@@ -1,14 +1,53 @@
-<script>
-export default {
-  name: 'Header'
-}
-// import ecomLogo from '@/assets/image/ecommerce_settings/ecom3logo17441769441747306879.png';
-import ecomLogo from '../../assets/image/ecommerce_settings/ecom3logo17441769441747306879.png';
-import c1 from '../../assets/image/c1.png';
-import login from '../../assets/image/login.png';
+<script setup>
+import ecomLogo from '../../assets/image/ecommerce_settings/ecom3logo17441769441747306879.png'
+import c1 from '../../assets/image/c1.png'
+import login from '../../assets/image/login.png'
+import imgGirlsFashion from '../../assets/image/images/category/girls-fashion-2025-05-06-11-31-49-7280.jpeg';
+import imgSaree from '../../assets/image/images/category/saree-2024-11-14-11-57-40-8691.jpg';
+import imageTop from '../../assets/image/images/category/tops-2025-05-16-12-03-45-3100.jpg';
+import womenFashion from '../../assets/image/images/category/women-fashion-2025-03-05-08-09-45-2322.png';
+import imageBaby from '../../assets/image/images/category/baby-collection-2025-03-05-08-09-29-1500.jpg';
+import imagePanjabi from '../../assets/image/images/category/panjabi-2025-03-05-08-24-49-7755.jpg';
+import imageshirt from '../../assets/image/images/category/polo-shirt-2025-03-05-08-24-28-4878.jpg';
 
+const navItems = [
+  {
+    id: 73,
+    name: 'Girls Fashion',
+    image: imgGirlsFashion
+  },
+  {
+    id: 48,
+    name: 'Saree',
+    image: imgSaree
+  },
+  {
+    id: 72,
+    name: 'Tops',
+    image: imageTop
+  },
+  {
+    id: 47,
+    name: 'Women Fashion',
+    image: womenFashion
+  },
+  {
+    id: 39,
+    name: 'Baby Collection',
+    image:imageBaby
+  },
+  {
+    id: 40,
+    name: 'Panjabi',
+    image:imagePanjabi
+  },
+  {
+    id: 42,
+    name: 'Polo Shirt',
+    image: imageshirt 
+  }
+]
 
-// import ecomLogo from '../../assets/image/ecommerce_settings/ecom3_logo17441769441747306879.png'
 </script>
 
 <template>
@@ -76,38 +115,79 @@ import login from '../../assets/image/login.png';
     </nav>
 
     <!-- Bottom Navigation Bar -->
-    <nav class="navbar navbar-expand-lg bottom_nav navbar-light orange-bg2 border-bottom">
-      <div class="container-fluid display_lg">
-        <div class="d-lg-flex align-items-center">
-          <div class="dropdown category_dropdown_box">
-            <div class="category_dropdown text-dark btn rounded-0">
-              <i class="fa fa-bars"></i>
-              <span class="text-cap medium font-13 mx-2 nato">Browse Categories</span>
-              <i class="fa fa-angle-down ms-auto"></i>
-            </div>
+       <nav class="navbar navbar-expand-lg bottom_nav navbar-light orange-bg2 border-bottom">
+    
 
-            <div class="categories dp_content">
-              <li class="nav-item"><a href="shop.html?cat_id=73" class="nav-link"><img src="..." width="20" /> Girls Fashion</a></li>
-              <li class="nav-item"><a href="shop-1.html?cat_id=48" class="nav-link"><img src="..." width="20" /> Saree</a></li>
-              <li class="nav-item has_menu">
-                <a href="shop-2.html?cat_id=39" class="nav-link"><img src="..." width="20" /> Baby Collection</a>
-                <ul class="inner_menu">
-                  <li class="nav-item"><a href="shop-3.html?cat_id=39&amp;sub_cat_id=68" class="nav-link">Baby shoe</a></li>
-                  <ul class="inner_menu_child"></ul>
+<div class="container-fluid display_lg">
+  <div class="d-lg-flex align-items-center">
+    <div class="dropdown category_dropdown_box ">
+      <div class="category_dropdown text-dark btn rounded-0">
+        <i class="fa fa-bars"></i>
+        <span class="text-cap medium font-13 mx-2  nato">Browse Categories</span>
+        <i class="fa fa-angle-down ms-auto"></i>
+      </div>
+ <div class="categories dp_content">
+              <li 
+                class="nav-item" 
+                :class="{ 'has_menu': item.submenu }"
+                v-for="item in navItems" 
+                :key="item.id"
+              >
+                <a :href="item.link" class="nav-link">
+                  <img :src="item.image" :alt="item.name" width="20">
+                  {{ item.name }}
+                </a>
+                <ul v-if="item.submenu" class="inner_menu">
+                  <li 
+                    class="nav-item" 
+                    v-for="subItem in item.submenu" 
+                    :key="subItem.id"
+                  >
+                    <a :href="subItem.link" class="nav-link">{{ subItem.name }}</a>
+                  </li>
                 </ul>
               </li>
-              <!-- Add other categories -->
             </div>
-          </div>
+     <!-- <li class="nav-item ">
+            <a href="shop-5.html?cat_id=43" class="nav-link">
+               <img src="posadmin/images/category/t-shirt-2025-03-05-08-18-25-2061.jpg" alt="" width="20"> T-Shirt
+            </a></li> -->
+                        <!-- <li class="nav-item ">
+            <a href="shop-6.html?cat_id=49" class="nav-link">
+               <img src="posadmin/images/category/formal-shirt-2024-09-17-04-01-46-7491.jpg" alt="" width="20"> Formal Shirt
+            </a>
+                    </li> -->
+                        <!-- <li class="nav-item ">
+            <a href="shop-7.html?cat_id=56" class="nav-link">
+               <img src="posadmin/images/category/jeans-pant-2024-12-14-02-46-09-9332.jpg" alt="" width="20"> Jeans pant
+            </a>
+                    </li> -->
+    </div>
+    <ul class="navbar-nav ms-2">
 
-          <ul class="navbar-nav ms-2">
-            <li class="nav-item"><a href="shop-8.html" class="nav-link text-dark font-14 text-cap">Top Selling</a></li>
-            <li class="nav-item"><a href="new-product.html" class="nav-link text-dark font-14">NEW PRODUCT</a></li>
-            <li class="nav-item"><a href="flash-product.html" class="nav-link text-dark font-14">FLASH SELL</a></li>
-          </ul>
-        </div>
-      </div>
-    </nav>
+      <li class="nav-item">
+        <a href="shop-8.html" class="nav-link text-dark font-14 text-cap">Top Selling</a>
+      </li>
+      
+      <!--<li class="nav-item">-->
+      <!--  <a href=" https://newfashion.softitglobal.com/categories " class="nav-link text-dark font-14"><i class="fas fa-list me-2"></i>  CATEGORIES</a>-->
+      <!--</li>-->
+
+        <li class="nav-item">
+            <a href="new-product.html" class="nav-link text-dark font-14">NEW PRODUCT</a>
+        </li>
+
+        <li class="nav-item">
+            <a href="flash-product.html" class="nav-link text-dark font-14">FLASH SELL</a>
+        </li>
+    </ul>
+
+  </div>
+
+
+
+</div>    
+</nav>
 
     <!-- Floating Cart Button -->
     <a href="index.htm" class="cart-dropdown-btn">
@@ -122,6 +202,111 @@ import login from '../../assets/image/login.png';
       </div>
     </a>
   </header>
+
+
+ <div class="overlay"></div>
+    <div class="cart_sidebar">
+      <div class="card border-0 h-100">
+  <div class="card-header">
+    <h5 class="mb-0">Shopping Cart</h5>
+    <div class="btn cart_dismiss">
+      <i class="fa fa-times"></i>
+      Close
+    </div>
+  </div>
+  <div class="card-body p-0">
+      <div class="cart_item_scroll">
+            </div>
+    <div class="subtotal p-2 border-top w-100">
+      <div class="d-flex justify-content-between align-items-center">
+        <h5>Subtotal:</h5>
+        <h5 class="text-warning">0</h5>
+      </div>
+      <a href="index.htm" class="btn text-cap btn-dark d-block">Checkout</a>
+    </div>
+        <div class="text-center">
+      <!-- for empty cart  -->
+      <div class="empty_icon">
+        <i class="fa fa-cart-arrow-down"></i>
+      </div>
+      <p>
+        No products in the cart.
+      </p>
+      <a href="shop-8.html" class="btn btn-dark text-cap">Return To Shop</a>
+    </div>
+      </div>
+</div>
+    </div>
+<!-- mobile nav -->
+    <!-- <div class="menu_sidebar">
+    
+
+<ul class="navbar-nav nav_mobile">
+   
+    <li class="nav-item"><a href="index.htm" class="nav-link active">Home</a></li>
+    <li class="nav-item">
+        <a href="shop-8.html" class="nav-link">SHOP PRODUCT</a>
+    </li>
+    <li class="nav-item">
+        <a href="new-product.html" class="nav-link">NEW PRODUCT</a>
+    </li>
+    <li class="nav-item">
+        <a href="flash-product.html" class="nav-link">FLASH SELL</a>
+    </li>
+            <li class="nav-item ">
+        <a href="shop.html?cat_id=73" class="nav-link">
+           <img src="posadmin/images/category/girls-fashion-2025-05-06-11-31-49-7280.jpeg" alt="" width="20">  Girls Fashion
+        </a>
+            </li>
+            <li class="nav-item ">
+        <a href="shop-1.html?cat_id=48" class="nav-link">
+           <img src="posadmin/images/category/saree-2024-11-14-11-57-40-8691.jpg" alt="" width="20">  Saree
+        </a>
+            </li>
+            <li class="nav-item has_menu">
+        <a href="shop-2.html?cat_id=39" class="nav-link">
+           <img src="posadmin/images/category/baby-collection-2025-03-05-08-09-29-1500.jpg" alt="" width="20">  Baby Collection
+        </a>
+                <ul class="inner_menu">
+                        <li class="nav-item">
+                <a href="shop-3.html?cat_id=39&amp;sub_cat_id=68" class="nav-link">Baby shoe</a>
+            </li>
+                        <ul class="inner_menu_child">
+                            </ul>
+                    </ul>
+            </li>
+            <li class="nav-item ">
+        <a href="shop-4.html?cat_id=42" class="nav-link">
+           <img src="posadmin/images/category/polo-shirt-2025-03-05-08-24-28-4878.jpg" alt="" width="20">  Polo Shirt
+        </a>
+            </li>
+            <li class="nav-item ">
+        <a href="shop-5.html?cat_id=43" class="nav-link">
+           <img src="posadmin/images/category/t-shirt-2025-03-05-08-18-25-2061.jpg" alt="" width="20">  T-Shirt
+        </a>
+            </li>
+            <li class="nav-item ">
+        <a href="shop-6.html?cat_id=49" class="nav-link">
+           <img src="posadmin/images/category/formal-shirt-2024-09-17-04-01-46-7491.jpg" alt="" width="20">  Formal Shirt
+        </a>
+            </li>
+            <li class="nav-item ">
+        <a href="shop-7.html?cat_id=56" class="nav-link">
+           <img src="posadmin/images/category/jeans-pant-2024-12-14-02-46-09-9332.jpg" alt="" width="20">  Jeans pant
+        </a>
+            </li>
+            
+    
+      
+</ul>
+<style>
+    .nav_mobile{
+        max-height: calc(100vh - 86px);
+        overflow-y: auto;
+    }
+</style>
+    </div> -->
+
 </template>
 
 

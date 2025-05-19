@@ -1,79 +1,99 @@
+<script setup>
+import posadmin from '../../assets/image/ecommerce_settings/ecom3logo17441769441747306879.png';
+import home_footer from '../../assets/image/home_footer/FreeDelivery17112665361734178775.png';
+import guaranty from '../../assets/image/home_footer/Guaranty1711266536.png';
+import geography from '../../assets/image/home_footer/geography--v11711266536.png';
+import payment from '../../assets/image/home_footer/payment1711266536.png';
+import { onMounted } from 'vue';
+
+onMounted(() => {
+  const actionButton = document.querySelector('.action-button');
+  if (actionButton) {
+    actionButton.addEventListener('click', (event) => {
+      event.currentTarget.classList.toggle('active');
+    });
+  }
+});
+</script>
+
 <template>
   <div>
     <div class="container-fluid divide">
-      <hr>
+      <hr />
     </div>
     <div class="container-fluid">
       <div class="row service-support-box">
         <div class="col-lg-3 col-md-6 col-6 border-end mb-3">
           <div class="support service-support-single d-flex align-items-center ps-4">
+            <img :src="home_footer" width="40" height="40">
             <div class="delivery">
               <h6 class="delivery_h6"><strong>Free Delivery</strong></h6>
-              <p class="font-13 m-0">
-                On all order above BDT 5000
-              </p>
+              <p class="font-13 m-0">On all order above BDT 5000</p>
             </div>
           </div>
         </div>
 
         <div class="col-lg-3 col-md-6 col-6 border-end mb-3">
           <div class="support service-support-single d-flex align-items-center ps-4">
+              <img :src="guaranty" width="40" height="40">
+                <div class="" style="margin: 5px;padding: 0px;"></div>
             <div class="guaranty">
               <h6 class="guaranty_h6"><strong>Easy 7 days return</strong></h6>
-              <p class="font-13 m-0">
-                7 days Easy return Guaranty
-              </p>
+              <p class="font-13 m-0">7 days Easy return Guaranty</p>
             </div>
           </div>
         </div>
 
         <div class="col-lg-3 col-md-6 col-6 border-end mb-3">
           <div class="support service-support-single d-flex align-items-center ps-4">
+                <img :src="geography" width="40" height="40">
             <div class="warranty">
               <h6 class="International"><strong>International Warranty</strong></h6>
-              <p class="font-13 m-0">
-                1 year official warranty
-              </p>
+              <p class="font-13 m-0">1 year official warranty</p>
             </div>
           </div>
         </div>
 
         <div class="col-lg-3 col-md-6 col-6 mb-3">
           <div class="support service-support-single d-flex align-items-center ps-4">
+               <img :src="payment" width="40" height="40">
             <div class="checkout">
               <h6 class="private"><strong>private2 100% secure checkout</strong></h6>
-              <p class="font-13 m-0">
-                COD/Mobile banking/visa
-              </p>
+              <p class="font-13 m-0">COD/Mobile banking/visa</p>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="modal fade" id="product_modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true"></div>
-
     <footer class="p-0">
-      <link rel="stylesheet" href="ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
       <div class="footerWidget">
         <div class="container-fluid">
           <div class="row">
             <div class="col-md-4 mb-3 marginRight">
               <div class="widget">
                 <h5>
-                  <i class="fa fa-home"></i> HEAD OFFICE
+                  <font-awesome-icon icon="home" /> HEAD OFFICE
                 </h5>
                 <ul class="contact ps-lg-4 ps-3">
-                  <li><span><i class="fa fa-map-marker"></i> Address:</span> </li>
-                  <li><span><i class="fa fa-phone"></i> Hotline:</span> 01615597820</li>
-                  <li><span><i class="fa fa-envelope"></i> E-mail:</span> softitglobal@gmail.com</li>
+                  <li>
+                    <span>
+                      <font-awesome-icon icon="map-marker-alt" /> Address:
+                    </span>
+                  </li>
+                  <li>
+                    <span><font-awesome-icon icon="phone" /> Hotline:</span> 01615597820
+                  </li>
+                  <li>
+                    <span><font-awesome-icon icon="envelope" /> E-mail:</span> softitglobal@gmail.com
+                  </li>
                 </ul>
               </div>
             </div>
             <div class="col-md-4 mb-3 marginRight">
               <div class="widget">
                 <h5>
-                  <i class="fa fa-book"></i> PAGE
+                  <font-awesome-icon icon="book" /> PAGE
                 </h5>
                 <ul class="quickLink ps-lg-4 ps-3">
                   <li><a href="about-site.html">About Ecom</a></li>
@@ -82,20 +102,20 @@
                   <li><a href="return-policy.html">Return Policy</a></li>
                 </ul>
                 <h5>
-                  <i class="fa-solid fa-star"></i> FOLLOW US
+                  <font-awesome-icon icon="star" /> FOLLOW US
                 </h5>
                 <div class="socials">
                   <a href="" class="btn btn-sm btn-primary me-2">
-                    <i class="fab fa-facebook"></i>
+                    <font-awesome-icon :icon="['fab', 'facebook']" />
                   </a>
                   <a href="" class="btn btn-sm btn-danger me-2">
-                    <i class="fab fa-youtube"></i>
+                    <font-awesome-icon :icon="['fab', 'youtube']" />
                   </a>
                   <a href="" class="btn btn-sm btn-success me-2">
-                    <i class="fab fa-instagram"></i>
+                    <font-awesome-icon :icon="['fab', 'instagram']" />
                   </a>
                   <a href="" class="btn btn-sm btn-success me-2">
-                    <i class="fab fa-tiktok"></i>
+                    <font-awesome-icon :icon="['fab', 'tiktok']" />
                   </a>
                   <a href="" class="btn btn-sm btn-success me-2">
                     <span class="x">𝕏</span>
@@ -105,9 +125,10 @@
             </div>
             <div class="col-md-4 mb-3">
               <div class="widget">
+                <img :src="posadmin" style="max-width:100%; margin-bottom:20px" />
                 <div>
                   <a href="order-tracking.html" class="btn btn-success">
-                    <i class="fa-solid fa-search"></i> Track Order
+                    <font-awesome-icon icon="search" /> Track Order
                   </a>
                 </div>
               </div>
@@ -115,73 +136,22 @@
           </div>
         </div>
       </div>
+
       <div class="copyRight">
         <div class="container-fluid">
           <p class="m-0 pm">
-            Develop by <a class="develop" href="https://softitglobal.com">Softitglobal.com</a>
+            Develop by
+            <a class="develop" href="https://softitglobal.com">Softitglobal.com</a>
           </p>
         </div>
-      </div>
-
-      <div class="footer-nav">
-        <div class="m-nav-main">
-          <div class="button-shop">
-            <a href="index.htm" class="footerBtn">
-              <i class="fa fa-home"></i>
-              <span>Home</span>
-            </a>
-          </div>
-          <div class="button-shop">
-            <a href="categories.html" class="footerBtn">
-              <i class="fa-solid fa-bars"></i>
-              <span>Categories</span>
-            </a>
-          </div>
-          <div class="button-shop">
-            <a href="shop-8.html" class="footerBtn">
-              <i class="fa fa-store"></i>
-              <span>All Product</span>
-            </a>
-          </div>
-          <div class="button-shop">
-            <a href="tel:01615597820" class="footerBtn">
-              <i class="fa-solid fa-phone-volume"></i>
-              <span>Call</span>
-            </a>
-          </div>
-        </div>
-      </div>
-
-      <div class='multi-action'>
-        <button class='action-button'><span class='fa fa-message'></span></button>
-        <ul class='actions'>
-          <li><a href="tel:01615597820"><span class='fa fa-phone'></span></a></li>
-          <li><a href=""><span class='fab fa-facebook-messenger'></span></a></li>
-          <li><a href="https://wa.me/+88"><span class='fa fa-whatsapp'></span></a></li>
-        </ul>
       </div>
     </footer>
   </div>
 </template>
 
-<script>
-export default {
-  name: 'FooterComponent',
-  mounted() {
-    this.initActionButton();
-  },
-  methods: {
-    initActionButton() {
-      const actionButton = document.querySelector('.action-button');
-      if (actionButton) {
-        actionButton.addEventListener('click', function() {
-          this.classList.toggle('active');
-        });
-      }
-    }
-  }
-}
-</script>
+<style>
+/* Your existing styles */
+</style>
 
 <style>
 /* General styles */
@@ -538,6 +508,3 @@ ul.contact {
   }
 }
 </style>
-<!-- <style scoped>
-/* You can add any component-specific styles here if needed */
-</style> -->
