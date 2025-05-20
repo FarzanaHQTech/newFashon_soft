@@ -10,8 +10,9 @@ import '@fortawesome/fontawesome-free/css/all.min.css'
 import './assets/css/style.css'
 import './assets/css/header.css'
 import './assets/css/home.css'
-// import './assets/css/product.css'
+import './assets/css/homeAdjust.css'
 import './assets/css/product.css'
+
 import './assets/css/media.css'
 
 // Slick carousel CSS (from node_modules)
