@@ -1,8 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
-import router from './routes/index.js'
+import router from './router/index.js'
 import 'swiper/swiper-bundle.css'
-
 // Core CSS
 import 'bootstrap/dist/css/bootstrap.min.css'
 import '@fortawesome/fontawesome-free/css/all.min.css'
@@ -34,6 +33,7 @@ const app = createApp(App)
 const pinia = createPinia()
 app.component('font-awesome-icon', FontAwesomeIcon)
 
-app.use(pinia)
-app.use(router)
-app.mount('#app')
+// app.use(pinia)
+// app.use(router)
+// app.mount('#app')
+createApp(App).use(router).use(pinia).mount('#app')

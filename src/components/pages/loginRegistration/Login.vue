@@ -1,5 +1,4 @@
 <template>
-  <div class="main-wrapper">
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-md-8">
@@ -74,7 +73,7 @@
       aria-labelledby="exampleModalLabel"
       aria-hidden="true"
     ></div>
-  </div>
+
 </template>
 
 <script setup>

@@ -33,19 +33,19 @@ import WomenFashion from '../productVarients/WomenFashion.vue';
 
 //  Run on component mount
 onMounted(() => {
-  initCarousel()
+  // initCarousel()
   initCountdown()
 })
 
 // Carousel initializer
-function initCarousel() {
-  const carouselElement = document.getElementById('main_carousel')
-  if (carouselElement) {
-    new Carousel(carouselElement, {
-      interval: 2000
-    })
-  }
-}
+// function initCarousel() {
+//   const carouselElement = document.getElementById('main_carousel')
+//   if (carouselElement) {
+//     new Carousel(carouselElement, {
+//       interval: 2000
+//     })
+//   }
+// }
 
 // Countdown setup
 function initCountdown() {

@@ -13,7 +13,6 @@ import imageshirt from '../../assets/image/images/category/polo-shirt-2025-03-05
 import { useNavberStore } from '../../stores/navbar'
 const navbar = useNavberStore()
 
-
 function handleMenuClick() {
   navbar.openMenu()
 }
@@ -94,10 +93,9 @@ const closeMobileMenu = () => {
             <span class="badge text-light" style="background-color: navy;">0</span>
           </div>
         </div>
-
-        <!-- login  -->
-    <router-link to="/login" class="btn px-0" style="color: navy;">
-          <img :src="login" style="width: 30px; filter: invert(1);" alt="" />
+        <!-- Mobile login icon only -->
+        <router-link to="/login" class="btn px-0 d-lg-none" style="color: navy;">
+          <img :src="login" style="width: 30px; filter: invert(1);" alt="Login" />
         </router-link>
 
         <form class="d-flex header_search col-lg-6 m-auto" action="shop.html">
@@ -114,10 +112,12 @@ const closeMobileMenu = () => {
             <a href="tel:01615597820" class="font-22" style="font-size: 20px;color: #000">
               <i class="fa fa-phone"></i> 01615597820
             </a>
-         
-<router-link to="/login" class="btn px-0" style="color: navy;">
-          <img :src="login" style="width: 30px; filter: invert(1);" alt="" />
-        </router-link>
+
+            <!-- Desktop login icon -->
+            <router-link to="/login" class="btn px-0" style="color: navy;">
+              <img :src="login" style="width: 30px; filter: invert(1);" alt="Login" />
+            </router-link>
+
             <div class="icon_cart semi btn p-0">
               <div class="btn badge2 px-0">
                 <img :src="c1" width="40" alt="" style="filter: invert(1);" />
@@ -162,7 +162,20 @@ const closeMobileMenu = () => {
         </div>
       </div>
     </nav>
+    <a href="../index.htm" class="cart-dropdown-btn">
+    <div class="fixed-cart-bottom">
+    <p style="background: #00276C;border-top-left-radius: 12px;border-top-right-radius: 12px;margin-bottom: 0px;">
+    <i class="fas fa-shopping-cart" style="color: #ffffff !important;"></i>
+</p>
+<p style="color: white;font-size: 12px;background: #00276C;margin-bottom: 0px;">
+  
+    <span id="cart_number">0</span> items 
+</p>
+<p id="total_amount" style="color: white;font-size: 12px;background: #f14705;border-bottom-left-radius: 12px;border-bottom-right-radius: 12px;margin-top: 0px;">৳ 0</p>
+    </div>
+</a>
   </header>
+
   <!-- Mobile Menu Sidebar from here -->
 
   <div :class="['menu_sidebar', { 'menu_sidebar--show': showMobileMenu }]">
