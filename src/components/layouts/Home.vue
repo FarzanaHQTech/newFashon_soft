@@ -15,8 +15,21 @@ import womenFashion from '../../assets/image/images/category/women-fashion-2025-
 import imageBaby from '../../assets/image/images/category/baby-collection-2025-03-05-08-09-29-1500.jpg';
 import imagePanjabi from '../../assets/image/images/category/panjabi-2025-03-05-08-24-49-7755.jpg';
 import imageshirt from '../../assets/image/images/category/polo-shirt-2025-03-05-08-24-28-4878.jpg';
-import FlashSell from '../productVarients/FlashSell.vue';
+import FlashSell2 from '../../assets/image/images/category/saree-2024-11-14-11-57-40-8691.jpg';
+// import FlashSell3 from '../productVarients/FlashSell.vue';
 
+import GirlFashion2 from '../productVarients/GirlFashion.vue';
+//start import swiper package
+import { Swiper, SwiperSlide } from 'swiper/vue'
+import 'swiper/css'
+import 'swiper/css/autoplay'
+import FlashSell from '../productVarients/FlashSell.vue';
+import GirlFashion from '../productVarients/GirlFashion.vue';
+import WomenFashion from '../productVarients/WomenFashion.vue';
+// import SwiperCore, { Autoplay, Pagination } from 'swiper'
+
+// enable modules
+// SwiperCore.use([Autoplay, Pagination])
 
 //  Run on component mount
 onMounted(() => {
@@ -75,9 +88,19 @@ const categories = [
     image:imagePanjabi
   },
   {
+    id: 41,
+    name: 'Polo Shirt',
+    image: FlashSell2 
+  },
+  {
     id: 42,
     name: 'Polo Shirt',
     image: imageshirt 
+  },
+  {
+    id: 43,
+    name: 'GirlFashion',
+    image: FlashSell2 
   }
 ]
 
@@ -88,6 +111,8 @@ function startCountdown(elementId, endDate, design = false) {
 </script>
 
 <template>
+
+
    <div class="container-fluid">
     <!-- Carousel Section -->
     <div class="row">
@@ -117,9 +142,33 @@ function startCountdown(elementId, endDate, design = false) {
         </div>
       </div>
     </div>
-    
+    <Swiper
+  :slides-per-view="'auto'"
+  :space-between="15"
+  :pagination="false"
+  :autoplay="{ delay: 3000, disableOnInteraction: false }"
+  class="mobile-category-swiper"
+>
+  <SwiperSlide
+    v-for="category in categories"
+    :key="category.id"
+    style="width: 150px;"
+  >
+    <div class="product-item mx-2 p-1">
+      <a :href="`shop.html?cat_id=${category.id}`">
+        <img
+          :src="category.image"
+          class="rounded-1 mb-2"
+          style="width: 133px; box-shadow: 3px 4px 6px 0px #504f4e80;"
+        />
+        <p class="ctgName">{{ category.name }}</p>
+      </a>
+    </div>
+  </SwiperSlide>
+</Swiper>
+
     <!-- Categories Section -->
-    <section class="my-lg-3" style="">
+    <!-- <section class="my-lg-3" style="">
       <div class="container-fluid p-0">
         <div class="text-center py-0">
           <div class="popular_product" bis_skin_checked="1">   
@@ -147,16 +196,38 @@ function startCountdown(elementId, endDate, design = false) {
     </div>
   </div>
       </div>
-    </section>
-    <FlashSell></FlashSell>
-   
-
+    </section> -->
+    <FlashSell/>
+   <GirlFashion/>
+  <WomenFashion/>
     
   </div>
 </template>
 
 <style scoped>
 
+.bg_image {
+  background-size: cover;
+  background-position: center;
+  width: 100%;
+  height: 400px;
+}
 
+/* Responsive display for desktop and mobile */
+.mobileHide {
+  display: block;
+}
+.mobileShow {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobileHide {
+    display: none;
+  }
+  .mobileShow {
+    display: block;
+  }
+}
 
 </style>

@@ -1,49 +1,6 @@
 @import url('./css2-1');
 /* Add these new styles for category items */
-
-.grid_content .mobile-slider {
-    display: flex;
-    overflow-x: auto;
-    gap: 28px;
-    padding: 10px 0;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-}
-.mobile-slider {
-  display: flex;
-  overflow-x: auto;
-  gap: 15px;
-  padding: 10px 0;
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-}
-
-.mobile-slider .product-item {
-  scroll-snap-align: start;
-  min-width: 150px;
-  flex: 0 0 auto;
-  background: white;
-  border-radius: 8px;
-  padding: 10px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-.mobile-slider .product-item img {
-  border-radius: 6px;
-  aspect-ratio: 1/1;
-  object-fit: cover;
-}
-
-.mobile-slider .product-item .ctgName {
-  text-align: center;
-  font-size: 14px;
-  font-weight: 600;
-  margin-top: 8px;
-  color: #333;
-}
-/* new add custom */
-
-
+ 
 .products{
     width: 100%;
     display: flex;

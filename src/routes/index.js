@@ -1,11 +1,17 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '../components/layouts/Home.vue' // ✅ Correct import
+import Home from '../components/layouts/Home.vue' 
+import Login from '../components/pages/loginRegistration/Login.vue'
 
 const routes = [
   {
     path: '/',
     name: 'Home',
     component: Home
+  },
+  {
+    path: '/login',
+    name: 'Login',
+    component:Login
   }
 ]
 
@@ -14,6 +20,11 @@ const router = createRouter({
   routes
 })
 
+
+router.beforeEach((to, from, next) => {
+  console.log('Navigating to:', to.fullPath)
+  next()
+})
 export default router
 
 

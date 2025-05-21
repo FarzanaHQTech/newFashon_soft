@@ -1,14 +1,22 @@
 <script setup>
+import { ref } from 'vue'
 import ecomLogo from '../../assets/image/ecommerce_settings/ecom3logo17441769441747306879.png'
 import c1 from '../../assets/image/c1.png'
 import login from '../../assets/image/login.png'
-import imgGirlsFashion from '../../assets/image/images/category/girls-fashion-2025-05-06-11-31-49-7280.jpeg';
-import imgSaree from '../../assets/image/images/category/saree-2024-11-14-11-57-40-8691.jpg';
-import imageTop from '../../assets/image/images/category/tops-2025-05-16-12-03-45-3100.jpg';
-import womenFashion from '../../assets/image/images/category/women-fashion-2025-03-05-08-09-45-2322.png';
-import imageBaby from '../../assets/image/images/category/baby-collection-2025-03-05-08-09-29-1500.jpg';
-import imagePanjabi from '../../assets/image/images/category/panjabi-2025-03-05-08-24-49-7755.jpg';
-import imageshirt from '../../assets/image/images/category/polo-shirt-2025-03-05-08-24-28-4878.jpg';
+import imgGirlsFashion from '../../assets/image/images/category/girls-fashion-2025-05-06-11-31-49-7280.jpeg'
+import imgSaree from '../../assets/image/images/category/saree-2024-11-14-11-57-40-8691.jpg'
+import imageTop from '../../assets/image/images/category/tops-2025-05-16-12-03-45-3100.jpg'
+import womenFashion from '../../assets/image/images/category/women-fashion-2025-03-05-08-09-45-2322.png'
+import imageBaby from '../../assets/image/images/category/baby-collection-2025-03-05-08-09-29-1500.jpg'
+import imagePanjabi from '../../assets/image/images/category/panjabi-2025-03-05-08-24-49-7755.jpg'
+import imageshirt from '../../assets/image/images/category/polo-shirt-2025-03-05-08-24-28-4878.jpg'
+import { useNavberStore } from '../../stores/navbar'
+const navbar = useNavberStore()
+
+
+function handleMenuClick() {
+  navbar.openMenu()
+}
 
 const navItems = [
   {
@@ -34,35 +42,50 @@ const navItems = [
   {
     id: 39,
     name: 'Baby Collection',
-    image:imageBaby
+    image: imageBaby,
+    submenu: [
+      { id: 1, name: 'Baby Shoe', link: 'shop.html?cat_id=39&sub_cat_id=68' },
+      { id: 2, name: 'Baby Dress', link: 'shop.html?cat_id=39&sub_cat_id=69' }
+    ]
   },
   {
     id: 40,
     name: 'Panjabi',
-    image:imagePanjabi
+    image: imagePanjabi
   },
   {
     id: 42,
     name: 'Polo Shirt',
-    image: imageshirt 
+    image: imageshirt
   }
 ]
+
+const showMobileMenu = ref(false)
+const toggleMobileMenu = () => {
+  showMobileMenu.value = !showMobileMenu.value
+}
+const closeMobileMenu = () => {
+  showMobileMenu.value = false
+}
 
 </script>
 
 <template>
   <header class="header">
-    <!-- Top Navigation Bar -->
+    <!-- Top Navigation -->
     <nav class="navbar navbar-expand-lg top_nav navbar-dark" style="background-color: #fafcff;">
       <div class="container-fluid align-items-center">
-        <button class="navbar-toggler side_menu_toggler display_sm border-0 p-0" style="font-size: 26px; color: navy;" type="button">
+        <!-- <button class="navbar-toggler border-0 p-0" 
+          style="font-size: 26px; color: navy;">
+          <i class="fa fa-bars"></i>
+        </button> -->
+        <button class="navbar-toggler border-0 p-0" style="font-size: 26px; color: navy;" @click="toggleMobileMenu">
           <i class="fa fa-bars"></i>
         </button>
-        
+
+
         <a class="navbar-brand" href="index.htm">
           <img :src="ecomLogo" alt="Ecom Logo" />
-          <!-- import ecomLogo from '@/assets/image/ecommerce_settings/ecom3_logo17441769441747306879.png'; -->
-          <!-- <img src="images/posadmin/ecommerce_settings/ecom3%20logo17441769441747306879.png" class="logo" /> -->
         </a>
 
         <div class="icon_cart semi btn p-0 me-lg-0 pe-lg-0 display_sm">
@@ -72,27 +95,18 @@ const navItems = [
           </div>
         </div>
 
-        <div class="display_sm">
-          <a href="login.html" class="btn px-0" style="color: navy;">
-            <!-- <img :src="login" style="width: 30px; filter: invert(1);" alt="" /> -->
-          </a>
-        </div>
+        <!-- login  -->
+    <router-link to="/login" class="btn px-0" style="color: navy;">
+          <img :src="login" style="width: 30px; filter: invert(1);" alt="" />
+        </router-link>
 
-        <form class="d-flex header_search col-lg-6 m-auto" action="https://newfashion.softitglobal.com/shop">
-          <select name="cat_id" class="form-select d-lg-block d-none" style="width: 70px; font-size: 14px; border-radius: 5px 0 0 5px; font-weight: 600; background-color: #d5d5d5;">
+        <form class="d-flex header_search col-lg-6 m-auto" action="shop.html">
+          <select name="cat_id" class="form-select d-lg-block d-none"
+            style="width: 70px; font-size: 14px; border-radius: 5px 0 0 5px; font-weight: 600; background-color: #d5d5d5;">
             <option value="">All</option>
-            <option value="73">Girls Fashion</option>
-            <option value="48">Saree</option>
-            <option value="39">Baby Collection</option>
-            <option value="42">Polo Shirt</option>
-            <option value="43">T-Shirt</option>
-            <option value="49">Formal Shirt</option>
-            <option value="56">Jeans pant</option>
+            <option v-for="item in navItems" :key="item.id" :value="item.id">{{ item.name }}</option>
           </select>
           <input class="form-control" type="text" placeholder="Search" name="q" />
-          <button class="btn text-dark" type="submit" style="background-color: red; color: white;">
-            <i class="fa fa-search text-light"></i>
-          </button>
         </form>
 
         <div class="display_lg">
@@ -100,9 +114,10 @@ const navItems = [
             <a href="tel:01615597820" class="font-22" style="font-size: 20px;color: #000">
               <i class="fa fa-phone"></i> 01615597820
             </a>
-            <a href="login.html" class="font-22 px-2" style="color: #000">
-              <img :src="login" style="width: 28px; filter: invert(1);" alt="" />
-            </a>
+         
+<router-link to="/login" class="btn px-0" style="color: navy;">
+          <img :src="login" style="width: 30px; filter: invert(1);" alt="" />
+        </router-link>
             <div class="icon_cart semi btn p-0">
               <div class="btn badge2 px-0">
                 <img :src="c1" width="40" alt="" style="filter: invert(1);" />
@@ -114,204 +129,114 @@ const navItems = [
       </div>
     </nav>
 
-    <!-- Bottom Navigation Bar -->
-       <nav class="navbar navbar-expand-lg bottom_nav navbar-light orange-bg2 border-bottom">
-    
-
-<div class="container-fluid display_lg">
-  <div class="d-lg-flex align-items-center">
-    <div class="dropdown category_dropdown_box ">
-      <div class="category_dropdown text-dark btn rounded-0">
-        <i class="fa fa-bars"></i>
-        <span class="text-cap medium font-13 mx-2  nato">Browse Categories</span>
-        <i class="fa fa-angle-down ms-auto"></i>
-      </div>
- <div class="categories dp_content">
-              <li 
-                class="nav-item" 
-                :class="{ 'has_menu': item.submenu }"
-                v-for="item in navItems" 
-                :key="item.id"
-              >
-                <a :href="item.link" class="nav-link">
+    <!-- Bottom Navigation -->
+    <nav class="navbar navbar-expand-lg bottom_nav navbar-light orange-bg2 border-bottom">
+      <div class="container-fluid display_lg">
+        <div class="d-lg-flex align-items-center">
+          <div class="dropdown category_dropdown_box">
+            <div class="category_dropdown text-dark btn rounded-0">
+              <i class="fa fa-bars"></i>
+              <span class="text-cap medium font-13 mx-2 nato">Browse Categories</span>
+              <i class="fa fa-angle-down ms-auto"></i>
+            </div>
+            <div class="categories dp_content">
+              <li class="nav-item" :class="{ 'has_menu': item.submenu }" v-for="item in navItems" :key="item.id">
+                <a :href="`shop.html?cat_id=${item.id}`" class="nav-link">
                   <img :src="item.image" :alt="item.name" width="20">
                   {{ item.name }}
                 </a>
                 <ul v-if="item.submenu" class="inner_menu">
-                  <li 
-                    class="nav-item" 
-                    v-for="subItem in item.submenu" 
-                    :key="subItem.id"
-                  >
+                  <li class="nav-item" v-for="subItem in item.submenu" :key="subItem.id">
                     <a :href="subItem.link" class="nav-link">{{ subItem.name }}</a>
                   </li>
                 </ul>
               </li>
             </div>
-     <!-- <li class="nav-item ">
-            <a href="shop-5.html?cat_id=43" class="nav-link">
-               <img src="posadmin/images/category/t-shirt-2025-03-05-08-18-25-2061.jpg" alt="" width="20"> T-Shirt
-            </a></li> -->
-                        <!-- <li class="nav-item ">
-            <a href="shop-6.html?cat_id=49" class="nav-link">
-               <img src="posadmin/images/category/formal-shirt-2024-09-17-04-01-46-7491.jpg" alt="" width="20"> Formal Shirt
-            </a>
-                    </li> -->
-                        <!-- <li class="nav-item ">
-            <a href="shop-7.html?cat_id=56" class="nav-link">
-               <img src="posadmin/images/category/jeans-pant-2024-12-14-02-46-09-9332.jpg" alt="" width="20"> Jeans pant
-            </a>
-                    </li> -->
-    </div>
-    <ul class="navbar-nav ms-2">
+          </div>
 
-      <li class="nav-item">
-        <a href="shop-8.html" class="nav-link text-dark font-14 text-cap">Top Selling</a>
-      </li>
-      
-      <!--<li class="nav-item">-->
-      <!--  <a href=" https://newfashion.softitglobal.com/categories " class="nav-link text-dark font-14"><i class="fas fa-list me-2"></i>  CATEGORIES</a>-->
-      <!--</li>-->
-
-        <li class="nav-item">
-            <a href="new-product.html" class="nav-link text-dark font-14">NEW PRODUCT</a>
-        </li>
-
-        <li class="nav-item">
-            <a href="flash-product.html" class="nav-link text-dark font-14">FLASH SELL</a>
-        </li>
-    </ul>
-
-  </div>
-
-
-
-</div>    
-</nav>
-
-    <!-- Floating Cart Button -->
-    <a href="index.htm" class="cart-dropdown-btn">
-      <div class="fixed-cart-bottom">
-        <p style="background: #00276C;border-top-left-radius: 12px;border-top-right-radius: 12px;margin-bottom: 0px;">
-          <i class="fas fa-shopping-cart" style="color: #ffffff !important;"></i>
-        </p>
-        <p style="color: white;font-size: 12px;background: #00276C;margin-bottom: 0px;">
-          <span id="cart_number">0</span> items 
-        </p>
-        <p id="total_amount" style="color: white;font-size: 12px;background: #f14705;border-bottom-left-radius: 12px;border-bottom-right-radius: 12px;margin-top: 0px;">৳ 0</p>
+          <ul class="navbar-nav ms-2">
+            <li class="nav-item"><a href="shop-8.html" class="nav-link text-dark font-14 text-cap">Top Selling</a></li>
+            <li class="nav-item"><a href="new-product.html" class="nav-link text-dark font-14">NEW PRODUCT</a></li>
+            <li class="nav-item"><a href="flash-product.html" class="nav-link text-dark font-14">FLASH SELL</a></li>
+          </ul>
+        </div>
       </div>
-    </a>
+    </nav>
   </header>
+  <!-- Mobile Menu Sidebar from here -->
 
-
- <div class="overlay"></div>
-    <div class="cart_sidebar">
-      <div class="card border-0 h-100">
-  <div class="card-header">
-    <h5 class="mb-0">Shopping Cart</h5>
-    <div class="btn cart_dismiss">
-      <i class="fa fa-times"></i>
-      Close
+  <div :class="['menu_sidebar', { 'menu_sidebar--show': showMobileMenu }]">
+    <div class="p-3">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <strong class="text-dark">Menu</strong>
+        <button class="btn-close" @click="closeMobileMenu"></button>
+      </div>
+      <ul class="list-unstyled">
+        <li v-for="item in navItems" :key="item.id" class="mb-2">
+          <a :href="`shop.html?cat_id=${item.id}`" class="d-block text-dark">
+            <img :src="item.image" alt="" width="20" class="me-2" /> {{ item.name }}
+          </a>
+          <ul v-if="item.submenu" class="ps-3">
+            <li v-for="sub in item.submenu" :key="sub.id">
+              <a :href="sub.link" class="text-secondary">{{ sub.name }}</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
     </div>
   </div>
-  <div class="card-body p-0">
-      <div class="cart_item_scroll">
-            </div>
-    <div class="subtotal p-2 border-top w-100">
-      <div class="d-flex justify-content-between align-items-center">
-        <h5>Subtotal:</h5>
-        <h5 class="text-warning">0</h5>
-      </div>
-      <a href="index.htm" class="btn text-cap btn-dark d-block">Checkout</a>
-    </div>
-        <div class="text-center">
-      <!-- for empty cart  -->
-      <div class="empty_icon">
-        <i class="fa fa-cart-arrow-down"></i>
-      </div>
-      <p>
-        No products in the cart.
-      </p>
-      <a href="shop-8.html" class="btn btn-dark text-cap">Return To Shop</a>
-    </div>
-      </div>
-</div>
-    </div>
-<!-- mobile nav -->
-    <!-- <div class="menu_sidebar">
-    
 
-<ul class="navbar-nav nav_mobile">
-   
-    <li class="nav-item"><a href="index.htm" class="nav-link active">Home</a></li>
-    <li class="nav-item">
-        <a href="shop-8.html" class="nav-link">SHOP PRODUCT</a>
-    </li>
-    <li class="nav-item">
-        <a href="new-product.html" class="nav-link">NEW PRODUCT</a>
-    </li>
-    <li class="nav-item">
-        <a href="flash-product.html" class="nav-link">FLASH SELL</a>
-    </li>
-            <li class="nav-item ">
-        <a href="shop.html?cat_id=73" class="nav-link">
-           <img src="posadmin/images/category/girls-fashion-2025-05-06-11-31-49-7280.jpeg" alt="" width="20">  Girls Fashion
-        </a>
-            </li>
-            <li class="nav-item ">
-        <a href="shop-1.html?cat_id=48" class="nav-link">
-           <img src="posadmin/images/category/saree-2024-11-14-11-57-40-8691.jpg" alt="" width="20">  Saree
-        </a>
-            </li>
-            <li class="nav-item has_menu">
-        <a href="shop-2.html?cat_id=39" class="nav-link">
-           <img src="posadmin/images/category/baby-collection-2025-03-05-08-09-29-1500.jpg" alt="" width="20">  Baby Collection
-        </a>
-                <ul class="inner_menu">
-                        <li class="nav-item">
-                <a href="shop-3.html?cat_id=39&amp;sub_cat_id=68" class="nav-link">Baby shoe</a>
-            </li>
-                        <ul class="inner_menu_child">
-                            </ul>
-                    </ul>
-            </li>
-            <li class="nav-item ">
-        <a href="shop-4.html?cat_id=42" class="nav-link">
-           <img src="posadmin/images/category/polo-shirt-2025-03-05-08-24-28-4878.jpg" alt="" width="20">  Polo Shirt
-        </a>
-            </li>
-            <li class="nav-item ">
-        <a href="shop-5.html?cat_id=43" class="nav-link">
-           <img src="posadmin/images/category/t-shirt-2025-03-05-08-18-25-2061.jpg" alt="" width="20">  T-Shirt
-        </a>
-            </li>
-            <li class="nav-item ">
-        <a href="shop-6.html?cat_id=49" class="nav-link">
-           <img src="posadmin/images/category/formal-shirt-2024-09-17-04-01-46-7491.jpg" alt="" width="20">  Formal Shirt
-        </a>
-            </li>
-            <li class="nav-item ">
-        <a href="shop-7.html?cat_id=56" class="nav-link">
-           <img src="posadmin/images/category/jeans-pant-2024-12-14-02-46-09-9332.jpg" alt="" width="20">  Jeans pant
-        </a>
-            </li>
-            
-    
-      
-</ul>
-<style>
-    .nav_mobile{
-        max-height: calc(100vh - 86px);
-        overflow-y: auto;
-    }
-</style>
-    </div> -->
-
+  <!-- Background Overlay -->
+  <div v-if="showMobileMenu" class="overlay" @click="closeMobileMenu"></div>
 </template>
 
-
-
 <style scoped>
+.menu_sidebar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 260px;
+  height: 100%;
+  background: #fff;
+  z-index: 9999;
+  overflow-y: auto;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-in-out;
+}
+
+.menu_sidebar--show {
+  transform: translateX(0);
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 9998;
+}
+
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 9998;
+}
+
+.nav-link img {
+  margin-right: 8px;
+}
+
+.inner_menu {
+  padding-left: 20px;
+}
+
 .fixed-cart-whats {
   position: fixed;
   bottom: 14rem;
@@ -347,6 +272,7 @@ const navItems = [
     width: auto;
   }
 }
+
 @media(min-width: 1600px) {
   .fixed-cart-bottom {
     right: calc(13% - 55px);
