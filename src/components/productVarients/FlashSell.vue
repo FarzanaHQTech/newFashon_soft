@@ -1,119 +1,49 @@
 <script setup>
 import { onMounted, ref } from 'vue'
-import product1 from '../../assets/image/images/product/small/DSC26521741599665.jpg'
-import product2 from '../../assets/image/images/product/small/DSC89281741599841.webp'
-import product3 from '../../assets/image/images/product/small/DSC7412_09979133-5da6-4dad-9b69-f2a56fb1cddb1741598188.jpg'
-import product4 from '../../assets/image/images/product/small/DSC27901741600029.webp'
-import product5 from '../../assets/image/images/product/small/DSC82001741598337.webp'
-import product6 from '../../assets/image/images/product/small/DSC64101741598476.webp'
-import product7 from '../../assets/image/images/product/small/DSC24601741598621.webp'
-import product8 from '../../assets/image/images/product/small/DSC58111741594128.webp'
-import product9 from '../../assets/image/images/product/small/DSC57401741594233.webp'
-import product10 from '../../assets/image/images/product/small/DSC57871741594350.webp'
+
 import ptsv from '../../assets/pt.svg'
 import api from '../../api'
+import { IMAGE_BASE_URL } from '../../api'
+const flasSells = ref([])
+const currentPage = ref(1)
+const lastPage = ref(1)
+const isLoading = ref(false)
+const allLoaded = ref(false)
 
-const flasSells = [
-  {
-    id: 96,
-    name: "Regular Fit Templeton Formal Shirt",
-    images:product1,
-    currentPrice: "2430 Tk",
-    originalPrice: "2700 Tk",
-    categoryId: 49
-  },
-  {
-    id: 97,
-    name: "Regular Fit Micro Check Formal Shirt",
-    images:product2,
-    // images: ["posadmin/images/product/small/DSC89281741599841.webp", "posadmin/images/product/small/DSC89281741599841.webp"],
-    currentPrice: "1530 Tk",
-    originalPrice: "1700 Tk",
-    categoryId: 49
-  },
-  {
-    id: 89,
-    name: "Slim Fit Jacquard Templeton Formal Shirt",
-    images:product3,
-    currentPrice: "2790 Tk",
-    originalPrice: "3100 Tk",
-    categoryId: 49
-  },
-  {
-    id: 98,
-    name: "Regular Fit Classic Checkered Formal Shirt",
-    images: product4,
-    currentPrice: "2070 Tk",
-    originalPrice: "2300 Tk",
-    categoryId: 49
-  },
-  {
-    id: 90,
-    name: "Slim Fit Dobby Templeton Formal Shirt",
-    images: product5,
-    currentPrice: "2790 Tk",
-    originalPrice: "3100 Tk",
-    categoryId: 49
-  },
-  {
-    id: 91,
-    name: "Slim Fit Formal Shirt",
-    images: product6,
-    currentPrice: "1530 Tk",
-    originalPrice: "1700 Tk",
-    categoryId: 49
-  },
-  {
-    id: 92,
-    name: "Regular Fit Multicolor Formal Shirt",
-    images:product7,
-    currentPrice: "2070 Tk",
-    originalPrice: "2300 Tk",
-    categoryId: 49
-  },
-  {
-    id: 70,
-    name: "Regular Fit Endy Cotton Semi-Formal Panjabi",
-    images: product8,
-    currentPrice: "2880 Tk",
-    originalPrice: "3200 Tk",
-    categoryId: 40,
-   
-  },
-  {
-    id: 71,
-    name: "Panjabi Regular Fit Jacquard Cotton Semi-Formal Panjabi",
-    images:product9,
-    currentPrice: "2430 Tk",
-    originalPrice: "2700 Tk",
-    categoryId: 39
-  },
-  {
-    id: 72,
-    name: "Regular Fit Jacquard Cotton Semi-Formal Panjabi.",
-    images:product10,
-    currentPrice: "2520 Tk",
-    originalPrice: "2800 Tk",
-    categoryId: 40
-  }
-]
-
-const flashSellProducts = ref([])
-const fetchFlashSell = async ()=>{
-
+const fetchFlashSell = async (page = 1, loadAll = false) => {
   try {
-    const res = await api.get('/flashProduct')
-    flashSellProducts.value = res.data.flash_products
-    console.log('Flash Sell Products',res.data);
+    isLoading.value = true
+    let url = `/flashProduct2?page=${page}`
+    if (loadAll) url += `&all=true`  // add param to get all remaining products
     
+    const res = await api.get(url)
+    console.log(res);
+ 
+
+    if (page === 1) {
+      flasSells.value = res.data.products
+    } else {
+      flasSells.value = [...flasSells.value, ...res.data.products]
+    }
+
+    currentPage.value = res.data.pagination.current_page
+    lastPage.value = res.data.pagination.last_page
+
+    // If loading all, no more to load
+    if (loadAll || !res.data.pagination.has_more) {
+      allLoaded.value = true
+    }
   } catch (error) {
-    console.error(error);
-    
+    console.error(error)
+  } finally {
+    isLoading.value = false
   }
-}  
+}
 
 onMounted(() => {
 fetchFlashSell()
+
+
   function startCountdown(elementId, endDate, design = false) {
     const countdownElement = document.getElementById(elementId);
     const targetDate = new Date(endDate).getTime();
@@ -190,11 +120,24 @@ fetchFlashSell()
   const endDate = countdownElement.dataset.date;
   startCountdown('promoCountdown2', endDate);
 });
+
+// Load More button click handler
+const loadMore = () => {
+  if (allLoaded.value) return // no more products
+
+  if (currentPage.value < lastPage.value) {
+    // Load next page normally (10 more)
+    fetchFlashSell(currentPage.value + 1)
+  } else {
+    // Load all remaining products at once
+    fetchFlashSell(1, true)
+  }
+}
 </script>
 
 
-<template >
-    <div class="category_products flash-sale-container">
+<template>
+  <div class="category_products flash-sale-container">
     <div class="banner rounded-2">
       <div class="text-center w-100">
         <div class="title">Flash Sell</div>
@@ -212,11 +155,19 @@ fetchFlashSell()
           :href="`product-show/${item.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '')}.html`"
           id="product_show"
           :data-productid="item.id"
-          :data-categoryid="item.categoryId"
+          :data-categoryid="item.category_id"
           :data-productname="item.name"
         >
-          <img :src="item.images" :alt="item.name" class="first" />
-          <img :src="item.images" :alt="item.name" class="second" />
+          <img 
+            :src="`${IMAGE_BASE_URL}/images/product/small/${item.main_image}`" 
+            :alt="item.name" 
+            class="first" 
+          />
+          <img 
+            :src="`${IMAGE_BASE_URL}/images/product/small/${item.main_image}`" 
+            :alt="item.name" 
+            class="second" 
+          />
         </a>
         <div class="product_btn_position content">
           <form method="POST" action="https://newfashion.softitglobal.com/carts" id="cart_form">
@@ -235,46 +186,38 @@ fetchFlashSell()
         </div>
       </div>
 
-      <div class="labels d-none">
-        <div class="tag bg-dark text-light">-39%</div>
-        <div class="tag bg-danger text-light">Sold Out</div>
-      </div>
-
       <div class="content px-2 text-center">
         <a
           :href="`product-show/${item.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '')}.html`"
           id="product_show"
           :data-productid="item.id"
-          :data-categoryid="item.categoryId"
+          :data-categoryid="item.category_id"
           :data-productname="item.name"
         >
           <div class="title">{{ item.name }}</div>
         </a>
         <div class="price">
-          <span class="current_price" style="color: #00276C; font-weight: bold;">{{ item.currentPrice }}</span>
-          <del style="color: red;">{{ item.originalPrice }}</del>
+          <span class="current_price" style="color: #00276C; font-weight: bold;">
+            {{ item.promotion && item.promotion_price ? item.promotion_price : item.price }}
+          </span>
+          <del v-if="item.promotion && item.promotion_price" style="color: red;">
+            {{ item.price }} Tk
+          </del>
         </div>
       </div>
     </div>
   </div>
 
-      <div class="text-center mt-3">
-        <button class="btn btn-danger load-more-flash-sale" data-page="2">
-          Load More Flash Deals
-        </button>
-      </div>
-
-
-         <!--End girls Fashion -->
-
-            <!-- Women Fashion -->
-        
-        <!--End Women Fashion -->
-    
+  <div class="text-center mt-3">
+    <button 
+      class="btn btn-danger load-more-flash-sale" 
+      :disabled="isLoading || allLoaded" 
+      @click="loadMore"
+    >
+      {{ allLoaded ? "All Products Loaded" : "Load More Flash Deals" }}
+    </button>
+  </div>
 </template>
-
-
-
 
 <style scoped>
 /* Other styles */

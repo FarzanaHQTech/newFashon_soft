@@ -12,8 +12,10 @@ import FlashSell from '../productVarients/FlashSell.vue'
 import GirlFashion from '../productVarients/GirlFashion.vue'
 import WomenFashion from '../productVarients/WomenFashion.vue'
 import { IMAGE_BASE_URL } from '../../api'
+
 // sliders/s11747487509.jpg
 // Initialize store
+useHomeCategoryStore
 const homeCategoryStore = useHomeCategoryStore()
 const { homeCategories, sliders } = storeToRefs(homeCategoryStore)
 

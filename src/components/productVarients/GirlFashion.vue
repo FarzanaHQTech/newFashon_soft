@@ -96,8 +96,6 @@ const girlsFashions = [
     categoryId: 50,
   }
 ]
-
-
 </script>
 
 <template>
