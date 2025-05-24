@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import product1 from '../../assets/image/images/product/small/DSC26521741599665.jpg'
 import product2 from '../../assets/image/images/product/small/DSC89281741599841.webp'
 import product3 from '../../assets/image/images/product/small/DSC7412_09979133-5da6-4dad-9b69-f2a56fb1cddb1741598188.jpg'
@@ -11,6 +11,7 @@ import product8 from '../../assets/image/images/product/small/DSC58111741594128.
 import product9 from '../../assets/image/images/product/small/DSC57401741594233.webp'
 import product10 from '../../assets/image/images/product/small/DSC57871741594350.webp'
 import ptsv from '../../assets/pt.svg'
+import api from '../../api'
 
 const flasSells = [
   {
@@ -97,8 +98,22 @@ const flasSells = [
   }
 ]
 
+const flashSellProducts = ref([])
+const fetchFlashSell = async ()=>{
+
+  try {
+    const res = await api.get('/flashProduct')
+    flashSellProducts.value = res.data.flash_products
+    console.log('Flash Sell Products',res.data);
+    
+  } catch (error) {
+    console.error(error);
+    
+  }
+}  
 
 onMounted(() => {
+fetchFlashSell()
   function startCountdown(elementId, endDate, design = false) {
     const countdownElement = document.getElementById(elementId);
     const targetDate = new Date(endDate).getTime();

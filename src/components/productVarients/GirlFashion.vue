@@ -137,6 +137,14 @@ const girlsFashions = [
                 </div>
               </router-link>
             </div>
+
+                     <div class="product_btn_position content">
+                <button type="button" class="submit_button btn btn-light d-block" @click="handleOrder()">
+                  <div class="cart_btn bangali bold ord_bt">
+                    <i class="fa fa-cart-shopping"></i><span> অর্ডার করুন</span>
+                  </div>
+                </button>
+              </div>
           </div>
 
           <div class="labels d-none">

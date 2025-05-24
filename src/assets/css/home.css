@@ -1,15 +1,26 @@
 .main-wrapper{
     background: #f8f9fa;
 }
-.carousel-indicators [data-bs-target]{
+.carousel-indicators [data-bs-target] {
     height: 10px;
     width: 10px;
     opacity: .7;
+    background-color: #000; 
+    border-radius: 50%;
 }
-.carousel-indicators .active{
+::v-deep .carousel-indicators li::before {
+  content: none !important;
+}
+.carousel-indicators .active {
     opacity: 1;
     background-color: #fff;
 }
+
+/* THIS hides the numbers on carousel dots */
+/* .carousel-indicators li::before {
+    content: none !important;
+} */
+
 .products_types .nav-tabs{
     border-bottom: 2px solid #c4c4c4;
 }

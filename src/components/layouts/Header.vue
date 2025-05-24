@@ -13,9 +13,6 @@ import imageshirt from '../../assets/image/images/category/polo-shirt-2025-03-05
 import { useNavberStore } from '../../stores/navbar'
 const navbar = useNavberStore()
 
-function handleMenuClick() {
-  navbar.openMenu()
-}
 
 const navItems = [
   {
@@ -59,14 +56,19 @@ const navItems = [
   }
 ]
 
+
+// Mobile menu toggle state
 const showMobileMenu = ref(false)
+
+// Toggle function
 const toggleMobileMenu = () => {
   showMobileMenu.value = !showMobileMenu.value
 }
+
+// Close function
 const closeMobileMenu = () => {
   showMobileMenu.value = false
 }
-
 </script>
 
 <template>
@@ -78,7 +80,7 @@ const closeMobileMenu = () => {
           style="font-size: 26px; color: navy;">
           <i class="fa fa-bars"></i>
         </button> -->
-        <button class="navbar-toggler border-0 p-0" style="font-size: 26px; color: navy;" @click="toggleMobileMenu">
+        <button class="menu-button" @click="toggleMobileMenu">
           <i class="fa fa-bars"></i>
         </button>
 
@@ -141,10 +143,15 @@ const closeMobileMenu = () => {
             </div>
             <div class="categories dp_content">
               <li class="nav-item" :class="{ 'has_menu': item.submenu }" v-for="item in navItems" :key="item.id">
-                <a :href="`shop.html?cat_id=${item.id}`" class="nav-link">
+                <!-- <a :href="`shop-page?cat_id=${item.id}`" class="nav-link">
                   <img :src="item.image" :alt="item.name" width="20">
                   {{ item.name }}
-                </a>
+                </a> -->
+
+                <router-link :to="{ path: '/shop-page' }" class="nav-link">
+                  <img :src="item.image" :alt="item.name" width="20" />
+                  {{ item.name }}
+                </router-link>
                 <ul v-if="item.submenu" class="inner_menu">
                   <li class="nav-item" v-for="subItem in item.submenu" :key="subItem.id">
                     <a :href="subItem.link" class="nav-link">{{ subItem.name }}</a>
@@ -163,47 +170,50 @@ const closeMobileMenu = () => {
       </div>
     </nav>
     <a href="../index.htm" class="cart-dropdown-btn">
-    <div class="fixed-cart-bottom">
-    <p style="background: #00276C;border-top-left-radius: 12px;border-top-right-radius: 12px;margin-bottom: 0px;">
-    <i class="fas fa-shopping-cart" style="color: #ffffff !important;"></i>
-</p>
-<p style="color: white;font-size: 12px;background: #00276C;margin-bottom: 0px;">
-  
-    <span id="cart_number">0</span> items 
-</p>
-<p id="total_amount" style="color: white;font-size: 12px;background: #f14705;border-bottom-left-radius: 12px;border-bottom-right-radius: 12px;margin-top: 0px;">৳ 0</p>
-    </div>
-</a>
+      <div class="fixed-cart-bottom">
+        <p style="background: #00276C;border-top-left-radius: 12px;border-top-right-radius: 12px;margin-bottom: 0px;">
+          <i class="fas fa-shopping-cart" style="color: #ffffff !important;"></i>
+        </p>
+        <p style="color: white;font-size: 12px;background: #00276C;margin-bottom: 0px;">
+
+          <span id="cart_number">0</span> items
+        </p>
+        <p id="total_amount"
+          style="color: white;font-size: 12px;background: #f14705;border-bottom-left-radius: 12px;border-bottom-right-radius: 12px;margin-top: 0px;">
+          ৳ 0</p>
+      </div>
+    </a>
   </header>
 
   <!-- Mobile Menu Sidebar from here -->
 
-  <div :class="['menu_sidebar', { 'menu_sidebar--show': showMobileMenu }]">
-    <div class="p-3">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <strong class="text-dark">Menu</strong>
-        <button class="btn-close" @click="closeMobileMenu"></button>
+  <!-- Mobile Menu Sidebar -->
+    <div :class="['menu_sidebar', { 'menu_sidebar--show': showMobileMenu }]">
+      <div class="p-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <strong>Menu</strong>
+          <button class="btn-close" @click="closeMobileMenu">×</button>
+        </div>
+        <ul class="list-unstyled">
+          <li v-for="item in navItems" :key="item.id" class="mb-2">
+            <a :href="item.link" class="text-dark">{{ item.name }}</a>
+          </li>
+        </ul>
       </div>
-      <ul class="list-unstyled">
-        <li v-for="item in navItems" :key="item.id" class="mb-2">
-          <a :href="`shop.html?cat_id=${item.id}`" class="d-block text-dark">
-            <img :src="item.image" alt="" width="20" class="me-2" /> {{ item.name }}
-          </a>
-          <ul v-if="item.submenu" class="ps-3">
-            <li v-for="sub in item.submenu" :key="sub.id">
-              <a :href="sub.link" class="text-secondary">{{ sub.name }}</a>
-            </li>
-          </ul>
-        </li>
-      </ul>
     </div>
-  </div>
 
   <!-- Background Overlay -->
-  <div v-if="showMobileMenu" class="overlay" @click="closeMobileMenu"></div>
+    <div v-if="showMobileMenu" class="overlay" @click="closeMobileMenu"></div>
 </template>
 
 <style scoped>
+.menu-button {
+  font-size: 24px;
+  background: none;
+  border: none;
+  color: #000;
+}
+
 .menu_sidebar {
   position: fixed;
   top: 0;
@@ -225,11 +235,12 @@ const closeMobileMenu = () => {
   position: fixed;
   top: 0;
   left: 0;
+  z-index: 9998;
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.4);
-  z-index: 9998;
 }
+
 
 
 .overlay {

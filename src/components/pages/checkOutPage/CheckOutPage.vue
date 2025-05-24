@@ -2,6 +2,7 @@
 <script script>
 // E:\xampp\htdocs\SOFT_IT\newFashonE_soft\src\assets\image\images\product\large\
     import  checkoutimage from '../../../assets/image/images/product/large/25JH-870a17411544471745663335.jpg'
+
 </script>
 <template >
     <div class="container-xl my-3" bis_skin_checked="1">
