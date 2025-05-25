@@ -1,153 +1,112 @@
 <script setup>
-import { onMounted, ref } from 'vue'
-
-import ptsv from '../../assets/pt.svg'
+import { ref, onMounted } from 'vue'
 import api from '../../api'
 import { IMAGE_BASE_URL } from '../../api'
-const flasSells = ref([])
+
+const flasSells = ref([])  
 const currentPage = ref(1)
 const lastPage = ref(1)
 const isLoading = ref(false)
 const allLoaded = ref(false)
+const lastDate = ref(null)
 
-const fetchFlashSell = async (page = 1, loadAll = false) => {
+let countdownInterval = null
+
+function startCountdown(elementId, endDate) {
+  const countdownElement = document.getElementById(elementId)
+  if (!countdownElement) return
+
+  // Clear previous interval if exists
+  if (countdownInterval) {
+    clearInterval(countdownInterval)
+  }
+
+  const targetDate = new Date(endDate).getTime()
+  if (isNaN(targetDate)) {
+    countdownElement.innerHTML = 'Invalid date'
+    return
+  }
+
+  function updateCountdown() {
+    const now = new Date().getTime()
+    const distance = targetDate - now
+
+    if (distance < 0) {
+      countdownElement.innerHTML = 'Expired'
+      clearInterval(countdownInterval)
+      return
+    }
+
+    const days = Math.floor(distance / (1000 * 60 * 60 * 24))
+    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000)
+
+    countdownElement.innerHTML = `
+      <div class="countdown_box">
+        <div class="count_item"><div class="number">${days}</div><div class="label">Days</div></div>
+        <div class="count_item"><div class="number">${hours}</div><div class="label">Hrs</div></div>
+        <div class="count_item"><div class="number">${minutes}</div><div class="label">Min</div></div>
+        <div class="count_item"><div class="number">${seconds}</div><div class="label">Sec</div></div>
+      </div>
+    `
+  }
+
+  updateCountdown()
+  countdownInterval = setInterval(updateCountdown, 1000)
+}
+
+const fetchFlashSell = async (page = 1) => {
+  if (isLoading.value || allLoaded.value) return
+
   try {
     isLoading.value = true
-    let url = `/flashProduct2?page=${page}`
-    if (loadAll) url += `&all=true`  // add param to get all remaining products
-    
-    const res = await api.get(url)
-    console.log(res);
- 
+    const res = await api.get(`/flashProduct2?page=${page}`)
 
-    if (page === 1) {
-      flasSells.value = res.data.products
-    } else {
-      flasSells.value = [...flasSells.value, ...res.data.products]
-    }
+    if (res.data.success) {
+      flasSells.value.push(...res.data.products)
+      currentPage.value = res.data.pagination.current_page
+      lastPage.value = res.data.pagination.last_page
+      lastDate.value = res.data.last_date
 
-    currentPage.value = res.data.pagination.current_page
-    lastPage.value = res.data.pagination.last_page
+      if (currentPage.value >= lastPage.value) {
+        allLoaded.value = true
+      }
 
-    // If loading all, no more to load
-    if (loadAll || !res.data.pagination.has_more) {
-      allLoaded.value = true
+      // Start countdown once lastDate is set
+      if (lastDate.value) {
+        startCountdown('promoCountdown2', lastDate.value)
+      }
     }
   } catch (error) {
-    console.error(error)
+    console.error('Failed to load flash sale products:', error)
   } finally {
     isLoading.value = false
   }
 }
 
 onMounted(() => {
-fetchFlashSell()
+  fetchFlashSell(1)
+})
 
-
-  function startCountdown(elementId, endDate, design = false) {
-    const countdownElement = document.getElementById(elementId);
-    const targetDate = new Date(endDate).getTime();
-
-    if (isNaN(targetDate)) {
-      countdownElement.innerHTML = 'Invalid date';
-      return;
-    }
-
-    function updateCountdown() {
-      const now = new Date().getTime();
-      const distance = targetDate - now;
-
-      if (distance < 0) {
-        countdownElement.innerHTML = 'Expired';
-        clearInterval(interval);
-        return;
-      }
-
-      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-   countdownElement.innerHTML = design
-  ? `
-    <div class="countdown_box2">
-      <div class="count_item">
-        <div class="number">${days}</div>
-        <div class="label">Days</div>
-      </div>
-      <div class="count_item">
-        <div class="number">${hours}</div>
-        <div class="label">Hrs</div>
-      </div>
-      <div class="count_item">
-        <div class="number">${minutes}</div>
-        <div class="label">Min</div>
-      </div>
-      <div class="count_item">
-        <div class="number">${seconds}</div>
-        <div class="label">Sec</div>
-      </div>
-    </div>
-  `
-  : `
-    <div class="countdown_box">
-      <div class="count_item">
-        <div class="number">${days}</div>
-        <div class="label">Days</div>
-      </div>
-      <div class="count_item">
-        <div class="number">${hours}</div>
-        <div class="label">Hrs</div>
-      </div>
-      <div class="count_item">
-        <div class="number">${minutes}</div>
-        <div class="label">Min</div>
-      </div>
-      <div class="count_item">
-        <div class="number">${seconds}</div>
-        <div class="label">Sec</div>
-      </div>
-    </div>
-  `;
-
-    }
-
-    updateCountdown();
-    const interval = setInterval(updateCountdown, 1000);
-  }
-
-  const countdownElement = document.querySelector('.promo-count');
-  const endDate = countdownElement.dataset.date;
-  startCountdown('promoCountdown2', endDate);
-});
-
-// Load More button click handler
 const loadMore = () => {
-  if (allLoaded.value) return // no more products
-
-  if (currentPage.value < lastPage.value) {
-    // Load next page normally (10 more)
+  if (currentPage.value < lastPage.value && !isLoading.value) {
     fetchFlashSell(currentPage.value + 1)
-  } else {
-    // Load all remaining products at once
-    fetchFlashSell(1, true)
   }
 }
 </script>
-
 
 <template>
   <div class="category_products flash-sale-container">
     <div class="banner rounded-2">
       <div class="text-center w-100">
         <div class="title">Flash Sell</div>
-        <img :src="ptsv" style="width: 200px;">
+        <img :src="ptsv" style="width: 200px;" />
         <span class="promo-count mx-2" id="promoCountdown2" data-date="2025-05-31"></span>
       </div>
     </div>
   </div>
 
-  <!-- Products Container -->
   <div class="products mt-3 flash-sale-products">
     <div class="product" v-for="item in flasSells" :key="item.id">
       <div class="image">
@@ -158,15 +117,15 @@ const loadMore = () => {
           :data-categoryid="item.category_id"
           :data-productname="item.name"
         >
-          <img 
-            :src="`${IMAGE_BASE_URL}/images/product/small/${item.main_image}`" 
-            :alt="item.name" 
-            class="first" 
+          <img
+            :src="`${IMAGE_BASE_URL}/images/product/small/${item.main_image}`"
+            :alt="item.name"
+            class="first"
           />
-          <img 
-            :src="`${IMAGE_BASE_URL}/images/product/small/${item.main_image}`" 
-            :alt="item.name" 
-            class="second" 
+          <img
+            :src="`${IMAGE_BASE_URL}/images/product/small/${item.main_image}`"
+            :alt="item.name"
+            class="second"
           />
         </a>
         <div class="product_btn_position content">
@@ -209,9 +168,9 @@ const loadMore = () => {
   </div>
 
   <div class="text-center mt-3">
-    <button 
-      class="btn btn-danger load-more-flash-sale" 
-      :disabled="isLoading || allLoaded" 
+    <button
+      class="btn btn-danger load-more-flash-sale"
+      :disabled="isLoading || allLoaded"
       @click="loadMore"
     >
       {{ allLoaded ? "All Products Loaded" : "Load More Flash Deals" }}
@@ -220,7 +179,6 @@ const loadMore = () => {
 </template>
 
 <style scoped>
-/* Other styles */
 .promo-count {
   padding: 2px 10px;
   color: #000;
@@ -260,7 +218,6 @@ const loadMore = () => {
   color: #555;
   margin-top: 2px;
 }
-
 
 .category_products .banner .title {
   font-size: 40px;

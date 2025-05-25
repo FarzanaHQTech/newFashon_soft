@@ -1,65 +1,24 @@
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import ecomLogo from '../../assets/image/ecommerce_settings/ecom3logo17441769441747306879.png'
 import c1 from '../../assets/image/c1.png'
 import login from '../../assets/image/login.png'
-import imgGirlsFashion from '../../assets/image/images/category/girls-fashion-2025-05-06-11-31-49-7280.jpeg'
-import imgSaree from '../../assets/image/images/category/saree-2024-11-14-11-57-40-8691.jpg'
-import imageTop from '../../assets/image/images/category/tops-2025-05-16-12-03-45-3100.jpg'
-import womenFashion from '../../assets/image/images/category/women-fashion-2025-03-05-08-09-45-2322.png'
-import imageBaby from '../../assets/image/images/category/baby-collection-2025-03-05-08-09-29-1500.jpg'
-import imagePanjabi from '../../assets/image/images/category/panjabi-2025-03-05-08-24-49-7755.jpg'
-import imageshirt from '../../assets/image/images/category/polo-shirt-2025-03-05-08-24-28-4878.jpg'
-import { useNavberStore } from '../../stores/navbar'
-const navbar = useNavberStore()
 
+import { useCategoryStore } from '../../stores/categoryStore'
+import { storeToRefs } from 'pinia'
+import { IMAGE_BASE_URL } from '../../api'
+// const navbar = useNavberStore()
 
-const navItems = [
-  {
-    id: 73,
-    name: 'Girls Fashion',
-    image: imgGirlsFashion
-  },
-  {
-    id: 48,
-    name: 'Saree',
-    image: imgSaree
-  },
-  {
-    id: 72,
-    name: 'Tops',
-    image: imageTop
-  },
-  {
-    id: 47,
-    name: 'Women Fashion',
-    image: womenFashion
-  },
-  {
-    id: 39,
-    name: 'Baby Collection',
-    image: imageBaby,
-    submenu: [
-      { id: 1, name: 'Baby Shoe', link: 'shop.html?cat_id=39&sub_cat_id=68' },
-      { id: 2, name: 'Baby Dress', link: 'shop.html?cat_id=39&sub_cat_id=69' }
-    ]
-  },
-  {
-    id: 40,
-    name: 'Panjabi',
-    image: imagePanjabi
-  },
-  {
-    id: 42,
-    name: 'Polo Shirt',
-    image: imageshirt
-  }
-]
+const showMenu = useCategoryStore()
+const { categoryMenu } = storeToRefs(showMenu)
+
+onMounted(() => {
+  showMenu.fetchCategoriesMenu()
+})
 
 
 // Mobile menu toggle state
 const showMobileMenu = ref(false)
-
 // Toggle function
 const toggleMobileMenu = () => {
   showMobileMenu.value = !showMobileMenu.value
@@ -80,9 +39,9 @@ const closeMobileMenu = () => {
           style="font-size: 26px; color: navy;">
           <i class="fa fa-bars"></i>
         </button> -->
-        <button class="menu-button" @click="toggleMobileMenu">
+        <!-- <button class="menu-button mb-3" @click="toggleMobileMenu">
           <i class="fa fa-bars"></i>
-        </button>
+        </button> -->
 
 
         <a class="navbar-brand" href="index.htm">
@@ -104,7 +63,7 @@ const closeMobileMenu = () => {
           <select name="cat_id" class="form-select d-lg-block d-none"
             style="width: 70px; font-size: 14px; border-radius: 5px 0 0 5px; font-weight: 600; background-color: #d5d5d5;">
             <option value="">All</option>
-            <option v-for="item in navItems" :key="item.id" :value="item.id">{{ item.name }}</option>
+            <option v-for="(item, index) in categoryMenu" :key="item.index" :value="item.id">{{ item.name }}</option>
           </select>
           <input class="form-control" type="text" placeholder="Search" name="q" />
         </form>
@@ -136,25 +95,35 @@ const closeMobileMenu = () => {
       <div class="container-fluid display_lg">
         <div class="d-lg-flex align-items-center">
           <div class="dropdown category_dropdown_box">
-            <div class="category_dropdown text-dark btn rounded-0">
-              <i class="fa fa-bars"></i>
+            <div class="category_dropdown text-dark btn rounded-0 ">
+              <i class="fa fa-bars mx-3"></i>
               <span class="text-cap medium font-13 mx-2 nato">Browse Categories</span>
               <i class="fa fa-angle-down ms-auto"></i>
             </div>
             <div class="categories dp_content">
-              <li class="nav-item" :class="{ 'has_menu': item.submenu }" v-for="item in navItems" :key="item.id">
-                <!-- <a :href="`shop-page?cat_id=${item.id}`" class="nav-link">
-                  <img :src="item.image" :alt="item.name" width="20">
-                  {{ item.name }}
-                </a> -->
-
-                <router-link :to="{ path: '/shop-page' }" class="nav-link">
-                  <img :src="item.image" :alt="item.name" width="20" />
+              <li class="nav-item" :class="{ 'has_menu': item.sub_categories && item.sub_categories.length }"
+                v-for="(item, index) in categoryMenu" :key="item.id">
+                <router-link :to="{ path: '/shop-page', query: { cat_id: item.id } }" class="nav-link">
+                  <img :src="`${IMAGE_BASE_URL}/images/category/${item.image}`" :alt="item.name" width="20" />
                   {{ item.name }}
                 </router-link>
-                <ul v-if="item.submenu" class="inner_menu">
-                  <li class="nav-item" v-for="subItem in item.submenu" :key="subItem.id">
-                    <a :href="subItem.link" class="nav-link">{{ subItem.name }}</a>
+
+                <!-- Sub Categories -->
+                <ul v-if="item.sub_categories && item.sub_categories.length" class="inner_menu">
+                  <li class="nav-item" v-for="subItem in item.sub_categories" :key="subItem.id">
+                    <a :href="`/shop-page?cat_id=${item.id}&sub_cat_id=${subItem.id}`" class="nav-link">
+                      {{ subItem.name }}
+                    </a>
+
+                    <!-- Sub-sub categories -->
+                    <ul v-if="subItem.sub_categories && subItem.sub_categories.length" class="inner_menu_child">
+                      <li class="nav-item" v-for="child in subItem.sub_categories" :key="child.id">
+                        <a :href="`/shop-page?cat_id=${item.id}&sub_cat_id=${subItem.id}&child_cat_id=${child.id}`"
+                          class="nav-link">
+                          {{ child.name }}
+                        </a>
+                      </li>
+                    </ul>
                   </li>
                 </ul>
               </li>
@@ -188,22 +157,21 @@ const closeMobileMenu = () => {
   <!-- Mobile Menu Sidebar from here -->
 
   <!-- Mobile Menu Sidebar -->
-    <div :class="['menu_sidebar', { 'menu_sidebar--show': showMobileMenu }]">
-      <div class="p-3">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <strong>Menu</strong>
-          <button class="btn-close" @click="closeMobileMenu">×</button>
-        </div>
-        <ul class="list-unstyled">
-          <li v-for="item in navItems" :key="item.id" class="mb-2">
-            <a :href="item.link" class="text-dark">{{ item.name }}</a>
-          </li>
-        </ul>
+  <div :class="['menu_sidebar', { 'menu_sidebar--show': showMobileMenu }]">
+    <div class="p-3">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <strong>Menu</strong>
+        <button class="btn-close" @click="closeMobileMenu">×</button>
       </div>
+      <ul class="list-unstyled">
+        <!-- <li v-for="item in navItems" :key="item.id" class="mb-2">
+            <a :href="item.link" class="text-dark">{{ item.name }}</a>
+          </li> -->
+      </ul>
     </div>
-
+  </div>
   <!-- Background Overlay -->
-    <div v-if="showMobileMenu" class="overlay" @click="closeMobileMenu"></div>
+  <div v-if="showMobileMenu" class="overlay" @click="closeMobileMenu"></div>
 </template>
 
 <style scoped>
