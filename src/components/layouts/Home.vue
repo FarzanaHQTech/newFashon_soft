@@ -9,9 +9,10 @@ import '../../assets/css/product.css'
 // Components
 import Categories from '../frontend/Categories.vue'
 import FlashSell from '../productVarients/FlashSell.vue'
-import GirlFashion from '../productVarients/GirlFashion.vue'
-import WomenFashion from '../productVarients/WomenFashion.vue'
+// import GirlFashion from '../productVarients/GirlFashion.vue'
+// import WomenFashion from '../productVarients/WomenFashion.vue'
 import { IMAGE_BASE_URL } from '../../api'
+import CategoryProducts from '../productVarients/CategoryProducts.vue'
 
 // sliders/s11747487509.jpg
 // Initialize store
@@ -79,8 +80,9 @@ function startCountdown(elementId, endDate, design = false) {
     <!-- Categories Section -->
     <Categories />
     <FlashSell />
-    <GirlFashion />
-    <WomenFashion/>
+    <!-- <GirlFashion />
+    <WomenFashion/> -->
+    <CategoryProducts/>
   </div>
 </template>
 

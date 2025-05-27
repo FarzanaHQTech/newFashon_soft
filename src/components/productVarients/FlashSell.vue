@@ -156,13 +156,21 @@ const loadMore = () => {
           <div class="title">{{ item.name }}</div>
         </a>
         <div class="price">
+              <span class="current_price" style="color: #00276C; font-weight: bold;">
+                {{ item.price }} Tk
+              </span>
+              <del v-if="item.promotion && item.promotion_price" style="color: red;">
+                {{ item.wprice }} Tk
+              </del>
+            </div>
+        <!-- <div class="price">
           <span class="current_price" style="color: #00276C; font-weight: bold;">
             {{ item.promotion && item.promotion_price ? item.promotion_price : item.price }}
           </span>
           <del v-if="item.promotion && item.promotion_price" style="color: red;">
             {{ item.price }} Tk
           </del>
-        </div>
+        </div> -->
       </div>
     </div>
   </div>

@@ -1,78 +1,96 @@
-// stores/homeCategoryStore.js
 import { defineStore } from "pinia";
-import api from "../api";
+import api from "../api"; // Ensure api.js is set up for Axios or Fetch
 
 export const useHomeCategoryStore = defineStore("homeCategory", {
   state: () => ({
     homeCategories: [],
     sliders: [],
     loading: false,
-    error: false,
+    error: null,
+
     categoryProducts: [],
     currentPage: 1,
     lastPage: 1,
     loadingMore: false,
-    productsCount: 0,  // total products count for first category
+    productsCount: 0,
+    currentCategoryId: null
   }),
 
+  
   actions: {
+    // Fetch homepage categories, sliders, and products
     async fetchHomeCategories(page = 1) {
       this.loading = true;
+      this.error = null;
+
       try {
-        const res = await api.get(`/home?page=${page}`);
-        console.log(res.data);
+        const res = await api.get((`/home?page=${page}`));
 
         if (res.data.success) {
-          this.homeCategories = res.data.categoriesProducts;
-          this.sliders = res.data.sliders;
+          // Assign homepage categories and sliders
+          this.homeCategories = res.data.categoriesProducts || [];
+          this.sliders = res.data.sliders || [];
 
-          this.currentPage = res.data.pagination.current_page || 1;
-          this.lastPage = res.data.pagination.last_page || 1;
+          // Handle pagination
+          this.currentPage = res.data.pagination?.current_page || 1;
+          this.lastPage = res.data.pagination?.last_page || 1;
 
+          // Set first category as default
           const firstCategory = this.homeCategories[0];
-    console.log("products_count",firstCategory.firstCategory);
+          if (firstCategory) {
+            this.currentCategoryId = firstCategory.id;
+            this.categoryProducts = firstCategory.products || [];
+            this.productsCount =
+              firstCategory.products_count || firstCategory.products?.length || 0;
+          }
 
-          if (firstCategory && firstCategory.products) {
-            this.categoryProducts = firstCategory.products;
-            this.productsCount = firstCategory.products_count || firstCategory.products.length;
+          // Optional: top-level products count (if provided)
+          if (res.data.products_count) {
+            this.productsCount = res.data.products_count;
           }
         } else {
-          this.error = true;
+          this.error = "Failed to load data from server";
         }
       } catch (err) {
         console.error("Fetch Error:", err);
-        this.error = true;
+        this.error = err.message || "Network error occurred";
       } finally {
         this.loading = false;
       }
     },
 
-async loadMoreProducts() {
-  if (this.loadingMore) return;
-
-  if (this.categoryProducts.length >= this.productsCount) return;
-  if (this.currentPage >= this.lastPage) return;
+    // Load more products for the current category (infinite scroll)
+    async loadMoreProducts() {
+  if (this.loadingMore || !this.currentCategoryId) return;
 
   this.loadingMore = true;
+  this.error = null;
+
   try {
-    const nextPage = this.currentPage + 1;
-    const res = await api.get(`/home?page=${nextPage}`);
+    const offset = this.categoryProducts.length;
+
+    const res = await api.get(`/category-products/${this.currentCategoryId}?offset=${offset}`);
+
     if (res.data.success) {
-      const newCategories = res.data.categoriesProducts;
+      const newProducts = res.data.products || [];
 
-      const firstCategoryId = this.homeCategories[0]?.id;
-      const newFirstCategory = newCategories.find(c => c.id === firstCategoryId);
-
-      if (newFirstCategory && newFirstCategory.products) {
-        this.categoryProducts.push(...newFirstCategory.products);
-        this.productsCount = newFirstCategory.products_count ?? this.productsCount;
+      if (newProducts.length > 0) {
+        this.categoryProducts.push(...newProducts);
       }
 
-      this.currentPage = res.data.pagination?.current_page ?? nextPage;
-      this.lastPage = res.data.pagination?.last_page ?? this.lastPage;
+      // // ✅ Update total product count from server
+      // if (res.data.total !== undefined) {
+      //   this.productsCount = res.data.total;
+      // }
+      if (typeof res.data.total === 'number' && res.data.total > 0) {
+  this.productsCount = res.data.total;
+}
+    } else {
+      this.error = "Failed to load more products";
     }
   } catch (err) {
     console.error("Load More Error:", err);
+    this.error = err.message || "Failed to load more products";
   } finally {
     this.loadingMore = false;
   }
@@ -81,11 +99,7 @@ async loadMoreProducts() {
   },
 
   getters: {
-    visibleProducts(state) {
-      return state.categoryProducts;
-    },
-    firstCategory(state) {
-      return state.homeCategories[0] || {};
-    },
-  },
+    visibleProducts: (state) => state.categoryProducts,
+    firstCategory: (state) => state.homeCategories[0] || {}
+  }
 });
