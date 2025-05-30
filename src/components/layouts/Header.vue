@@ -5,17 +5,16 @@ import c1 from '../../assets/image/c1.png'
 import login from '../../assets/image/login.png'
 
 import { useCategoryStore } from '../../stores/categoryStore'
-import { storeToRefs } from 'pinia'
+
 import { IMAGE_BASE_URL } from '../../api'
 // const navbar = useNavberStore()
 
+import { storeToRefs } from 'pinia'
+import { useCartCheckoutStore } from '../../stores/cartCheckout'
+
+
 const showMenu = useCategoryStore()
 const { categoryMenu } = storeToRefs(showMenu)
-
-onMounted(() => {
-  showMenu.fetchCategoriesMenu()
-})
-
 
 // Mobile menu toggle state
 const showMobileMenu = ref(false)
@@ -28,6 +27,18 @@ const toggleMobileMenu = () => {
 const closeMobileMenu = () => {
   showMobileMenu.value = false
 }
+//for add to cart
+// import { useCartCheckoutStore } from '@/stores/cartCheckout'
+
+const store = useCartCheckoutStore()
+const { cartCount, grandTotal } = storeToRefs(store)
+
+
+// Initialize cart on component mount
+onMounted(async () => {
+  await store.fetchCart()
+   await showMenu.fetchCategoriesMenu()
+})
 </script>
 
 <template>
@@ -42,11 +53,12 @@ const closeMobileMenu = () => {
         <!-- <button class="menu-button mb-3" @click="toggleMobileMenu">
           <i class="fa fa-bars"></i>
         </button> -->
-
-
-        <a class="navbar-brand" href="index.htm">
+        <router-link :to="`/`" class="navbar-brand">
           <img :src="ecomLogo" alt="Ecom Logo" />
-        </a>
+        </router-link>
+        <!-- <a class="navbar-brand" href="index.htm">
+          <img :src="ecomLogo" alt="Ecom Logo" />
+        </a> -->
 
         <div class="icon_cart semi btn p-0 me-lg-0 pe-lg-0 display_sm">
           <div class="btn badge2 px-0">
@@ -131,27 +143,39 @@ const closeMobileMenu = () => {
           </div>
 
           <ul class="navbar-nav ms-2">
-            <li class="nav-item"><a href="shop-8.html" class="nav-link text-dark font-14 text-cap">Top Selling</a></li>
-            <li class="nav-item"><a href="new-product.html" class="nav-link text-dark font-14">NEW PRODUCT</a></li>
-            <li class="nav-item"><a href="flash-product.html" class="nav-link text-dark font-14">FLASH SELL</a></li>
+            <li class="nav-item">
+              <router-link to="/shop" class="nav-link text-dark font-14 text-cap">Top Selling</router-link>
+              <!-- <a href="shop-8.html" class="nav-link text-dark font-14 text-cap">Top Selling</a> -->
+            </li>
+            <li class="nav-item">
+              <!-- <a href="new-product.html" class="nav-link text-dark font-14"></a> -->
+              <router-link :to="`/new-product`" class="nav-link text-dark font-14">NEW PRODUCT
+              </router-link>
+            </li>
+            <li class="nav-item">
+              <router-link :to="`/flash-product`" class="nav-link text-dark font-14">FLASH SELL
+              </router-link>
+              <!-- <a href="flash-product.html" class="nav-link text-dark font-14"></a> -->
+            </li>
           </ul>
         </div>
       </div>
     </nav>
-    <a href="../index.htm" class="cart-dropdown-btn">
-      <div class="fixed-cart-bottom">
-        <p style="background: #00276C;border-top-left-radius: 12px;border-top-right-radius: 12px;margin-bottom: 0px;">
-          <i class="fas fa-shopping-cart" style="color: #ffffff !important;"></i>
-        </p>
-        <p style="color: white;font-size: 12px;background: #00276C;margin-bottom: 0px;">
-
-          <span id="cart_number">0</span> items
-        </p>
-        <p id="total_amount"
-          style="color: white;font-size: 12px;background: #f14705;border-bottom-left-radius: 12px;border-bottom-right-radius: 12px;margin-top: 0px;">
-          ৳ 0</p>
-      </div>
-    </a>
+    
+   <router-link to="/checkout">
+    <div class="fixed-cart-bottom">
+      <p style="background: #00276C;border-top-left-radius: 12px;border-top-right-radius: 12px;margin-bottom: 0px;">
+        <i class="fas fa-shopping-cart" style="color: #ffffff !important;"></i>
+      </p>
+      <p style="color: white;font-size: 12px;background: #00276C;margin-bottom: 0px;">
+        <span id="cart_number">{{ cartCount }}</span> items
+      </p>
+      <p id="total_amount"
+        style="color: white;font-size: 12px;background: #f14705;border-bottom-left-radius: 12px;border-bottom-right-radius: 12px;margin-top: 0px;">
+        ৳ {{ grandTotal }}
+      </p>
+    </div>
+  </router-link>
   </header>
 
   <!-- Mobile Menu Sidebar from here -->

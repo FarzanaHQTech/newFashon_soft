@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import api from "../api"; // Ensure api.js is set up for Axios or Fetch
+import { posadminApi} from '../api/index';
 
 export const useHomeCategoryStore = defineStore("homeCategory", {
   state: () => ({
@@ -24,7 +24,7 @@ export const useHomeCategoryStore = defineStore("homeCategory", {
       this.error = null;
 
       try {
-        const res = await api.get((`/home?page=${page}`));
+        const res = await posadminApi.get((`/home?page=${page}`));
 
         if (res.data.success) {
           // Assign homepage categories and sliders
@@ -69,7 +69,7 @@ export const useHomeCategoryStore = defineStore("homeCategory", {
   try {
     const offset = this.categoryProducts.length;
 
-    const res = await api.get(`/category-products/${this.currentCategoryId}?offset=${offset}`);
+    const res = await posadminApi.get(`/category-products/${this.currentCategoryId}?offset=${offset}`);
 
     if (res.data.success) {
       const newProducts = res.data.products || [];

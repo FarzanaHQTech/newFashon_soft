@@ -286,6 +286,7 @@ body ::-webkit-scrollbar-track, html ::-webkit-scrollbar-track {
 }
 body{
     background: white;
+    scroll-behavior: auto !important;
 }
 .main-wrapper{
     width: 100%;

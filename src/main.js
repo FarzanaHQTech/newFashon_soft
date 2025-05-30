@@ -2,6 +2,7 @@ import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router/index.js';
 import { createPinia } from 'pinia';
+import axios from 'axios';
 
 // CSS Imports
 import 'swiper/swiper-bundle.css';
@@ -21,6 +22,7 @@ import './assets/css/media.css';
 
 // JS Dependencies
 import 'bootstrap';
+import 'swiper/swiper-bundle.css';
 import 'slick-carousel'; // jQuery plugin
 import $ from 'jquery';
 import toastr from 'toastr'; // If you're using it in components
@@ -32,7 +34,7 @@ const app = createApp(App);
 
 // Register global components
 app.component('font-awesome-icon', FontAwesomeIcon);
-
+axios.defaults.withCredentials = true;
 // Use plugins
 app.use(createPinia());
 app.use(router);

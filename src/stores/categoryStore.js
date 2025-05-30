@@ -1,7 +1,6 @@
 // src/stores/categoryStore.js
 import { defineStore } from 'pinia';
-import api from '../api/index'; // Make sure this path is correct
-
+import { posadminApi } from '../api/index';
 export const useCategoryStore = defineStore('category', {
   state: () => ({
     categories: [],
@@ -12,7 +11,7 @@ export const useCategoryStore = defineStore('category', {
   actions: {
     async fetchCategories() {
       try {
-        const res = await api.get('/categories');
+        const res = await posadminApi.get('/categories');
         this.categories = res.data.categories;
         // console.log(' Categories fetched:', this.categories);
       } catch (error) {
@@ -23,7 +22,7 @@ export const useCategoryStore = defineStore('category', {
     async fetchCategoriesMenu(){
       try {
         this.laoding=true
-        const res= await api.get('getMenuCategories')
+        const res= await posadminApi.get('getMenuCategories')
         this.categoryMenu=res.data.menus
         // console.log("Get Menus",res.data);
         

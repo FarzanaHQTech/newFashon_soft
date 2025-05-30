@@ -80,8 +80,6 @@ function startCountdown(elementId, endDate, design = false) {
     <!-- Categories Section -->
     <Categories />
     <FlashSell />
-    <!-- <GirlFashion />
-    <WomenFashion/> -->
     <CategoryProducts/>
   </div>
 </template>

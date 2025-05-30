@@ -122,26 +122,7 @@ function goToCheckout() {
                         <img :src="item.images" alt="" class="second" />
                     </a>
                     <div class="product_btn_position content">
-                        <!-- <form method="POST" action="https://newfashion.softitglobal.com/carts" id="cart_form"> -->
-                        <!-- <form method="POST" action="https://newfashion.softitglobal.com/carts" id="cart_form">
-
-                            <input type="hidden" name="_token" value="xsED4Nne1eihR0J1Q2QMZ66RViuU99odXVearmOw"
-                                autocomplete="off" />
-                            <input type="hidden" name="product_id" value="110" />
-                            <input type="hidden" name="quantity" value="1" />
-                            <input type="hidden" id="action_type" name="action_type" value="" />
-                            <div class="d-flex justify-content-between">
-                                    <button type="submit" class="submit_button btn btn-light d-block"
-                                        data-type="order_now">
-                                        <div class="cart_btn bangali bold ord_bt">
-                                            <i class="fa fa-cart-shopping"></i><span> অর্ডার করুন</span>
-                                        </div>
-                                    </button>
-                                </div>
-
-                          
-                        </form> -->
-
+                        
                         <!-- No need for <form>, use Vue methods instead -->
                         <button @click="goToCheckout" class="submit_button btn btn-light d-block">
                             <div class="cart_btn bangali bold ord_bt">

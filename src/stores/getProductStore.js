@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import api from "../api"; // Ensure api.js is set up for Axios or Fetch
+import { posadminApi } from '../api/index';
 
 export const useCategoryStore = defineStore("products", {
   state: () => ({
@@ -32,7 +32,7 @@ export const useCategoryStore = defineStore("products", {
 
     async fetchProduct(categoryId, page = 1) {
   try {
-    const res = await api.get(`/category-products2/${categoryId}?page=${page}`);
+    const res = await posadminApi.get(`/category-products2/${categoryId}?page=${page}`);
     if (page === 1) {
       this.categoryProducts = res.data.products.data;
     } else {
@@ -41,7 +41,7 @@ export const useCategoryStore = defineStore("products", {
     this.currentPage = res.data.products.current_page;
     this.lastPage = res.data.products.last_page;
     this.productsCount = res.data.products.total;
-    console.log("products with id", res);
+    // console.log("products with id", res);
   } catch (error) {
     console.error("Fetch failed:", error);
     this.error = error;

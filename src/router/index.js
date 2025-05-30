@@ -15,32 +15,55 @@ const routes = [
     name: 'Login',
     component:Login
   },
-  {
-   path: '/product',
-  name: 'ProductDetail',
-  component: () => import('../components/pages/productsDetailsView/GirlFashionDetails.vue')
 
+{
+   path: '/product-show/:slug',
+  name: 'ProductDetail',
+  component: () => import('../components/pages/productsDetailsView/ShopPageDetails.vue')
 },
+
 {
   path:'/checkout',
   name:'Checkout',
-  component:()=>import('../components/pages/checkOutPage/CheckOutPage.vue')
+  component:()=>import('../components/frontend/checkOutPage/CheckOutCart.vue')
 },
 {
   path:'/shop-page',
   name:'GirlsShopPage',
-  component:()=>import('../components/pages/shopPages/GirlsShop-page.vue')
-}
-]
+  component:()=>import('../components/pages/shopPages/ShopPage.vue')
+},
+{
+  path:'/new-product',
+  name:'NewProducts',
+  component:()=>import('../components/frontend/navPages/NewProductShop.vue')
+},
+{
+  path:'/flash-product',
+  name:'FlashSellProduct',
+  component:()=>import('../components/frontend/navPages/FlashSellShop.vue')
+},
+{
+  path:'/shop',
+  name:'TopSellProducts',
+  component:()=>import('../components/frontend/navPages/TopSellProduct.vue')
+},
 
+{
+  path: '/thank-you/:order_id',
+  name: 'ThankYou',
+  component: () => import('../components/frontend/thankyouPage/ThankyouPage.vue')
+},
+]
 const router = createRouter({
   history: createWebHistory(),
-  routes
-})
+  routes,
 
-
-// router.beforeEach((to, from, next) => {
-//   console.log('Navigating to:', to.fullPath)
-//   next()
-// })
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return { ...savedPosition, behavior: 'auto' } 
+    } else {
+      return { top: 0, behavior: 'auto' } 
+    }
+  }
+  });
 export default router

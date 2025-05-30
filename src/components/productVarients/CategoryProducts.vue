@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useHomeCategoryStore } from '../../stores/girlsWomenStore';
 import { IMAGE_BASE_URL } from '../../api';
 import ptsv from '../../assets/pt.svg';
+import { param } from 'jquery';
 
 const homeStore = useHomeCategoryStore();
 
@@ -17,11 +18,12 @@ const handleNavigate = (item, navigate) => {
 const handleOrder = (product) => {
   console.log('Ordering product:', product);
 };
+
 </script>
 <template>
   <div class="">
-    <div  class="category_products" :data-category-id="category.id"
-    v-for="category in homeStore.categories" :key="category.id" >
+    <div class="category_products" :data-category-id="category.id" v-for="category in homeStore.categories"
+      :key="category.id">
       <!-- Category header -->
       <div class="banner rounded-2">
         <div class="text-center w-100">
@@ -30,23 +32,29 @@ const handleOrder = (product) => {
           <div class="small" v-if="category.tag">{{ category.tag }}</div>
         </div>
       </div>
-          <div class="products mt-3">
-  <div class="product" v-for="item in homeStore.getCategoryProducts(category.id)" :key="item.id">
-        
- <div class="image">
+      <div class="products mt-3">
+        <div class="product" v-for="item in homeStore.getCategoryProducts(category.id)" :key="item.id">
+
+          <div class="image">
 
             <!-- <router-link :to="{ name: 'ProductDetail', params: { id: item.id } }" :data-productid="item.id"
               :data-categoryid="item.categoryId" :data-productname="item.name"> -->
-            <router-link to="/product" custom v-slot="{ navigate }">
+            <!-- <router-link :to="{name:'ProductDetail',params:{slug:item.id}}">
               <div @click="() => handleNavigate(item, navigate)">
+                <img :src="`${IMAGE_BASE_URL}/images/product/small/${item.main_image}`" alt="" class="first" />
+                <img :src="`${IMAGE_BASE_URL}/images/product/small/${item.main_image}`" class="second" />
+              </div>
+            </router-link> -->
+            <router-link :to="{ name: 'ProductDetail', params: { slug: item.slug } }">
+              <div>
                 <img :src="`${IMAGE_BASE_URL}/images/product/small/${item.main_image}`" alt="" class="first" />
                 <img :src="`${IMAGE_BASE_URL}/images/product/small/${item.main_image}`" class="second" />
               </div>
             </router-link>
 
             <div class="product_btn_position content">
-
-              <router-link to="/product" custom v-slot="{ navigate }">
+              <!-- <router-link to="/product-show/${item.slug}" custom v-slot="{ navigate }"> -->
+              <router-link :to="{ name: 'ProductDetail', params: { slug: item.slug } }">
                 <div @click="() => handleNavigate(item, navigate)">
                   <img :src="`${IMAGE_BASE_URL}/images/product/small/${item.main_image}`" alt="" class="first" />
                   <img :src="`${IMAGE_BASE_URL}/images/product/small/${item.main_image}`" class="second" />
@@ -105,23 +113,17 @@ const handleOrder = (product) => {
           </div>
         </div>
       </div>
-<!-- 
+      <!-- 
 :disabled="homeStore.loadingMoreMap[category.id]"
 {{ homeStore.loadingMoreMap[category.id] ? 'Loading...' : 'Load More' }} -->
-     <!-- Load More -->
-<div class="text-center mt-3" v-if="homeStore.hasMoreProducts(category.id)">
-  <button class="btn btn-danger load-more-products"
-          @click="homeStore.loadMore(category.id)"
-         :disabled="homeStore.loadingMoreMap[category.id]">
-   {{ homeStore.loadingMoreMap[category.id] ? 'Loading...' : 'Load More' }}
-  </button>
-</div>
+      <!-- Load More -->
+      <div class="text-center mt-3" v-if="homeStore.hasMoreProducts(category.id)">
+        <button class="btn btn-danger load-more-products" @click="homeStore.loadMore(category.id)"
+          :disabled="homeStore.loadingMoreMap[category.id]">
+          {{ homeStore.loadingMoreMap[category.id] ? 'Loading...' : 'Load More' }}
+        </button>
       </div>
     </div>
-  
+  </div>
+
 </template>
-
-
-
-
-

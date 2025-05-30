@@ -1,7 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import api from '../../api'
-import { IMAGE_BASE_URL } from '../../api'
+// import { posadminApi } from '../api/index';
+import { IMAGE_BASE_URL,posadminApi } from '../../api'
+import { param } from 'jquery'
 
 const flasSells = ref([])  
 const currentPage = ref(1)
@@ -61,7 +62,7 @@ const fetchFlashSell = async (page = 1) => {
 
   try {
     isLoading.value = true
-    const res = await api.get(`/flashProduct2?page=${page}`)
+    const res = await posadminApi.get(`/flashProduct2?page=${page}`)
 
     if (res.data.success) {
       flasSells.value.push(...res.data.products)
@@ -110,24 +111,25 @@ const loadMore = () => {
   <div class="products mt-3 flash-sale-products">
     <div class="product" v-for="item in flasSells" :key="item.id">
       <div class="image">
-        <a
-          :href="`product-show/${item.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '')}.html`"
-          id="product_show"
+        <router-link :to="{name:'ProductDetail' ,params: {slug: item.slug}} ">
+          <!-- id="product_show"
           :data-productid="item.id"
           :data-categoryid="item.category_id"
-          :data-productname="item.name"
-        >
+          :data-productname="item.name" -->
           <img
             :src="`${IMAGE_BASE_URL}/images/product/small/${item.main_image}`"
             :alt="item.name"
             class="first"
           />
-          <img
+        </router-link>
+          <router-link :to="{name:'ProductDetail', params:{slug:item.slug}}">
+
+            <img
             :src="`${IMAGE_BASE_URL}/images/product/small/${item.main_image}`"
             :alt="item.name"
             class="second"
-          />
-        </a>
+            />
+          </router-link>
         <div class="product_btn_position content">
           <form method="POST" action="https://newfashion.softitglobal.com/carts" id="cart_form">
             <input type="hidden" name="_token" value="xsED4Nne1eihR0J1Q2QMZ66RViuU99odXVearmOw" autocomplete="off" />
