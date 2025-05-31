@@ -13,7 +13,7 @@ onMounted(async () => {
   console.log('Initializing checkout...');
 
   try {
-    
+
     // Check if ae have any local cart data first
     if (store.cartItems.length > 0) {
       console.log('Using existing cart items:', store.cartItems);
@@ -48,9 +48,9 @@ const handleSubmit = async () => {
 
     // Process checkout
     const result = await store.processCheckout();
-    
+
     // Check for success message
-     
+
     if (result.message === 'Order placed successfully') {
       router.push({
         name: 'ThankYou',
@@ -58,18 +58,18 @@ const handleSubmit = async () => {
       });
       return;
     }
-    
+
     // If we get here, there might be an unexpected response
     throw new Error(result.message || 'Order processing completed with unexpected response');
 
   } catch (error) {
     console.error('Checkout error:', error);
-    
+
     // Show the actual error message from the response if available
-    const errorMessage = error.response?.data?.message || 
-                        error.message || 
-                        'Checkout failed for unknown reason';
-    
+    const errorMessage = error.response?.data?.message ||
+      error.message ||
+      'Checkout failed for unknown reason';
+
     alert(errorMessage);
   }
 };
@@ -89,7 +89,7 @@ const handleSubmit = async () => {
 
 //     // Process checkout
 //     const result = await store.processCheckout();
-    
+
 //     if (result.message === 'Order failed') {
 //       throw new Error(result.error || 'Order processing failed');
 //     }
@@ -182,8 +182,9 @@ const getVariantText = (variants) => {
                   </tr>
                 </thead>
                 <tbody>
-                +
-                  <!-- <tr v-for="item in store.cartItems"
+                  +
+            
+                  <tr v-for="item in store.cartItems"
                     :key="item.product_id + (item.variant_1 || '') + (item.variant_2 || '') + (item.variant_3 || '')">
                     <th scope="row" class="fontSize">
                       <div class="d-flex">
@@ -196,18 +197,7 @@ const getVariantText = (variants) => {
                         <img :src="getImageUrl(item.image)" alt="" class="rounded border"
                           style="height: 60px;width: 60px;" @error="handleImageError">
                       </div>
-                    </th> -->
-                    <tr v-for="item in store.cartItems" :key="item.product_id + (item.variant_1 || '') + (item.variant_2 || '') + (item.variant_3 || '')">
-  <th scope="row" class="fontSize">
-    <div class="d-flex">
-      <div class="remove">
-        <button @click="store.removeItem(item.product_id)" class="btn btn-sm text-danger remove-item" type="button">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      <img :src="getImageUrl(item.image)" alt="" class="rounded border" style="height: 60px;width: 60px;" @error="handleImageError">
-    </div>
-  </th>
+                    </th>
                     <td class="fontSize">{{ item.name }}</td>
                     <td class="fontSize">
                       <template v-if="item.variant_1 || item.variant_2 || item.variant_3">
@@ -234,7 +224,7 @@ const getVariantText = (variants) => {
                       </div>
                     </td>
                     <td class="fontSize">
-                      <strong>{{ (item.price * item.quantity).toFixed(2) }} ৳</strong>
+                      <strong>{{ (item.price ).toFixed(2) }} ৳</strong>
                       <span v-if="item.discount > 0">
                         <br>Discount: <strong>{{ (item.discount * item.quantity).toFixed(2) }} ৳</strong>
                       </span>

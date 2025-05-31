@@ -1,15 +1,28 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 // import { posadminApi } from '../api/index';
-import { IMAGE_BASE_URL,posadminApi } from '../../api'
+import { IMAGE_BASE_URL, posadminApi } from '../../api'
 import { param } from 'jquery'
 
-const flasSells = ref([])  
+const flasSells = ref([])
 const currentPage = ref(1)
 const lastPage = ref(1)
 const isLoading = ref(false)
 const allLoaded = ref(false)
 const lastDate = ref(null)
+
+
+const isFlashSellActive = ref(false)
+function checkFlashActive() {
+  if (!lastDate.value) {
+    isFlashSellActive.value = false
+    return
+  }
+  const now = new Date()
+  const end = new Date(lastDate.value)
+  isFlashSellActive.value = end > now
+}
+
 
 let countdownInterval = null
 
@@ -35,6 +48,7 @@ function startCountdown(elementId, endDate) {
     if (distance < 0) {
       countdownElement.innerHTML = 'Expired'
       clearInterval(countdownInterval)
+       isFlashSellActive.value = false
       return
     }
 
@@ -65,16 +79,17 @@ const fetchFlashSell = async (page = 1) => {
     const res = await posadminApi.get(`/flashProduct2?page=${page}`)
 
     if (res.data.success) {
-      flasSells.value.push(...res.data.products)
       currentPage.value = res.data.pagination.current_page
       lastPage.value = res.data.pagination.last_page
       lastDate.value = res.data.last_date
+      checkFlashActive()
+
+      flasSells.value.push(...res.data.products)
 
       if (currentPage.value >= lastPage.value) {
         allLoaded.value = true
       }
 
-      // Start countdown once lastDate is set
       if (lastDate.value) {
         startCountdown('promoCountdown2', lastDate.value)
       }
@@ -86,8 +101,15 @@ const fetchFlashSell = async (page = 1) => {
   }
 }
 
+
+
 onMounted(() => {
   fetchFlashSell(1)
+
+  // Auto-check every 1 minute if flash sell is still active
+  setInterval(() => {
+    checkFlashActive()
+  }, 60000)
 })
 
 const loadMore = () => {
@@ -97,7 +119,8 @@ const loadMore = () => {
 }
 </script>
 
-<template>
+<template  >
+  <div v-if="isFlashSellActive">
   <div class="category_products flash-sale-container">
     <div class="banner rounded-2">
       <div class="text-center w-100">
@@ -111,25 +134,17 @@ const loadMore = () => {
   <div class="products mt-3 flash-sale-products">
     <div class="product" v-for="item in flasSells" :key="item.id">
       <div class="image">
-        <router-link :to="{name:'ProductDetail' ,params: {slug: item.slug}} ">
+        <router-link :to="{ name: 'ProductDetail', params: { slug: item.slug } }">
           <!-- id="product_show"
           :data-productid="item.id"
           :data-categoryid="item.category_id"
           :data-productname="item.name" -->
-          <img
-            :src="`${IMAGE_BASE_URL}/images/product/small/${item.main_image}`"
-            :alt="item.name"
-            class="first"
-          />
+          <img :src="`${IMAGE_BASE_URL}/images/product/small/${item.main_image}`" :alt="item.name" class="first" />
         </router-link>
-          <router-link :to="{name:'ProductDetail', params:{slug:item.slug}}">
+        <router-link :to="{ name: 'ProductDetail', params: { slug: item.slug } }">
 
-            <img
-            :src="`${IMAGE_BASE_URL}/images/product/small/${item.main_image}`"
-            :alt="item.name"
-            class="second"
-            />
-          </router-link>
+          <img :src="`${IMAGE_BASE_URL}/images/product/small/${item.main_image}`" :alt="item.name" class="second" />
+        </router-link>
         <div class="product_btn_position content">
           <form method="POST" action="https://newfashion.softitglobal.com/carts" id="cart_form">
             <input type="hidden" name="_token" value="xsED4Nne1eihR0J1Q2QMZ66RViuU99odXVearmOw" autocomplete="off" />
@@ -148,23 +163,18 @@ const loadMore = () => {
       </div>
 
       <div class="content px-2 text-center">
-        <a
-          :href="`product-show/${item.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '')}.html`"
-          id="product_show"
-          :data-productid="item.id"
-          :data-categoryid="item.category_id"
-          :data-productname="item.name"
-        >
+        <a :href="`product-show/${item.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '')}.html`"
+          id="product_show" :data-productid="item.id" :data-categoryid="item.category_id" :data-productname="item.name">
           <div class="title">{{ item.name }}</div>
         </a>
         <div class="price">
-              <span class="current_price" style="color: #00276C; font-weight: bold;">
-                {{ item.price }} Tk
-              </span>
-              <del v-if="item.promotion && item.promotion_price" style="color: red;">
-                {{ item.wprice }} Tk
-              </del>
-            </div>
+          <span class="current_price" style="color: #00276C; font-weight: bold;">
+            {{ item.price }} Tk
+          </span>
+          <del v-if="item.promotion && item.promotion_price" style="color: red;">
+            {{ item.wprice }} Tk
+          </del>
+        </div>
         <!-- <div class="price">
           <span class="current_price" style="color: #00276C; font-weight: bold;">
             {{ item.promotion && item.promotion_price ? item.promotion_price : item.price }}
@@ -178,13 +188,10 @@ const loadMore = () => {
   </div>
 
   <div class="text-center mt-3">
-    <button
-      class="btn btn-danger load-more-flash-sale"
-      :disabled="isLoading || allLoaded"
-      @click="loadMore"
-    >
+    <button class="btn btn-danger load-more-flash-sale" :disabled="isLoading || allLoaded" @click="loadMore">
       {{ allLoaded ? "All Products Loaded" : "Load More Flash Deals" }}
     </button>
+  </div>
   </div>
 </template>
 
