@@ -53,6 +53,11 @@ const routes = [
   name: 'ThankYou',
   component: () => import('../components/frontend/thankyouPage/ThankyouPage.vue')
 },
+{
+  path: '/cart-count-store',
+  name: 'CartCountStore',
+  component: () => import('../components/frontend/CartSidebarStore.vue')
+},
 ]
 const router = createRouter({
   history: createWebHistory(),

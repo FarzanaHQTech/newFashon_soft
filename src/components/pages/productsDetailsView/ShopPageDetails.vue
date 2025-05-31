@@ -121,6 +121,45 @@ const hasVariants = computed(() => {
   return shopPages.value?.is_variant == 1 && variantOptions.value.length > 0
 })
 
+// async function orderNow() {
+//   try {
+//     selectedVariants.value = {};
+//     const variantInputs = document.querySelectorAll('.burmanRadio__input:checked');
+
+//     // Collect selected variants
+//     variantInputs.forEach(el => {
+//       const variantNum = el.name.split('_')[1];
+//       selectedVariants.value[`variant_${variantNum}`] = el.value;
+//     });
+
+//     // Prepare product data for cart
+//     const product = {
+//       product_id: shopPages.value.id,
+//       slug: shopPages.value.slug,
+//       name: shopPages.value.name,
+//       image: allImages.value[0]?.image || shopPages.value.main_image,
+//       price: displayPrice.value,
+//       quantity: quantity.value,
+//       discount: shopPages.value.price - displayPrice.value,
+//       ...(shopPages.value.is_variant == 1 && {
+//         variant_1: selectedVariants.value.variant_1 || null,
+//         variant_2: selectedVariants.value.variant_2 || null,
+//         variant_3: selectedVariants.value.variant_3 || null
+//       })
+//     };
+
+//     // Add to cart
+//     await store.addToCart(product);
+    
+//     // Redirect to checkout page
+//     router.push('/checkout');
+//   } catch (error) {
+//     console.error('Error in orderNow:', error);
+//     alert(error.message || 'Failed to add to cart');
+//   }
+// }
+
+
 async function orderNow() {
   try {
     selectedVariants.value = {};
@@ -139,7 +178,7 @@ async function orderNow() {
       name: shopPages.value.name,
       image: allImages.value[0]?.image || shopPages.value.main_image,
       price: displayPrice.value,
-      quantity: quantity.value,
+      quantity: quantity.value, // Keep the selected quantity
       discount: shopPages.value.price - displayPrice.value,
       ...(shopPages.value.is_variant == 1 && {
         variant_1: selectedVariants.value.variant_1 || null,
@@ -148,10 +187,10 @@ async function orderNow() {
       })
     };
 
-    // Add to cart
+    // Add to cart - this will replace if same product/variant exists
     await store.addToCart(product);
     
-    // Redirect to checkout page
+    // Optionally redirect to checkout page
     router.push('/checkout');
   } catch (error) {
     console.error('Error in orderNow:', error);

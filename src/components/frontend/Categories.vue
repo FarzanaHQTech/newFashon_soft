@@ -4,17 +4,26 @@ import { Navigation } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/navigation'
 
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useCategoryStore } from '../../stores/categoryStore'
 import { storeToRefs } from 'pinia'
-import { IMAGE_BASE_URL } from '../../api/index' 
+import { IMAGE_BASE_URL } from '../../api/index'
 
 const categoryStore = useCategoryStore()
 const { categories } = storeToRefs(categoryStore)
 
 onMounted(() => {
   categoryStore.fetchCategories()
+  console.log(categories);
+
 })
+const failedImages = ref(new Set())
+
+
+function handleImageError(event, id) {
+  console.warn(`Image not found for category ID ${id}:`, event.target.src)
+  failedImages.value.add(id)
+}
 </script>
 
 
@@ -35,15 +44,21 @@ onMounted(() => {
 
       <Swiper :modules="[Navigation]" :slides-per-view="'auto'" :space-between="15"
         :navigation="{ nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' }" class="mobile-category-swiper">
-        <SwiperSlide v-for="category in categories" :key="category.id" style="width: 150px;">
+        <SwiperSlide
+          v-for="category in categories.filter(cat => cat.image && cat.image.trim() !== '' && !failedImages.has(cat.id))"
+          :key="category.id" style="width: 150px;">
           <div class="product-item mx-2 p-1 text-center">
-            <a :href="`shop.html?cat_id=${category.id}`">
-            <img :src="`${IMAGE_BASE_URL}images/category/${category.image}`"  style="width: 133px; box-shadow: 3px 4px 6px 0px #504f4e80;"  />
-            
+            <router-link to="/shop">
+            <!-- <a :href="`shop.html?cat_id=${category.id}`"> -->
+              <img :src="`${IMAGE_BASE_URL}images/category/${category.image}`"
+                @error="handleImageError($event, category.id)" :alt="category.name"
+                style="width: 133px; box-shadow: 3px 4px 6px 0px #504f4e80;" />
               <p class="ctgName mt-2">{{ category.name }}</p>
-            </a>
+            </router-link>
           </div>
         </SwiperSlide>
+
+
 
       </Swiper>
     </div>

@@ -3,6 +3,7 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useCartStore } from '../../stores/cartStoreCount'
+import { storeToRefs } from 'pinia'
 
 const cartStore = useCartStore()
 const { cartList, total, loading } = storeToRefs(cartStore)

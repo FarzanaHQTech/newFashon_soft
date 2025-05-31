@@ -63,6 +63,44 @@ const confirmOrder = async () => {
 };
 
 
+// const handleSubmit = async () => {
+//   try {
+//     // Validate inputs
+//     if (!store.customer.name || !store.customer.mobile || !store.customer.address) {
+//       throw new Error('Please fill all required fields');
+//     }
+
+//     if (store.cartCount === 0) {
+//       throw new Error('Your cart is empty');
+//     }
+
+//     // Process checkout
+//     const result = await store.processCheckout();
+
+//     // Check for success message
+
+//     if (result.message === 'Order placed successfully') {
+//       router.push({
+//         name: 'ThankYou',
+//         params: { order_id: result.order_id }
+//       });
+//       return;
+//     }
+
+//     // If we get here, there might be an unexpected response
+//     throw new Error(result.message || 'Order processing completed with unexpected response');
+
+//   } catch (error) {
+//     console.error('Checkout error:', error);
+
+//     // Show the actual error message from the response if available
+//     const errorMessage = error.response?.data?.message ||
+//       error.message ||
+//       'Checkout failed for unknown reason';
+
+//     alert(errorMessage);
+//   }
+// };
 const handleSubmit = async () => {
   try {
     // Validate inputs
@@ -78,8 +116,11 @@ const handleSubmit = async () => {
     const result = await store.processCheckout();
 
     // Check for success message
-
     if (result.message === 'Order placed successfully') {
+      // Clear the cart after successful order
+      await store.clearCart();
+      
+      // Redirect to thank you page
       router.push({
         name: 'ThankYou',
         params: { order_id: result.order_id }
@@ -87,21 +128,15 @@ const handleSubmit = async () => {
       return;
     }
 
-    // If we get here, there might be an unexpected response
     throw new Error(result.message || 'Order processing completed with unexpected response');
-
   } catch (error) {
     console.error('Checkout error:', error);
-
-    // Show the actual error message from the response if available
     const errorMessage = error.response?.data?.message ||
       error.message ||
       'Checkout failed for unknown reason';
-
     alert(errorMessage);
   }
 };
-
 
 const getImageUrl = (imagePath) => {
   if (!imagePath) return '/path/to/placeholder.jpg';
@@ -141,7 +176,6 @@ const getVariantText = (variants) => {
         <div class="card mb-4">
           <div class="card-header">
             <h5 class="mb-0">Cart - <span id="cart_number">{{ store.cartCount }}</span></h5>
-            <!-- <h5 class="mb-0">Cart - {{ store.cartCount }} items</h5> -->
           </div>
           <div class="card-body cartBody">
             <div class="input-group mb-3">
@@ -213,52 +247,51 @@ const getVariantText = (variants) => {
                       </span>
                     </td>
                   </tr> -->
-                      <tr v-for="(item, index) in store.cartItems" :key="index">
-      <th scope="row" class="fontSize">
-        <div class="d-flex">
-          <div class="remove">
-            <button @click="store.removeItem(store.generateCartItemKey(item))" 
-                    class="btn btn-sm text-danger remove-item" type="button">
-              <i class="fas fa-times"></i>
+        <tr v-for="(item, index) in store.cartItems" :key="index">
+        <th scope="row" class="fontSize">
+          <div class="d-flex">
+            <div class="remove">
+              <button @click="store.removeItem(store.generateCartItemKey(item))" 
+                      class="btn btn-sm text-danger remove-item" type="button">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+            <img :src="getImageUrl(item.image)" alt="" class="rounded border" 
+                 style="height: 60px;width: 60px;" @error="handleImageError">
+          </div>
+        </th>
+        <td class="fontSize">{{ item.name }}</td>
+        <td class="fontSize">
+          <template v-if="item.variant_1 || item.variant_2 || item.variant_3">
+            {{[item.variant_1, item.variant_2, item.variant_3].filter(v => v).join(' / ')}}
+          </template>
+          <template v-else>
+            N/A
+          </template>
+        </td>
+        <td>
+          <div class="d-flex mb-4 align-items-start" style="max-width: 300px">
+            <button @click="store.updateQuantity(store.generateCartItemKey(item), item.quantity - 1)"
+                    class="btn btn-primary me-2 qtybtn minus" :disabled="item.quantity <= 1">
+              <i class="fas fa-minus"></i>
+            </button>
+            <div class="form-outline">
+              <input :value="item.quantity" style="width: 40px;" type="text" readonly
+                     class="form-control quantity">
+            </div>
+            <button @click="store.updateQuantity(store.generateCartItemKey(item), item.quantity + 1)"
+                    class="btn btn-primary ms-2 qtybtn plus">
+              <i class="fas fa-plus"></i>
             </button>
           </div>
-          <img :src="getImageUrl(item.image)" alt="" class="rounded border" 
-               style="height: 60px;width: 60px;" @error="handleImageError">
-        </div>
-      </th>
-      <td class="fontSize">{{ item.name }}</td>
-      <td class="fontSize">
-        <template v-if="item.variant_1 || item.variant_2 || item.variant_3">
-          {{[item.variant_1, item.variant_2, item.variant_3].filter(v => v).join(' / ')}}
-        </template>
-        <template v-else>
-          N/A
-        </template>
-      </td>
-      <td>
-        <div class="d-flex mb-4 align-items-start" style="max-width: 300px">
-          <button @click="store.updateQuantity(store.generateCartItemKey(item), item.quantity - 1)"
-                  class="btn btn-primary me-2 qtybtn minus" :disabled="item.quantity <= 1">
-            <i class="fas fa-minus"></i>
-          </button>
-          <div class="form-outline">
-            <input :value="item.quantity" style="width: 40px;" type="text" readonly
-                   class="form-control quantity">
-          </div>
-          <button @click="store.updateQuantity(store.generateCartItemKey(item), item.quantity + 1)"
-                  class="btn btn-primary ms-2 qtybtn plus">
-            <i class="fas fa-plus"></i>
-          </button>
-        </div>
-      </td>
-      <td class="fontSize">
-        <strong>{{ (item.price * item.quantity).toFixed(2) }} ৳</strong>
-        <span v-if="item.discount > 0">
-          <br>Discount: <strong>{{ (item.discount * item.quantity).toFixed(2) }} ৳</strong>
-        </span>
-      </td>
-    </tr>
-
+        </td>
+        <td class="fontSize">
+          <strong>{{ (item.price ).toFixed(2) }} ৳</strong>
+          <span v-if="item.discount > 0">
+            <br>Discount: <strong>{{ (item.discount * item.quantity).toFixed(2) }} ৳</strong>
+          </span>
+        </td>
+      </tr>
                   
                   <!-- Summary Rows -->
                   <tr>

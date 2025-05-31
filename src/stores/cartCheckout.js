@@ -19,7 +19,26 @@ export const useCartCheckoutStore = defineStore("cartCheckout", {
   }),
 
   getters: {
-    subtotal() {
+    // subtotal() {
+    //   return this.cartItems.reduce(
+    //     (sum, item) => sum + item.price * item.quantity,
+    //     0
+    //   );
+    // },
+    // totalDiscount() {
+    //   return this.cartItems.reduce(
+    //     (sum, item) => sum + (item.discount || 0) * item.quantity,
+    //     0
+    //   );
+    // },
+    // grandTotal() {
+    //   return this.subtotal - this.couponDiscount + this.shippingCharge;
+    // },
+    // cartCount() {
+    //   return this.cartItems.reduce((total, item) => total + item.quantity, 0);
+    // },
+     subtotal() {
+      // Keep quantity multiplication for pricing
       return this.cartItems.reduce(
         (sum, item) => sum + item.price * item.quantity,
         0
@@ -34,8 +53,13 @@ export const useCartCheckoutStore = defineStore("cartCheckout", {
     grandTotal() {
       return this.subtotal - this.couponDiscount + this.shippingCharge;
     },
-    cartCount() {
-      return this.cartItems.reduce((total, item) => total + item.quantity, 0);
+    // cartCount() {
+    //   // Return total quantity for header count
+    //   return this.cartItems.reduce((total, item) => total + item.quantity, 0);
+    // },
+       cartCount() {
+      // Count each product as 1 item
+      return this.cartItems.length;
     },
     uniqueCartCount() {
       return this.cartItems.length;
@@ -117,64 +141,66 @@ export const useCartCheckoutStore = defineStore("cartCheckout", {
     //     this.loading = false;
     //   }
     // },
-generateCartItemKey(productData) {
-  // Create a unique key based on product ID and variants
-  return [
-    productData.product_id,
-    productData.variant_1 || '',
-    productData.variant_2 || '',
-    productData.variant_3 || ''
-  ].join('|');
-},
+ generateCartItemKey(productData) {
+      return [
+        productData.product_id,
+        productData.variant_1 || '',
+        productData.variant_2 || '',
+        productData.variant_3 || ''
+      ].join('|');
+    },
+    findCartItem(productData) {
+      const key = this.generateCartItemKey(productData);
+      return this.cartItems.find(item => 
+        this.generateCartItemKey(item) === key
+      );
+    },
 
-findCartItem(productData) {
-  const key = this.generateCartItemKey(productData);
-  return this.cartItems.find(item => 
-    this.generateCartItemKey(item) === key
-  );
-},
 
-async addToCart(productData) {
-  this.loading = true;
-  try {
-    const payload = {
-      product_id: productData.product_id,
-      slug: productData.slug,
-      quantity: productData.quantity || 1,
-      variant_1: productData.variant_1 || null,
-      variant_2: productData.variant_2 || null,
-      variant_3: productData.variant_3 || null,
-      price: productData.price,
-      discount: productData.discount || 0,
-      image: productData.image,
-      name: productData.name
-    };
+ async addToCart(productData) {
+      this.loading = true;
+      try {
+        const payload = {
+          product_id: productData.product_id,
+          slug: productData.slug,
+          quantity: productData.quantity || 1, // Keep quantity from product data
+          variant_1: productData.variant_1 || null,
+          variant_2: productData.variant_2 || null,
+          variant_3: productData.variant_3 || null,
+          price: productData.price,
+          discount: productData.discount || 0,
+          image: productData.image,
+          name: productData.name
+        };
 
-    // Check if item already exists in cart
-    const existingItem = this.findCartItem(payload);
-    
-    if (existingItem) {
-      // Update quantity if item exists
-      payload.quantity = existingItem.quantity + payload.quantity;
-    }
+        // Check if item already exists in cart
+        const key = this.generateCartItemKey(payload);
+        const existingIndex = this.cartItems.findIndex(item => 
+          this.generateCartItemKey(item) === key
+        );
 
-    // Make API call
-    const response = await frontendApi.post("/cartStore", payload);
-    
-    // Update cart items from response
-    this.cartItems = response.data.carts ? Object.values(response.data.carts) : [];
-    
-    this.persistCartToLocalStorage();
-    this.updateHeaderCart();
-    return { success: true, data: response.data };
-  } catch (error) {
-    console.error("Add to cart error:", error);
-    this.error = error.response?.data?.message || "Failed to add to cart";
-    throw error;
-  } finally {
-    this.loading = false;
-  }
-},
+        if (existingIndex >= 0) {
+          // If item exists, update it (including quantity)
+          this.cartItems[existingIndex] = payload;
+        } else {
+          // Add new item
+          this.cartItems.push(payload);
+        }
+
+        // Make API call
+        const response = await frontendApi.post("/cartStore", payload);
+
+        this.persistCartToLocalStorage();
+        this.updateHeaderCart();
+        return { success: true, data: response.data };
+      } catch (error) {
+        console.error("Add to cart error:", error);
+        this.error = error.response?.data?.message || "Failed to add to cart";
+        throw error;
+      } finally {
+        this.loading = false;
+      }
+    },
 
 
     persistCartToLocalStorage() {
@@ -327,61 +353,86 @@ async addToCart(productData) {
     //   }
     // },
 async updateQuantity(itemKey, newQuantity) {
-  try {
-    // Find item by its unique key
-    const item = this.cartItems.find(item => 
-      this.generateCartItemKey(item) === itemKey
-    );
-    
-    if (!item) throw new Error("Item not found in cart");
-    
-    // Ensure quantity is at least 1
-    newQuantity = Math.max(1, newQuantity);
-    
-    const response = await frontendApi.post("/cart/update", {
-      item_id: item.variant_id || item.product_id,
-      quantity: newQuantity
-    });
+      try {
+        // Find item by its unique key
+        const itemIndex = this.cartItems.findIndex(item => 
+          this.generateCartItemKey(item) === itemKey
+        );
+        
+        if (itemIndex === -1) throw new Error("Item not found in cart");
+        
+        // Ensure quantity is at least 1
+        newQuantity = Math.max(1, newQuantity);
+        
+        // Update quantity locally
+        this.cartItems[itemIndex].quantity = newQuantity;
+        
+        // Make API call
+        const response = await frontendApi.post("/cart/update", {
+          item_id: this.cartItems[itemIndex].variant_id || this.cartItems[itemIndex].product_id,
+          quantity: newQuantity
+        });
 
-    // Update local state
-    item.quantity = newQuantity;
-    this.persistCartToLocalStorage();
-    this.updateHeaderCart();
+        this.persistCartToLocalStorage();
+        this.updateHeaderCart();
+        
+        return response.data;
+      } catch (error) {
+        console.error("Update quantity error:", error);
+        throw error;
+      }
+    },
+// async removeItem(itemKey) {
+//   try {
+//     // Find item by its unique key
+//     const item = this.cartItems.find(item => 
+//       this.generateCartItemKey(item) === itemKey
+//     );
     
-    return response.data;
-  } catch (error) {
-    console.error("Update quantity error:", error);
-    throw error;
-  }
-},
-
-async removeItem(itemKey) {
-  try {
-    // Find item by its unique key
-    const item = this.cartItems.find(item => 
-      this.generateCartItemKey(item) === itemKey
-    );
+//     if (!item) throw new Error("Item not found in cart");
     
-    if (!item) throw new Error("Item not found in cart");
+//     const response = await frontendApi.delete(`/cartDelete/${item.variant_id || item.product_id}`);
+
+//     // Remove from local state
+//     this.cartItems = this.cartItems.filter(cartItem => 
+//       this.generateCartItemKey(cartItem) !== itemKey
+//     );
+//     this.persistCartToLocalStorage();
+//     this.updateHeaderCart();
     
-    const response = await frontendApi.delete(`/cartDelete/${item.variant_id || item.product_id}`);
-
-    // Remove from local state
-    this.cartItems = this.cartItems.filter(cartItem => 
-      this.generateCartItemKey(cartItem) !== itemKey
-    );
-    this.persistCartToLocalStorage();
-    this.updateHeaderCart();
-    
-    return response.data;
-  } catch (error) {
-    console.error("Remove item error:", error);
-    throw error;
-  }
-},
+//     return response.data;
+//   } catch (error) {
+//     console.error("Remove item error:", error);
+//     throw error;
+//   }
+// },
 
 
+ // Remove quantity update functionality since we're treating each as separate orders
+    async removeItem(itemKey) {
+      try {
+        // Find item by its unique key
+        const itemIndex = this.cartItems.findIndex(item => 
+          this.generateCartItemKey(item) === itemKey
+        );
+        
+        if (itemIndex === -1) throw new Error("Item not found in cart");
+        
+        const item = this.cartItems[itemIndex];
+        
+        const response = await frontendApi.delete(`/cartDelete/${item.variant_id || item.product_id}`);
 
+        // Remove from local state
+        this.cartItems.splice(itemIndex, 1);
+        this.persistCartToLocalStorage();
+        this.updateHeaderCart();
+        
+        return response.data;
+      } catch (error) {
+        console.error("Remove item error:", error);
+        throw error;
+      }
+    },
     updateHeaderCart() {
       const cartNumber = document.getElementById("cart_number");
       const totalAmount = document.getElementById("total_amount");
