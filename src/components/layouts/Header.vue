@@ -13,22 +13,6 @@ import { storeToRefs } from 'pinia'
 import { useCartCheckoutStore } from '../../stores/cartCheckout'
 
 
-const showMenu = useCategoryStore()
-const { categoryMenu } = storeToRefs(showMenu)
-
-// Mobile menu toggle state
-const showMobileMenu = ref(false)
-// Toggle function
-const toggleMobileMenu = () => {
-  showMobileMenu.value = !showMobileMenu.value
-}
-
-// Close function
-const closeMobileMenu = () => {
-  showMobileMenu.value = false
-}
-//for add to cart
-// import { useCartCheckoutStore } from '@/stores/cartCheckout'
 
 const store = useCartCheckoutStore()
 const { cartCount, grandTotal } = storeToRefs(store)
@@ -46,13 +30,7 @@ onMounted(async () => {
     <!-- Top Navigation -->
     <nav class="navbar navbar-expand-lg top_nav navbar-dark" style="background-color: #fafcff;">
       <div class="container-fluid align-items-center">
-        <!-- <button class="navbar-toggler border-0 p-0" 
-          style="font-size: 26px; color: navy;">
-          <i class="fa fa-bars"></i>
-        </button> -->
-        <!-- <button class="menu-button mb-3" @click="toggleMobileMenu">
-          <i class="fa fa-bars"></i>
-        </button> -->
+      
         <router-link :to="`/`" class="navbar-brand">
           <img :src="ecomLogo" alt="Ecom Logo" />
         </router-link>
@@ -82,7 +60,7 @@ onMounted(async () => {
 
         <div class="display_lg">
           <div class="d-lg-flex d-none align-items-center gap-2 ps-lg-3">
-            <a href="tel:01615597820" class="font-22" style="font-size: 20px;color: #000">
+            <a :href="`tel:01615597820`" class="font-22" style="font-size: 20px;color: #000">
               <i class="fa fa-phone"></i> 01615597820
             </a>
 
@@ -113,9 +91,8 @@ onMounted(async () => {
               <i class="fa fa-angle-down ms-auto"></i>
             </div>
             <div class="categories dp_content">
-              <li class="nav-item" :class="{ 'has_menu': item.sub_categories && item.sub_categories.length }"
-                v-for="(item, index) in categoryMenu" :key="item.id">
-                <router-link :to="{ path: '/shop-page', query: { cat_id: item.id } }" class="nav-link">
+              <li class="nav-item" :class="{ 'has_menu': item.sub_categories && item.sub_categories.length }"v-for="(item, index) in categoryMenu" :key="item.id">
+                <router-link :to="{ path: '/shop', query: { cat_id: item.id } }" class="nav-link">
                   <img :src="`${IMAGE_BASE_URL}/images/category/${item.image}`" :alt="item.name" width="20" />
                   {{ item.name }}
                 </router-link>
@@ -123,17 +100,18 @@ onMounted(async () => {
                 <!-- Sub Categories -->
                 <ul v-if="item.sub_categories && item.sub_categories.length" class="inner_menu">
                   <li class="nav-item" v-for="subItem in item.sub_categories" :key="subItem.id">
-                    <a :href="`/shop-page?cat_id=${item.id}&sub_cat_id=${subItem.id}`" class="nav-link">
+                    <<router-link to="/shop-page?cat_id=${item.id}&sub_cat_id=${subItem.id}`" class="nav-link">
                       {{ subItem.name }}
-                    </a>
+                 </router-link>
 
                     <!-- Sub-sub categories -->
                     <ul v-if="subItem.sub_categories && subItem.sub_categories.length" class="inner_menu_child">
                       <li class="nav-item" v-for="child in subItem.sub_categories" :key="child.id">
-                        <a :href="`/shop-page?cat_id=${item.id}&sub_cat_id=${subItem.id}&child_cat_id=${child.id}`"
-                          class="nav-link">
-                          {{ child.name }}
-                        </a>
+                      
+                        <router-link to="/shop-page?cat_id=${item.id}&sub_cat_id=${subItem.id}&child_cat_id=${child.id}"
+                          class="nav-link">   {{ child.name }}</router-link>
+                       
+                     <!-- to=" -->
                       </li>
                     </ul>
                   </li>

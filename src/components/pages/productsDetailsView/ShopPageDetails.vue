@@ -126,116 +126,39 @@ async function orderNow() {
     selectedVariants.value = {};
     const variantInputs = document.querySelectorAll('.burmanRadio__input:checked');
 
-    // Collect selected variants and find the selected color
-    let selectedColor = null;
+    // Collect selected variants
     variantInputs.forEach(el => {
       const variantNum = el.name.split('_')[1];
       selectedVariants.value[`variant_${variantNum}`] = el.value;
-
-      // Track the selected color
-      if (variantOptions.value[variantNum - 1]?.toLowerCase() === 'color') {
-        selectedColor = el.value;
-      }
     });
 
-    // Find the image that matches the selected color
-    const matchingImage = allImages.value.find(img => img.color === selectedColor) || 
-                         allImages.value[0]; // Fallback to first image
-
+    // Prepare product data for cart
     const product = {
       product_id: shopPages.value.id,
+      slug: shopPages.value.slug,
       name: shopPages.value.name,
-      image: matchingImage.image, // Use the image matching the selected color
-      price: shopPages.value.price,
+      image: allImages.value[0]?.image || shopPages.value.main_image,
+      price: displayPrice.value,
       quantity: quantity.value,
+      discount: shopPages.value.price - displayPrice.value,
       ...(shopPages.value.is_variant == 1 && {
         variant_1: selectedVariants.value.variant_1 || null,
         variant_2: selectedVariants.value.variant_2 || null,
         variant_3: selectedVariants.value.variant_3 || null
-      }),
-      promotion_price: shopPages.value.promotion_price,
-      selected_color: selectedColor // Optional: store the color for reference
+      })
     };
 
-    const result = await store.addToCart(product);
-    if (result?.success) {
-      router.push('/checkout');
-    }
+    // Add to cart
+    await store.addToCart(product);
+    
+    // Redirect to checkout page
+    router.push('/checkout');
   } catch (error) {
     console.error('Error in orderNow:', error);
     alert(error.message || 'Failed to add to cart');
   }
 }
 
-//order now function
-// async function orderNow() {
-//   // if (!validateVariants()) return;
-//   try {
-//     selectedVariants.value = {};
-//     const variantInputs = document.querySelectorAll('.burmanRadio__input:checked');
-
-//     // Collect selected variants
-//     variantInputs.forEach(el => {
-//       const variantNum = el.name.split('_')[1];
-//       selectedVariants.value[`variant_${variantNum}`] = el.value;
-
-//       // Update image if color variant changes
-//       if (variantOptions.value[variantNum - 1]?.toLowerCase() === 'color') {
-//         updateImageByColor(el.value);
-//       }
-//     });
-
-//     // Verify all required variants are selected
-//     if (hasVariants.value && variantInputs.length !== variantOptions.value.length) {
-//       alert('Please select all required variations');
-//       return;
-//     }
-    
-
-//     // Get variant price
-//     const variantNames = Object.values(selectedVariants.value);
-//     const priceResponse = await frontendApi.post('/variable-price', {
-//       productId: shopPages.value.id,
-//       variant_1: variantNames[0] || null,
-//       variant_2: variantNames[1] || null,
-//       variant_3: variantNames[2] || null
-//     });
-
-//     const { variantPrice, promotional_price, variant_id } = priceResponse.data;
-
-//     const product = {
-//       product_id: shopPages.value.id,
-//       name: shopPages.value.name,
-//       image: shopPages.value.main_image,
-//       price: variantPrice,
-//       promotion_price: promotional_price,
-//       quantity: quantity.value,
-//       variant_id: variant_id,
-//       ...(hasVariants.value && {
-//         variant_1: selectedVariants.value.variant_1 || null,
-//         variant_2: selectedVariants.value.variant_2 || null,
-//         variant_3: selectedVariants.value.variant_3 || null
-//       })
-//     };
-
-
-//     const result = await store.addToCart(product);
-
-//     if (result?.success) {
-//       router.push('/checkout');
-//     } else {
-//       const errorMsg = result?.msg || result?.message || 'Failed to add to cart';
-//       alert(errorMsg);
-//     }
-//   } catch (error) {
-//     console.error('Error in orderNow:', error);
-//     const errorMsg = error.response?.data?.message ||
-//       error.response?.data?.msg ||
-//       error.message ||
-//       'Failed to add to cart. Please try again.';
-//     alert(errorMsg);
-//   }
-// }
 // Computed property for displaying price
 const displayPrice = computed(() => {
   if (!shopPages.value) return 0;
@@ -381,28 +304,12 @@ watch(
                 </div>
               </div>
             </div>
-            <!-- <div v-for="(option, index) in variantOptions" :key="index" class="d-flex" v-if="shopPages.is_variant == 1">
-              <h4 class="pop medium">{{ option }}:</h4>
-              <div class="sizes d-flex flex-wrap align-items-center">
-                <div v-for="(value, i) in variantValues[index]?.split(',')" :key="i" class="burmanRadio me-2">
-                  <input type="radio" class="burmanRadio__input" :id="`variant_${index + 1}_${value.trim()}`"
-                    :name="`variant_${index + 1}`" :value="value.trim()" required />
-                  <label :for="`variant_${index + 1}_${value.trim()}`" class="burmanRadio__label">
-                    {{ value.trim() }}
-                  </label>
-                </div>
-              </div>
-            </div> -->
+         
 
             <div class="align-items-center flex-wrap mt-2 col-lg-6">
               <input type="hidden" name="product_id" value="122">
               <div class="d-flex justify-content-between align-items-start mb-1" style="width: 100%;">
-                <!-- <div class="quantity_box mb-2 quantityBtnDesign me-2" style="overflow: hidden;">
-                  <button type="button" class="minus btn">-</button>
-                  <input type="text" class="quantity_value placeholder_black form-control" name="quantity" value="1"
-                    min="1" max="12">
-                  <button type="button" class="plus btn">+</button>
-                </div> -->
+       
 
                 <!-- // Update the quantity input in template: -->
                 <div class="quantity_box mb-2 quantityBtnDesign me-2" style="overflow: hidden;">
@@ -411,16 +318,22 @@ watch(
                     max="12" readonly>
                   <button type="button" class="plus btn" @click="increaseQuantity">+</button>
                 </div>
-                <button class="btn rounded-5 flex-fill ord_btn orderBtnDesign btn_design" @click.prevent="orderNow">
+                <!-- <button class="btn rounded-5 flex-fill ord_btn orderBtnDesign btn_design" @click.prevent="orderNow">
                   <div class="cart_btn bangali bold ord_bt">
                     <i class="fa-solid fa-cart-plus text-white mx-2"></i>
                     <span>অর্ডার করুন</span>
                   </div>
-                </button>
+                </button> -->
+                          <button class="btn rounded-5 flex-fill ord_btn orderBtnDesign btn_design" @click.prevent="orderNow">
+  <div class="cart_btn bangali bold ord_bt">
+    <i class="fa fa-cart-shopping"></i>
+    <span>অর্ডার করুন</span>
+  </div>
+</button>
 
-
-
+      
               </div>
+              
               <div class="btn_submit">
                 <button class="btn mt-lg-2 semi text-cap col-12 add_to_cart btn_design rounded-5"> <i
                     class="fa-solid fa-cart-plus text-white mx-2"></i> কার্টে রাখুন</button>
@@ -665,14 +578,18 @@ watch(
             <div class="product_btn_position content">
 
               <!-- No need for <form>, use Vue methods instead -->
+                <router-link :to="{ name: 'ProductDetail', params: { slug: item.slug } }">
               <button @click="goToCheckout" class="submit_button btn btn-light d-block">
+                
                 <div class="cart_btn bangali bold ord_bt">
                   <i class="fa fa-cart-shopping"></i>
                   <span>অর্ডার করুন</span>
                 </div>
               </button>
+              </router-link>
 
             </div>
+            
           </div>
 
           <div class="labels d-none">

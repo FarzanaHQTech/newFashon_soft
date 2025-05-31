@@ -96,28 +96,28 @@ onMounted(() => {
                   <font-awesome-icon icon="book" /> PAGE
                 </h5>
                 <ul class="quickLink ps-lg-4 ps-3">
-                  <li><a href="about-site.html">About Ecom</a></li>
-                  <li><a href="delivery-policy.html">Delivery Policy</a></li>
-                  <li><a href="terms-condition.html">Terms &amp; Condition</a></li>
-                  <li><a href="return-policy.html">Return Policy</a></li>
+                  <li><a :href="`about-site.html`">About Ecom</a></li>
+                  <li><a :href="`delivery-policy.html`">Delivery Policy</a></li>
+                  <li><a :href="`terms-condition.html`">Terms &amp; Condition</a></li>
+                  <li><a :href="`return-policy.html`">Return Policy</a></li>
                 </ul>
                 <h5>
                   <font-awesome-icon icon="star" /> FOLLOW US
                 </h5>
                 <div class="socials">
-                  <a href="" class="btn btn-sm btn-primary me-2">
+                  <a :href="``" class="btn btn-sm btn-primary me-2">
                     <font-awesome-icon :icon="['fab', 'facebook']" />
                   </a>
-                  <a href="" class="btn btn-sm btn-danger me-2">
+                  <a :href="``" class="btn btn-sm btn-danger me-2">
                     <font-awesome-icon :icon="['fab', 'youtube']" />
                   </a>
-                  <a href="" class="btn btn-sm btn-success me-2">
+                  <a :href="``" class="btn btn-sm btn-success me-2">
                     <font-awesome-icon :icon="['fab', 'instagram']" />
                   </a>
-                  <a href="" class="btn btn-sm btn-success me-2">
+                  <a :href="``" class="btn btn-sm btn-success me-2">
                     <font-awesome-icon :icon="['fab', 'tiktok']" />
                   </a>
-                  <a href="" class="btn btn-sm btn-success me-2">
+                  <a :href="``" class="btn btn-sm btn-success me-2">
                     <span class="x">𝕏</span>
                   </a>
                 </div>

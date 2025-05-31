@@ -25,7 +25,7 @@ onMounted(async () => {
             <img :src="`${IMAGE_BASE_URL}images/product/small/${item.main_image}`" alt="" class="second" />
           </a>
            <div class="product_btn_position content">
-                        <form method="POST" action="https://newfashion.softitglobal.com/carts" id="cart_form">
+                            <router-link :to="{ name: 'ProductDetail', params: { slug: item.slug } }">
                             <input type="hidden" name="_token" value="LTHwQNjo5ToXg7e35OXohGlNKkBqzc0oghUkFajK"
                                 autocomplete="off"> <input type="hidden" name="product_id" value="69">
                             <input type="hidden" name="quantity" value="1">
@@ -36,7 +36,7 @@ onMounted(async () => {
                                             অর্ডার করুন</span></div>
                                 </button>
                             </div>
-                        </form>
+                       </router-link>
                     </div>
                 </div>
 

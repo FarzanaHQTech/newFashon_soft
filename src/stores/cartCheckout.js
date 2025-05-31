@@ -1,7 +1,6 @@
 import { defineStore } from "pinia";
 import { frontendApi } from "../api";
 
-
 export const useCartCheckoutStore = defineStore("cartCheckout", {
   state: () => ({
     cartItems: [],
@@ -28,85 +27,88 @@ export const useCartCheckoutStore = defineStore("cartCheckout", {
     },
     totalDiscount() {
       return this.cartItems.reduce(
-        (sum, item) => sum + item.discount * item.quantity,
+        (sum, item) => sum + (item.discount || 0) * item.quantity,
         0
       );
     },
     grandTotal() {
       return this.subtotal - this.couponDiscount + this.shippingCharge;
     },
-
-  cartCount() {
-  if (!Array.isArray(this.cartItems)) return 0;
-  return this.cartItems.reduce((total, item) => {
-    const quantity = parseInt(item.quantity) || 0;
-    console.log(`Item ${item.product_id} quantity:`, quantity); // Debug log
-    return total + quantity;
-  }, 0);
-},
+    cartCount() {
+      return this.cartItems.reduce((total, item) => total + item.quantity, 0);
+    },
+    uniqueCartCount() {
+      return this.cartItems.length;
+    }
   },
 
   actions: {
-    // ✅ Add to Cart
+    // generateCartItemKey(productData) {
+    //   return [
+    //     productData.product_id,
+    //     productData.variant_1 || '',
+    //     productData.variant_2 || '',
+    //     productData.variant_3 || ''
+    //   ].join('|');
+    // },
 
-    findCartItem(productData) {
-      return this.cartItems.find(
-        (item) =>
-          item.product_id === productData.product_id &&
-          item.variant_1 === (productData.variant_1 || null) &&
-          item.variant_2 === (productData.variant_2 || null) &&
-          item.variant_3 === (productData.variant_3 || null)
-      );
-    },
+    // findCartItem(productData) {
+    //   const key = this.generateCartItemKey(productData);
+    //   return this.cartItems.find(item => 
+    //     this.generateCartItemKey(item) === key
+    //   );
+    // },
 
     // async addToCart(productData) {
     //   this.loading = true;
     //   try {
+    //     // Normalize product data
     //     const payload = {
     //       product_id: productData.product_id,
+    //       slug: productData.slug,
     //       quantity: productData.quantity || 1,
     //       variant_1: productData.variant_1 || null,
     //       variant_2: productData.variant_2 || null,
     //       variant_3: productData.variant_3 || null,
+    //       price: productData.price,
+    //       discount: productData.discount || 0,
+    //       image: productData.image,
+    //       name: productData.name
     //     };
 
-    //     const existingItemIndex = this.cartItems.findIndex(
-    //       (item) =>
-    //         item.product_id === payload.product_id &&
-    //         item.variant_1 === payload.variant_1 &&
-    //         item.variant_2 === payload.variant_2 &&
-    //         item.variant_3 === payload.variant_3
-    //     );
-
-    //     if (existingItemIndex >= 0) {
-    //       payload.quantity =
-    //         this.cartItems[existingItemIndex].quantity +
-    //         (payload.quantity || 1);
+    //     // Check if item already exists in cart
+    //     const existingItem = this.findCartItem(payload);
+        
+    //     if (existingItem) {
+    //       // Update quantity if item exists
+    //       payload.quantity = existingItem.quantity + payload.quantity;
     //     }
 
+    //     // Make API call
     //     const response = await frontendApi.post("/cart", payload);
-
+        
+    //     // Process response
     //     const cartData = response.data.cart || {};
-    //     const newCartItems = Array.isArray(cartData)
-    //       ? cartData
-    //       : Object.values(cartData);
+    //     const newCartItems = Array.isArray(cartData) ? cartData : Object.values(cartData);
 
-    //     this.cartItems = newCartItems.map((item) => ({
-    //       product_id: item.product_id || item.id,
-    //       name: item.name || item.product_name,
-    //       price: Number(item.price) || 0,
-    //       quantity: Number(item.quantity) || 1,
-    //       discount: Number(item.discount) || 0, // Ensure discount is always a number
-    //       image: item.image || item.product_image,
-    //       variant_1: item.variant_1 || null,
-    //       variant_2: item.variant_2 || null,
-    //       variant_3: item.variant_3 || null,
-    //       variant_id: item.variant_id || null,
+    //     // Update cart items
+    //     this.cartItems = newCartItems.map(item => ({
+    //       product_id: item.product_id,
+    //       slug: item.slug,
+    //       name: item.name,
+    //       price: Number(item.price),
+    //       quantity: Number(item.quantity),
+    //       discount: Number(item.discount || 0),
+    //       image: item.image,
+    //       variant_1: item.variant_1,
+    //       variant_2: item.variant_2,
+    //       variant_3: item.variant_3,
+    //       variant_id: item.variant_id
     //     }));
 
     //     this.persistCartToLocalStorage();
     //     this.updateHeaderCart();
-    //     return response.data;
+    //     return { success: true, data: response.data };
     //   } catch (error) {
     //     console.error("Add to cart error:", error);
     //     this.error = error.response?.data?.message || "Failed to add to cart";
@@ -115,57 +117,56 @@ export const useCartCheckoutStore = defineStore("cartCheckout", {
     //     this.loading = false;
     //   }
     // },
+generateCartItemKey(productData) {
+  // Create a unique key based on product ID and variants
+  return [
+    productData.product_id,
+    productData.variant_1 || '',
+    productData.variant_2 || '',
+    productData.variant_3 || ''
+  ].join('|');
+},
 
+findCartItem(productData) {
+  const key = this.generateCartItemKey(productData);
+  return this.cartItems.find(item => 
+    this.generateCartItemKey(item) === key
+  );
+},
 
-    async addToCart(productData) {
+async addToCart(productData) {
   this.loading = true;
   try {
     const payload = {
       product_id: productData.product_id,
+      slug: productData.slug,
       quantity: productData.quantity || 1,
       variant_1: productData.variant_1 || null,
       variant_2: productData.variant_2 || null,
       variant_3: productData.variant_3 || null,
+      price: productData.price,
+      discount: productData.discount || 0,
+      image: productData.image,
+      name: productData.name
     };
 
-    // Find existing item with the same product and variants
-    const existingItem = this.cartItems.find(item => 
-      item.product_id === payload.product_id &&
-      item.variant_1 === payload.variant_1 &&
-      item.variant_2 === payload.variant_2 &&
-      item.variant_3 === payload.variant_3
-    );
-
-    // If item exists, update the quantity in the payload
+    // Check if item already exists in cart
+    const existingItem = this.findCartItem(payload);
+    
     if (existingItem) {
-      payload.quantity = existingItem.quantity + (productData.quantity || 1);
+      // Update quantity if item exists
+      payload.quantity = existingItem.quantity + payload.quantity;
     }
 
-    const response = await frontendApi.post("/cart", payload);
-
-    // Process the response
-    const cartData = response.data.cart || {};
-    const newCartItems = Array.isArray(cartData)
-      ? cartData
-      : Object.values(cartData);
-
-    // Update cart items with proper quantity handling
-    this.cartItems = newCartItems.map((item) => ({
-      product_id: item.product_id || item.id,
-      name: item.name || item.product_name,
-      price: Number(item.price) || 0,
-      quantity: Number(item.quantity) || 1,
-      discount: Number(item.discount) || 0,
-      image: item.image || item.product_image,
-      variant_1: item.variant_1 || null,
-      variant_2: item.variant_2 || null,
-      variant_3: item.variant_3 || null,
-      variant_id: item.variant_id || null,
-    }));
-
+    // Make API call
+    const response = await frontendApi.post("/cartStore", payload);
+    
+    // Update cart items from response
+    this.cartItems = response.data.carts ? Object.values(response.data.carts) : [];
+    
     this.persistCartToLocalStorage();
     this.updateHeaderCart();
-    return response.data;
+    return { success: true, data: response.data };
   } catch (error) {
     console.error("Add to cart error:", error);
     this.error = error.response?.data?.message || "Failed to add to cart";
@@ -174,6 +175,8 @@ export const useCartCheckoutStore = defineStore("cartCheckout", {
     this.loading = false;
   }
 },
+
+
     persistCartToLocalStorage() {
       localStorage.setItem("cart_backup", JSON.stringify(this.cartItems));
     },
@@ -186,119 +189,41 @@ export const useCartCheckoutStore = defineStore("cartCheckout", {
     },
 
     async fetchCart() {
-  this.loading = true;
-  this.error = null; // Reset previous errors
-  
-  try {
-    console.log('Fetching cart from server...');
-    const response = await frontendApi.get("/getcart");
-    
-    // Debug logging
-    console.log('Raw cart response:', response.data);
-    
-    const cartData = response.data.cart || {};
-    console.log('Cart data before processing:', cartData);
+      this.loading = true;
+      try {
+        const response = await frontendApi.get("/getcart");
+        const cartData = response.data.cart || {};
+        
+        const newCartItems = Array.isArray(cartData) ? 
+          cartData : 
+          Object.values(cartData);
 
-    // Process cart data
-    let normalizedItems = [];
-    if (Array.isArray(cartData)) {
-      normalizedItems = cartData;
-    } else if (typeof cartData === "object" && cartData !== null) {
-      normalizedItems = Object.values(cartData);
-    }
+        this.cartItems = newCartItems.map(item => ({
+          product_id: item.product_id,
+          slug: item.slug,
+          name: item.name,
+          price: Number(item.price),
+          quantity: Number(item.quantity),
+          discount: Number(item.discount || 0),
+          image: item.image,
+          variant_1: item.variant_1,
+          variant_2: item.variant_2,
+          variant_3: item.variant_3,
+          variant_id: item.variant_id
+        }));
 
-    this.cartItems = normalizedItems.map((item) => ({
-      product_id: item.product_id || item.id,
-      name: item.name || item.product_name,
-      price: Number(item.price) || 0,
-      quantity: Number(item.quantity) || 1,
-      discount: Number(item.discount) || 0, // Ensure discount is always a number
-      image: item.image || item.product_image,
-      variant_1: item.variant_1 || null,
-      variant_2: item.variant_2 || null,
-      variant_3: item.variant_3 || null,
-      variant_id: item.variant_id || null,
-    }));
-
-    this.persistCartToLocalStorage();
-    this.updateHeaderCart();
-    return response.data;
-
-  } catch (error) {
-    // Enhanced error logging
-    const errorDetails = {
-      message: error.message,
-      response: error.response?.data,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined,
-      timestamp: new Date().toISOString()
-    };
-    
-    console.error('Detailed fetch error:', errorDetails);
-    
-    // Store the error in state for UI to display
-    this.error = {
-      userMessage: error.response?.data?.message || 'Failed to fetch cart',
-      technicalMessage: process.env.NODE_ENV === 'development' ? error.message : undefined,
-      code: error.response?.status
-    };
-    
-    // Attempt to restore from local storage if available
-    try {
-      this.restoreCartFromLocalStorage();
-      if (this.cartItems.length > 0) {
-        console.warn('Fell back to local storage cart data');
+        this.persistCartToLocalStorage();
+        this.updateHeaderCart();
+        return response.data;
+      } catch (error) {
+        console.error("Fetch cart error:", error);
+        this.error = error.response?.data?.message || "Failed to fetch cart";
+        this.restoreCartFromLocalStorage();
+        throw error;
+      } finally {
+        this.loading = false;
       }
-    } catch (localStorageError) {
-      console.error('Failed to restore from local storage:', localStorageError);
-    }
-    
-    // Re-throw a more specific error if needed
-    throw new Error('CART_FETCH_FAILED', { cause: error });
-    
-  } finally {
-    this.loading = false;
-  }
-},
-  //   async fetchCart() {
-  //     this.loading = true;
-  // try {
-  //   console.log('Fetching cart from server...');
-  //   const response = await frontendApi.get("/getcart");
-  //   console.log('Raw cart response:', response.data);
-    
-  //   const cartData = response.data.cart || {};
-  //   console.log('Cart data before processing:', cartData);
-  //       let normalizedItems = [];
-  //       if (Array.isArray(cartData)) {
-  //         normalizedItems = cartData;
-  //       } else if (typeof cartData === "object") {
-  //         normalizedItems = Object.values(cartData);
-  //       }
-
-  //       this.cartItems = normalizedItems.map((item) => ({
-  //         product_id: item.product_id || item.id,
-  //         name: item.name || item.product_name,
-  //         price: Number(item.price) || 0,
-  //         quantity: Number(item.quantity) || 1,
-  //         discount: Number(item.discount) || 0,
-  //         image: item.image || item.product_image,
-  //         variant_1: item.variant_1 || null,
-  //         variant_2: item.variant_2 || null,
-  //         variant_3: item.variant_3 || null,
-  //         variant_id: item.variant_id || null,
-  //       }));
-
-  //       this.persistCartToLocalStorage();
-  //       this.updateHeaderCart();
-  //       return response.data;
-  //     } catch (error) {
-  //       console.error("Fetch cart error:", error);
-  //       this.error = error.response?.data?.message || "Failed to fetch cart";
-  //       throw error;
-  //     } finally {
-  //       this.loading = false;
-  //     }
-  //   },
+    },
 
     async processCheckout() {
       this.loading = true;
@@ -309,7 +234,7 @@ export const useCartCheckoutStore = defineStore("cartCheckout", {
           address: this.customer.address,
           shipping_charge: this.shippingCharge,
           paying_method: this.payingMethod,
-          cart_items: this.cartItems.map((item) => ({
+          cart_items: this.cartItems.map(item => ({
             product_id: item.product_id,
             variant_id: item.variant_id || null,
             quantity: item.quantity,
@@ -320,10 +245,6 @@ export const useCartCheckoutStore = defineStore("cartCheckout", {
 
         const response = await frontendApi.post("/checkout", orderData);
 
-          // Verify the response structure
-    if (!response.data || !response.data.message) {
-      throw new Error('Invalid server response');
-    }
         if (response.data.success) {
           await this.clearCart();
           this.updateHeaderCart();
@@ -331,12 +252,8 @@ export const useCartCheckoutStore = defineStore("cartCheckout", {
 
         return response.data;
       } catch (error) {
-       console.error("Detailed checkout error:", {
-      message: error.message,
-      response: error.response?.data,
-      stack: error.stack
-    });
-     this.error = error.response?.data?.message || "Checkout failed";
+        console.error("Checkout error:", error);
+        this.error = error.response?.data?.message || "Checkout failed";
         throw error;
       } finally {
         this.loading = false;
@@ -345,91 +262,149 @@ export const useCartCheckoutStore = defineStore("cartCheckout", {
 
     async clearCart() {
       this.cartItems = [];
-      this.persistCartToLocalStorage();
+      localStorage.removeItem("cart_backup");
     },
 
-    // ✅ Sync Local with Server Cart
-    async syncCartWithServer() {
-      try {
-        await this.fetchCart();
-      } catch (error) {
-        console.error("Failed to sync cart:", error);
-      }
-    },
+    // async updateQuantity(itemKey, newQuantity) {
+    //   try {
+    //     // Find item by its unique key
+    //     const item = this.cartItems.find(item => 
+    //       this.generateCartItemKey(item) === itemKey
+    //     );
+        
+    //     if (!item) throw new Error("Item not found in cart");
+        
+    //     // Ensure quantity is at least 1
+    //     newQuantity = Math.max(1, newQuantity);
+        
+    //     const response = await frontendApi.post("/cart/update", {
+    //       product_id: item.product_id,
+    //       variant_1: item.variant_1,
+    //       variant_2: item.variant_2,
+    //       variant_3: item.variant_3,
+    //       quantity: newQuantity
+    //     });
 
-    // ✅ Update Cart Header (UI Helper)
+    //     // Update local state
+    //     item.quantity = newQuantity;
+    //     this.persistCartToLocalStorage();
+    //     this.updateHeaderCart();
+        
+    //     return response.data;
+    //   } catch (error) {
+    //     console.error("Update quantity error:", error);
+    //     throw error;
+    //   }
+    // },
+
+    // async removeItem(itemKey) {
+    //   try {
+    //     // Find item by its unique key
+    //     const itemIndex = this.cartItems.findIndex(item => 
+    //       this.generateCartItemKey(item) === itemKey
+    //     );
+        
+    //     if (itemIndex === -1) throw new Error("Item not found in cart");
+        
+    //     const item = this.cartItems[itemIndex];
+        
+    //     const response = await frontendApi.post("/cart/remove", {
+    //       product_id: item.product_id,
+    //       variant_1: item.variant_1,
+    //       variant_2: item.variant_2,
+    //       variant_3: item.variant_3
+    //     });
+
+    //     // Remove from local state
+    //     this.cartItems.splice(itemIndex, 1);
+    //     this.persistCartToLocalStorage();
+    //     this.updateHeaderCart();
+        
+    //     return response.data;
+    //   } catch (error) {
+    //     console.error("Remove item error:", error);
+    //     throw error;
+    //   }
+    // },
+async updateQuantity(itemKey, newQuantity) {
+  try {
+    // Find item by its unique key
+    const item = this.cartItems.find(item => 
+      this.generateCartItemKey(item) === itemKey
+    );
+    
+    if (!item) throw new Error("Item not found in cart");
+    
+    // Ensure quantity is at least 1
+    newQuantity = Math.max(1, newQuantity);
+    
+    const response = await frontendApi.post("/cart/update", {
+      item_id: item.variant_id || item.product_id,
+      quantity: newQuantity
+    });
+
+    // Update local state
+    item.quantity = newQuantity;
+    this.persistCartToLocalStorage();
+    this.updateHeaderCart();
+    
+    return response.data;
+  } catch (error) {
+    console.error("Update quantity error:", error);
+    throw error;
+  }
+},
+
+async removeItem(itemKey) {
+  try {
+    // Find item by its unique key
+    const item = this.cartItems.find(item => 
+      this.generateCartItemKey(item) === itemKey
+    );
+    
+    if (!item) throw new Error("Item not found in cart");
+    
+    const response = await frontendApi.delete(`/cartDelete/${item.variant_id || item.product_id}`);
+
+    // Remove from local state
+    this.cartItems = this.cartItems.filter(cartItem => 
+      this.generateCartItemKey(cartItem) !== itemKey
+    );
+    this.persistCartToLocalStorage();
+    this.updateHeaderCart();
+    
+    return response.data;
+  } catch (error) {
+    console.error("Remove item error:", error);
+    throw error;
+  }
+},
+
+
+
     updateHeaderCart() {
       const cartNumber = document.getElementById("cart_number");
       const totalAmount = document.getElementById("total_amount");
 
-      // if (cartNumber) {
-      //   cartNumber.textContent = this.cartCount;
-      // }
       if (cartNumber) {
         cartNumber.textContent = this.cartCount;
       }
 
       if (totalAmount) {
-        totalAmount.textContent = `৳ ${this.grandTotal}`;
+        totalAmount.textContent = `৳ ${this.grandTotal.toFixed(2)}`;
       }
     },
 
-    // ✅ Apply Coupon (mock logic)
     async applyCoupon(code) {
-      this.couponCode = code;
-      this.couponDiscount = 50; // Example discount
-    },
-
-    // ✅ Update Shipping Charge
-    updateShipping(charge) {
-      this.shippingCharge = charge;
-    },
-
-    // ✅ Update Item Quantity
-    async updateQuantity(itemId, newQuantity) {
       try {
-        const response = await frontendApi.post("/cart/update", {
-          item_id: itemId,
-          quantity: newQuantity,
-        });
-
-        // Update local state from server response
-        this.cartItems = Object.values(response.data.cart || {});
-        this.updateHeaderCart();
+        const response = await frontendApi.post("/apply-coupon", { code });
+        this.couponCode = code;
+        this.couponDiscount = response.data.discount || 0;
         return response.data;
       } catch (error) {
-        console.error("Update quantity error:", error);
-        this.error = error.response?.data?.msg || "Failed to update quantity";
+        console.error("Coupon error:", error);
         throw error;
       }
-    },
-    //    async clearCart() {
-    //   try {
-    //     const response = await frontendApi.post('/cart/clear');
-    //     this.cartItems = [];
-    //     return response.data;
-    //   } catch (error) {
-    //     console.error("Clear cart error:", error);
-    //     throw error;
-    //   }
-    // },
-
-    // ✅ Remove Item from Cart
-    async removeItem(itemId) {
-      try {
-        const response = await frontendApi.post("/cart/remove", {
-          item_id: itemId,
-        });
-
-        // Update local state from server response
-        this.cartItems = Object.values(response.data.cart || {});
-        this.updateHeaderCart();
-        return response.data;
-      } catch (error) {
-        console.error("Remove item error:", error);
-        this.error = error.response?.data?.msg || "Failed to remove item";
-        throw error;
-      }
-    },
-  },
+    }
+  }
 });

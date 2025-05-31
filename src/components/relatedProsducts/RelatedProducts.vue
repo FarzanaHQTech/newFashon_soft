@@ -124,12 +124,14 @@ function goToCheckout() {
                     <div class="product_btn_position content">
                         
                         <!-- No need for <form>, use Vue methods instead -->
+                        <router-link :to="{ name: 'ProductDetail', params: { slug: item.slug } }">
                         <button @click="goToCheckout" class="submit_button btn btn-light d-block">
                             <div class="cart_btn bangali bold ord_bt">
                                 <i class="fa fa-cart-shopping"></i>
                                 <span>অর্ডার করুন</span>
                             </div>
                         </button>
+                        </router-link>
 
                     </div>
                 </div>

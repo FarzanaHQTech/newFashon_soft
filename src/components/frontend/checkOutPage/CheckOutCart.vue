@@ -1,12 +1,14 @@
 <script setup>
 import { onMounted, computed } from 'vue'
 import { useCartCheckoutStore } from '../../../stores/cartCheckout'
-import { frontendApi, IMAGE_BASE_URL } from '../../../api'
+import {  IMAGE_BASE_URL } from '../../../api'
 import { useRouter } from 'vue-router'
 import { watch } from 'vue'
 const store = useCartCheckoutStore()
 
 const router = useRouter()
+
+
 
 
 onMounted(async () => {
@@ -35,6 +37,32 @@ onMounted(async () => {
     }
   }
 });
+
+const uniqueCartCount = computed(() => {
+  const seen = new Set();
+  store.cartItems.forEach(item => {
+    seen.add(`${item.product_id}_${item.slug}`);
+  });
+  return seen.size;
+});
+
+const confirmOrder = async () => {
+  try {
+    // Send order data to backend
+    await axios.post('/api/confirm-order', { items: store.cartItems });
+
+    // Clear cart and localStorage
+    store.cartItems = [];
+    localStorage.removeItem('cart');
+
+    // Redirect or show success
+    router.push('/thank-you');
+  } catch (error) {
+    console.error('Order error:', error);
+  }
+};
+
+
 const handleSubmit = async () => {
   try {
     // Validate inputs
@@ -75,51 +103,6 @@ const handleSubmit = async () => {
 };
 
 
-// Enhanced Handle Submit
-// const handleSubmit = async () => {
-//   try {
-//     // Validate inputs
-//     if (!store.customer.name || !store.customer.mobile || !store.customer.address) {
-//       throw new Error('Please fill all required fields');
-//     }
-
-//     if (store.cartCount === 0) {
-//       throw new Error('Your cart is empty');
-//     }
-
-//     // Process checkout
-//     const result = await store.processCheckout();
-
-//     if (result.message === 'Order failed') {
-//       throw new Error(result.error || 'Order processing failed');
-//     }
-
-//     if (result.order_id) {
-//       router.push({
-//         name: 'ThankYou',
-//         params: { order_id: result.order_id }
-//       });
-//     }
-//   } catch (error) {
-//     console.error('Checkout error:', error);
-//     alert(error.response?.data?.message || error.message || 'Checkout failed');
-//   }
-// };
-// In your checkout page script
-// const getImageUrl = (imagePath) => {
-//   if (!imagePath) return '/path/to/placeholder.jpg'
-
-//   // Check if already a full URL
-//   if (imagePath.startsWith('http')) return imagePath
-
-//   // Handle different image path formats
-//   if (imagePath.includes('images/product/')) {
-//     return `${IMAGE_BASE_URL}/${imagePath}`
-//   }
-
-//   // Default case - assume it's just the filename
-//   return `${IMAGE_BASE_URL}/images/product/large/${imagePath}`
-// }
 const getImageUrl = (imagePath) => {
   if (!imagePath) return '/path/to/placeholder.jpg';
 
@@ -184,7 +167,7 @@ const getVariantText = (variants) => {
                 <tbody>
                   +
             
-                  <tr v-for="item in store.cartItems"
+                  <!-- <tr v-for="item in store.cartItems"
                     :key="item.product_id + (item.variant_1 || '') + (item.variant_2 || '') + (item.variant_3 || '')">
                     <th scope="row" class="fontSize">
                       <div class="d-flex">
@@ -229,7 +212,54 @@ const getVariantText = (variants) => {
                         <br>Discount: <strong>{{ (item.discount * item.quantity).toFixed(2) }} ৳</strong>
                       </span>
                     </td>
-                  </tr>
+                  </tr> -->
+                      <tr v-for="(item, index) in store.cartItems" :key="index">
+      <th scope="row" class="fontSize">
+        <div class="d-flex">
+          <div class="remove">
+            <button @click="store.removeItem(store.generateCartItemKey(item))" 
+                    class="btn btn-sm text-danger remove-item" type="button">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <img :src="getImageUrl(item.image)" alt="" class="rounded border" 
+               style="height: 60px;width: 60px;" @error="handleImageError">
+        </div>
+      </th>
+      <td class="fontSize">{{ item.name }}</td>
+      <td class="fontSize">
+        <template v-if="item.variant_1 || item.variant_2 || item.variant_3">
+          {{[item.variant_1, item.variant_2, item.variant_3].filter(v => v).join(' / ')}}
+        </template>
+        <template v-else>
+          N/A
+        </template>
+      </td>
+      <td>
+        <div class="d-flex mb-4 align-items-start" style="max-width: 300px">
+          <button @click="store.updateQuantity(store.generateCartItemKey(item), item.quantity - 1)"
+                  class="btn btn-primary me-2 qtybtn minus" :disabled="item.quantity <= 1">
+            <i class="fas fa-minus"></i>
+          </button>
+          <div class="form-outline">
+            <input :value="item.quantity" style="width: 40px;" type="text" readonly
+                   class="form-control quantity">
+          </div>
+          <button @click="store.updateQuantity(store.generateCartItemKey(item), item.quantity + 1)"
+                  class="btn btn-primary ms-2 qtybtn plus">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+      </td>
+      <td class="fontSize">
+        <strong>{{ (item.price * item.quantity).toFixed(2) }} ৳</strong>
+        <span v-if="item.discount > 0">
+          <br>Discount: <strong>{{ (item.discount * item.quantity).toFixed(2) }} ৳</strong>
+        </span>
+      </td>
+    </tr>
+
+                  
                   <!-- Summary Rows -->
                   <tr>
                     <td colspan="4" class="text-end" style="font-weight: bold;">সাবটোটাল</td>

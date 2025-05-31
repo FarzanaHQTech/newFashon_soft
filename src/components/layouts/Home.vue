@@ -67,10 +67,10 @@ function startCountdown(elementId, endDate, design = false) {
               :class="['carousel-item', 'h-100', { active: index === 0 }]"
               data-bs-interval="2000"
             >
-              <a href="#">
+              <router-link to="/">
                 <div class="bg_image mobileHide" :style="{ backgroundImage: `url(${IMAGE_BASE_URL}/sliders/${slider.image})` }"></div>
                 <div class="bg_image mobileShow" :style="{ backgroundImage: `url(${IMAGE_BASE_URL}/sliders/${slider.mobile_image})` }"></div>
-              </a>
+              </router-link>
             </div>
           </div>
         </div>

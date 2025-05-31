@@ -37,14 +37,7 @@ const handleOrder = (product) => {
 
           <div class="image">
 
-            <!-- <router-link :to="{ name: 'ProductDetail', params: { id: item.id } }" :data-productid="item.id"
-              :data-categoryid="item.categoryId" :data-productname="item.name"> -->
-            <!-- <router-link :to="{name:'ProductDetail',params:{slug:item.id}}">
-              <div @click="() => handleNavigate(item, navigate)">
-                <img :src="`${IMAGE_BASE_URL}/images/product/small/${item.main_image}`" alt="" class="first" />
-                <img :src="`${IMAGE_BASE_URL}/images/product/small/${item.main_image}`" class="second" />
-              </div>
-            </router-link> -->
+         
             <router-link :to="{ name: 'ProductDetail', params: { slug: item.slug } }">
               <div>
                 <img :src="`${IMAGE_BASE_URL}/images/product/small/${item.main_image}`" alt="" class="first" />
@@ -62,13 +55,16 @@ const handleOrder = (product) => {
               </router-link>
             </div>
 
+            <router-link :to="{ name: 'ProductDetail', params: { slug: item.slug } }">
             <div class="product_btn_position content">
               <button type="button" class="submit_button btn btn-light d-block" @click="handleOrder()">
                 <div class="cart_btn bangali bold ord_bt">
                   <i class="fa fa-cart-shopping"></i><span> অর্ডার করুন</span>
                 </div>
               </button>
+
             </div>
+            </router-link>
           </div>
 
           <!-- <div class="labels d-none">

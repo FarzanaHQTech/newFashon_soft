@@ -151,6 +151,8 @@ const loadMore = () => {
             <input type="hidden" name="product_id" :value="item.id" />
             <input type="hidden" name="quantity" value="1" />
             <input type="hidden" id="action_type" name="action_type" value="" />
+
+            <router-link :to="{ name: 'ProductDetail', params: { slug: item.slug } }">
             <div class="d-flex justify-content-between">
               <button type="submit" class="submit_button btn btn-light d-block" data-type="order_now">
                 <div class="cart_btn bangali bold ord_bt">
@@ -158,6 +160,8 @@ const loadMore = () => {
                 </div>
               </button>
             </div>
+            </router-link>
+            
           </form>
         </div>
       </div>
