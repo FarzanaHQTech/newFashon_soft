@@ -1,74 +1,140 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '../components/layouts/Home.vue' 
-import Login from '../components/pages/loginRegistration/Login.vue'
-
-
+import Home from '../components/layouts/Home.vue'
+import { posadminApi } from '../api'
 
 const routes = [
   {
     path: '/',
     name: 'Home',
-    component: Home
+    component: Home,
+    meta: {
+      preload: true
+    }
   },
   {
     path: '/login',
     name: 'Login',
-    component:Login
+    component: () => import('../components/pages/frontend/loginRegistration/Login.vue'),
+    meta: {
+      preload: true
+    }
   },
-
-{
-   path: '/product-show/:slug',
-  name: 'ProductDetail',
-  component: () => import('../components/pages/productsDetailsView/ShopPageDetails.vue')
-},
-
-{
-  path:'/checkout',
-  name:'Checkout',
-  component:()=>import('../components/frontend/checkOutPage/CheckOutCart.vue')
-},
-{
-  path:'/shop-page',
-  name:'GirlsShopPage',
-  component:()=>import('../components/pages/shopPages/ShopPage.vue')
-},
-{
-  path:'/new-product',
-  name:'NewProducts',
-  component:()=>import('../components/frontend/navPages/NewProductShop.vue')
-},
-{
-  path:'/flash-product',
-  name:'FlashSellProduct',
-  component:()=>import('../components/frontend/navPages/FlashSellShop.vue')
-},
-{
-  path:'/shop',
-  name:'TopSellProducts',
-  component:()=>import('../components/frontend/navPages/TopSellProduct.vue')
-},
-
-{
-  path: '/thank-you/:order_id',
-  name: 'ThankYou',
-  component: () => import('../components/frontend/thankyouPage/ThankyouPage.vue')
-},
-{
-  path: '/cart-count-store',
-  name: 'CartCountStore',
-  component: () => import('../components/frontend/CartSidebarStore.vue')
-},
-]
-const router = createRouter({
-  history: createWebHistory(),
-  routes,
-
-  scrollBehavior(to, from, savedPosition) {
-    if (savedPosition) {
-      return { ...savedPosition, behavior: 'auto' } 
-    } else {
-      return { top: 0, behavior: 'auto' } 
+  {
+    path: '/registration',
+    name: 'Registration',
+    component: () => import('../components/pages/frontend/loginRegistration/Registration.vue'),
+    meta: {
+      preload: true
+    }
+  },
+  {
+    path: '/product-show/:slug',
+    name: 'ProductDetail',
+    component: () => import('../components/pages/frontend/productsDetailsView/ShopPageDetails.vue'),
+    meta: {
+      preload: true
+    }
+  },
+  {
+    path: '/checkout',
+    name: 'Checkout',
+    component: () => import('../components/frontend/checkOutPage/CheckOutCart.vue'),
+    meta: {
+      preload: true
+    }
+  },
+  {
+    path: '/new-product',
+    name: 'NewProducts',
+    component: () => import('../components/frontend/navPages/NewProductShop.vue'),
+    meta: {
+      preload: true
+    }
+  },
+  {
+    path: '/flash-product',
+    name: 'FlashSellProduct',
+    component: () => import('../components/frontend/navPages/FlashSellShop.vue'),
+    meta: {
+      preload: true
+    }
+  },
+  {
+    path: '/shop',
+    name: 'TopSellProducts',
+    component: () => import('../components/frontend/navPages/TopSellProduct.vue'),
+    meta: {
+      preload: true
+    }
+  },
+  {
+    path: '/thank-you/:order_id',
+    name: 'ThankYou',
+    component: () => import('../components/frontend/thankyouPage/ThankyouPage.vue'),
+    meta: {
+      preload: true
+    }
+  },
+  {
+    path: '/cart-count-store',
+    name: 'CartCountStore',
+    component: () => import('../components/frontend/CartSidebarStore.vue'),
+    meta: {
+      preload: true
     }
   }
-  });
+]
+
+const router = createRouter({
+  // history: createWebHistory(import.meta.env.VITE_BASE_URL || '/vue.softitglobalbd.xyz/'),
+  history: createWebHistory(import.meta.env.VITE_BASE_URL || '/'),
+  routes,
+  scrollBehavior(to, from, savedPosition) {
+    return savedPosition || { top: 0, behavior: 'smooth' }
+  }
+})
+router.beforeEach(async (to, from, next) => {
+  // Show loading state if needed (handled in App.vue)
+  
+  // Preload component if it's a dynamic import
+  if (typeof to.matched[0]?.components?.default === 'function') {
+    await to.matched[0].components.default();
+  }
+  
+  // Prefetch API data for specific routes
+  if (to.name === 'ProductDetail') {
+    const slug = to.params.slug
+    await prefetchProductData(slug)
+  }
+  
+  next()
+})
+
+async function prefetchProductData(slug) {
+  try {
+    await posadminApi.get(`/product/${slug}`)
+  } catch (error) {
+    console.error('Prefetch failed:', error)
+  }
+}
+
+
+// Call this in your main app initialization
+// preloadImportantRoutes()
+
 export default router
+
+// const router = createRouter({
+//   // history: createWebHistory(),
+//   history: createWebHistory(import.meta.env.VITE_BASE_URL),
+//   routes,
+
+//   scrollBehavior(to, from, savedPosition) {
+//     if (savedPosition) {
+//       return { ...savedPosition, behavior: 'auto' } 
+//     } else {
+//       return { top: 0, behavior: 'auto' } 
+//     }
+//   }
+//   });
+// export default router

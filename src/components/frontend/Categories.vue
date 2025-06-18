@@ -4,18 +4,34 @@ import { Navigation } from 'swiper/modules'
 import 'swiper/css'
 import 'swiper/css/navigation'
 
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useCategoryStore } from '../../stores/categoryStore'
 import { storeToRefs } from 'pinia'
 import { IMAGE_BASE_URL } from '../../api/index'
+import { useFlashNewStore } from '../../stores/navShopPage'
+import { useRoute } from 'vue-router'
 
 const categoryStore = useCategoryStore()
 const { categories } = storeToRefs(categoryStore)
 
+//from topSell 
+const route = useRoute()
+const categorySearch = useFlashNewStore()
+const {topProductsShops} = storeToRefs(categorySearch)
+
+const loadPopularProducts = ()=>{
+  const catId = route.query.cat_id || null;
+  categorySearch.fetchTopSellPage(1, catId);
+}
+
 onMounted(() => {
+  loadPopularProducts()
   categoryStore.fetchCategories()
   console.log(categories);
-
+  
+})
+watch(()=>route.query.cat_id,()=>{
+ loadPopularProducts()
 })
 const failedImages = ref(new Set())
 
@@ -48,8 +64,8 @@ function handleImageError(event, id) {
           v-for="category in categories.filter(cat => cat.image && cat.image.trim() !== '' && !failedImages.has(cat.id))"
           :key="category.id" style="width: 150px;">
           <div class="product-item mx-2 p-1 text-center">
-            <router-link to="/shop">
-            <!-- <a :href="`shop.html?cat_id=${category.id}`"> -->
+            <!-- <router-link :to="{path:'/shop', query:{cat_id: item.id} }"> -->
+           <router-link :to="{ path: '/shop', query: { cat_id: category.id } }">
               <img :src="`${IMAGE_BASE_URL}images/category/${category.image}`"
                 @error="handleImageError($event, category.id)" :alt="category.name"
                 style="width: 133px; box-shadow: 3px 4px 6px 0px #504f4e80;" />

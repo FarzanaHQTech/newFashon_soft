@@ -50,11 +50,11 @@ onMounted(async () => {
                 </div>
 
                 <div class="content px-2 text-center">
-                    <a href="https://newfashion.softitglobal.com/product-show/Regular%20Fit%20Jacquard%20Cotton%20Semi-Formal%20Panjabi"
+                    <router-link to="https://newfashion.softitglobal.com/product-show/Regular%20Fit%20Jacquard%20Cotton%20Semi-Formal%20Panjabi"
                         id="product_show" :data-productid="item.id" data-categoryid="item.category_id"
                         :data-productname="item.name">
                         <div class="title">{{item.name}}</div>
-                    </a>
+                    </router-link>
                     <div class="price">
 
 

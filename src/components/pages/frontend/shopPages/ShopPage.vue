@@ -114,14 +114,14 @@ onMounted(()=>{
         <div class="products shopProducts mt-3" >
             <div class="product" v-for="(item,index) in girlsFashionShops" :key="index">
                 <div class="image">
-                    <a href="https://newfashion.softitglobal.com/product-show/asim-jofa-luxury-lawn-2020-collections-122"
+                   <router-link to="https://newfashion.softitglobal.com/product-show/asim-jofa-luxury-lawn-2020-collections-122"
                         id="product_show" :data-productid="item.id" :data-categoryid="item.id"
                         :data-productname="item.name">
                         <img :src="item.images"
                             :alt="item.name" class="first">
                         <img :src="item.images"
                             alt="" class="second">
-                    </a>
+                </router-link>
                     <div class="product_btn_position content">
                         <a class="submit_button btn btn-light btn_modal d-block"
                             href="https://newfashion.softitglobal.com/product-show/asim-jofa-luxury-lawn-2020-collections-122"
@@ -142,11 +142,11 @@ onMounted(()=>{
                 </div>
 
                 <div class="content px-2 text-center">
-                    <a href="https://newfashion.softitglobal.com/product-show/asim-jofa-luxury-lawn-2020-collections-122"
+                   <router-link to="https://newfashion.softitglobal.com/product-show/asim-jofa-luxury-lawn-2020-collections-122"
                         id="product_show" data-productid="122" data-categoryid="73"
                         :data-productname="item.name">
                         <div class="title">{{item.name}}</div>
-                    </a>
+                    </router-link>
                     <div class="price">
 
                         <span class="current_price" style="color: #00276C;">{{item.currentPrice}}</span>

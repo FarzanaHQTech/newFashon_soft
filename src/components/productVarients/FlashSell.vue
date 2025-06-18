@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 // import { posadminApi } from '../api/index';
 import { IMAGE_BASE_URL, posadminApi } from '../../api'
-import { param } from 'jquery'
+
 
 const flasSells = ref([])
 const currentPage = ref(1)

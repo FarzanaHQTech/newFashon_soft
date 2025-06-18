@@ -284,9 +284,11 @@ body ::-webkit-scrollbar-track, html ::-webkit-scrollbar-track {
     -ms-border-radius: 999999999px;
     -o-border-radius: 999999999px;
 }
+
 body{
     background: white;
     scroll-behavior: auto !important;
+     font-family: var(--bs-body-font-family);
 }
 .main-wrapper{
     width: 100%;

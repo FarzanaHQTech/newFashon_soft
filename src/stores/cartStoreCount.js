@@ -33,6 +33,8 @@ export const useCartStore = defineStore('cart', {
         console.error('Add to cart failed:', err);
       }
     },
+
+    
     async removeFromCart(id) {
       try {
         await frontendApi.delete(`/cart/delete/${id}`);

@@ -1,26 +1,52 @@
+
 <script setup>
-import { onMounted } from 'vue';
+import { onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { IMAGE_BASE_URL } from '../../../api';
 import { useFlashNewStore } from '../../../stores/navShopPage';
 
+const route = useRoute();
 const topSallProducts = useFlashNewStore();
 const { topProductsShops } = storeToRefs(topSallProducts);
 
-onMounted(async () => {
-  await topSallProducts.fetchTopSellPage();
+// Function to fetch products (filtered if cat_id exists)
+const loadProducts = async () => {
+  const catId = route.query.cat_id || null;
+  await topSallProducts.fetchTopSellPage(1, catId); // assuming fetchTopSellPage accepts (page, cat_id)
+};
+
+// Fetch on mount
+onMounted(loadProducts);
+
+// Watch for route changes (e.g., when clicking on a new category)
+watch(() => route.query.cat_id, () => {
+  loadProducts();
 });
 </script>
 
 <template>
   <div class="container-fluid" style="min-height: 800px">
     <div class="products shopProducts mt-3">  
+
+  <!-- Show message when no products found -->
+
+<div class="d-flex justify-content-center align-items-center mt-5 w-100 ">
+  <div v-if="topProductsShops.length === 0" class="text-center">
+    <div class="alert alert-warning p-4 shadow-sm rounded-3 mx-auto " style="max-width: 600px;">
+      <h4 class="mb-3">
+        <i class="fa fa-box-open me-2"></i>দুঃখিত! কোনো পণ্য খুঁজে পাওয়া যায়নি
+      </h4>
+      <p class="text-muted">এই ক্যাটাগরিতে বর্তমানে কোনো পণ্য নেই। অনুগ্রহ করে অন্য ক্যাটাগরি দেখুন।</p>
+      <router-link to="/" class="btn btn-warning mt-3">হোম পেইজে ফিরে যান</router-link>
+    </div>
+  </div>
+</div>
+
+        <!-- //Top Selling Shop Products  -->
       <div class="product" v-for="(item , index) in topProductsShops" :key="index">
         <div class="image">
-          <!-- <a :href="`https://newfashion.softitglobal.com/product-show/${item.name}`"
-             :data-productid="item.id"
-             :data-categoryid="item.category_id"
-             :data-productname="item.name"> -->
+          
               <router-link :to="{ name: 'ProductDetail', params: { slug: item.slug } }">
             <img :src="`${IMAGE_BASE_URL}images/product/small/${item.main_image}`" alt="" class="first" />
             <img :src="`${IMAGE_BASE_URL}images/product/small/${item.main_image}`" alt="" class="second" />
@@ -54,9 +80,7 @@ onMounted(async () => {
                 </div>
 
                 <div class="content px-2 text-center">
-                    <!-- <a href="https://newfashion.softitglobal.com/product-show/Regular%20Fit%20Jacquard%20Cotton%20Semi-Formal%20Panjabi"
-                        id="product_show" :data-productid="item.id" data-categoryid="item.category_id"
-                        :data-productname="item.name"> -->
+     
                            <router-link :to="{ name: 'ProductDetail', params: { slug: item.slug } }">
                         <div class="title">{{item.name}}</div>
                         </router-link>

@@ -48,22 +48,44 @@ export const useFlashNewStore = defineStore('navShopNewPage', {
         this.loading = false;
       }
     },
-    async fetchTopSellPage(page = 1) {
-      this.loadlashing = true;
-      this.error = null;
-      try {
-        const res = await posadminApi.get(`/shop?page=${page}`);
-        this.topProductsShops = res.data.data;
-        this.pagination = res.data.pagination;
-        this.currentPage = page;
-        // console.log("this is Top sell sell page data", res.data);
+    // async fetchTopSellPage(page = 1, cat_id = null) {
+    //   this.loadlashing = true;
+    //   this.error = null;
+    //   try {
+    //     const res = await posadminApi.get(`/shop?page=${page}`);
+    //     this.topProductsShops = res.data.data;
+    //     this.pagination = res.data.pagination;
+    //     this.currentPage = page;
+    //     // console.log("this is Top sell sell page data", res.data);
         
-      } catch (error) {
-        console.error("Fetch error", error);
-        this.error = error.message || "Network Error";
-      } finally {
-        this.loading = false;
-      }
-    },
+    //   } catch (error) {
+    //     console.error("Fetch error", error);
+    //     this.error = error.message || "Network Error";
+    //   } finally {
+    //     this.loading = false;
+    //   }
+    // },
+  async fetchTopSellPage(page = 1, cat_id = null) {
+  this.loading = true;
+  this.error = null;
+  try {
+    let url = `/shop?page=${page}`;
+    if (cat_id) {
+      url += `&cat_id=${cat_id}`;
+    }
+    const res = await posadminApi.get(url);
+    this.topProductsShops = res.data.data;
+    this.pagination = res.data.pagination;
+    this.currentPage = page;
+  } catch (error) {
+    console.error("Fetch error", error);
+    this.error = error.message || "Network Error";
+  } finally {
+    this.loading = false;
+  }
+}
+
+
+    
   }
 });

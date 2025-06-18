@@ -1,57 +1,68 @@
-<template >
-   <ul class="navbar-nav nav_mobile">
-    <!--<li><i class="fa fa-close" style="font-size: 30px;"></i></li>-->
-    <!-- <li class="nav-item"><a href="{{ route('home')}}" class="nav-link active">Home</a></li>
+<template>
+  <ul class="navbar-nav nav_mobile">
+    <!-- <li><i class="fa fa-close" style="font-size: 30px;"></i></li> -->
+
     <li class="nav-item">
-        <a href=" {{ route('shop')}} " class="nav-link">SHOP PRODUCT</a>
+      <RouterLink to="/" class="nav-link active">Home</RouterLink>
     </li>
     <li class="nav-item">
-        <a href="{{ route('newProduct')}}" class="nav-link">NEW PRODUCT</a>
+      <RouterLink to="/shop" class="nav-link">SHOP PRODUCT</RouterLink>
     </li>
     <li class="nav-item">
-        <a href="{{ route('flashProduct')}}" class="nav-link">FLASH SELL</a>
+      <RouterLink to="/new-product" class="nav-link">NEW PRODUCT</RouterLink>
     </li>
-    @foreach($cats as $cat)
-    @php
-        $count=$cat->sub_categories->count();
-    @endphp
-    <li class="nav-item {{$count?'has_menu':''}}">
-        <a href="{{ route('shop',['cat_id'=> $cat->id])}}" class="nav-link">
-           <img src="{{ asset('posadmin/images/category/'.$cat->image)}}" alt="" width="20">  {{ $cat->name}}
-        </a>
-        @if($count)
-        <ul class="inner_menu">
-            @foreach($cat->sub_categories as $sub)
-            <li class="nav-item">
-                <a href="{{ route('shop',['cat_id'=> $cat->id, 'sub_cat_id'=> $sub->id])}}" class="nav-link">{{$sub->name}}</a>
+    <li class="nav-item">
+      <RouterLink to="/flash-sell" class="nav-link">FLASH SELL</RouterLink>
+    </li>
+
+    <li
+      v-for="cat in cats"
+      :key="cat.id"
+      class="nav-item"
+      :class="{ has_menu: cat.sub_categories && cat.sub_categories.length }"
+    >
+      <RouterLink :to="`/shop?cat_id=${cat.id}`" class="nav-link">
+        {{ cat.name }}
+      </RouterLink>
+
+      <ul v-if="cat.sub_categories && cat.sub_categories.length" class="inner_menu">
+        <li
+          v-for="sub in cat.sub_categories"
+          :key="sub.id"
+          class="nav-item"
+        >
+          <RouterLink
+            :to="`/shop?cat_id=${cat.id}&sub_cat_id=${sub.id}`"
+            class="nav-link"
+          >
+            {{ sub.name }}
+          </RouterLink>
+
+          <ul v-if="sub.sub_categories && sub.sub_categories.length" class="inner_menu_child">
+            <li
+              v-for="child in sub.sub_categories"
+              :key="child.id"
+              class="nav-item"
+              :class="{ has_child_menu: sub.sub_categories.length }"
+              style="padding: 5px 0px;"
+            >
+              <RouterLink
+                :to="`/shop?cat_id=${cat.id}&sub_cat_id=${sub.id}&child_cat_id=${child.id}`"
+                class="nav-link"
+              >
+                {{ child.name }}
+              </RouterLink>
             </li>
-            @php
-                $subcount=$sub->sub_categories->count();
-            @endphp
-            <ul class="inner_menu_child">
-                @foreach($sub->sub_categories as $child)
-                <li class="nav-item {{$subcount?'has_child_menu':''}} "  style="padding: 5px 0px;">
-                    <a href="{{ route('shop',['cat_id'=> $cat->id, 'sub_cat_id'=> $sub->id, 'child_cat_id'=>$child->id])}}" class="nav-link">{{$child->name}}</a>
-                </li>
-                @endforeach
-            </ul>
-            @endforeach
-        </ul>
-        @endif
+          </ul>
+        </li>
+      </ul>
     </li>
-    @endforeach -->
-        
-    
-      
-</ul>
-
+  </ul>
 </template>
-<script setup>
 
-</script>
 <style scoped>
-      .nav_mobile{
-        max-height: calc(100vh - 86px);
-        overflow-y: auto;
-    }
+.nav_mobile {
+  max-height: calc(100vh - 86px);
+  overflow-y: auto;
+}
 </style>

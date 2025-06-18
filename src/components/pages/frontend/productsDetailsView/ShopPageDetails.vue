@@ -1,11 +1,12 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { useShopPage } from '../../../stores/shopPage'
+// import { useShopPage } from '../../../stores/shopPage'
+import { useShopPage } from '../../../../stores/shopPage'
 import { storeToRefs } from 'pinia'
 import { onMounted } from 'vue'
-import {  frontendApi, IMAGE_BASE_URL, posadminApi } from '../../../api'
+import { frontendApi, IMAGE_BASE_URL, posadminApi } from '../../../../api'
 import { useRoute, useRouter } from 'vue-router'
-import { useCartCheckoutStore } from '../../../stores/cartCheckout'
+import { useCartCheckoutStore } from '../../../../stores/cartCheckout'
 import { Swiper, SwiperSlide } from 'swiper/vue'
 import { Navigation, Thumbs, Pagination, Zoom } from 'swiper/modules'
 import 'swiper/css'
@@ -13,6 +14,14 @@ import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import 'swiper/css/zoom'
 import 'swiper/css/navigation'
+import { useToast } from 'vue-toast-notification'
+
+
+
+
+
+// Initialize toast
+const $toast = useToast()
 // Initialize Swiper modules
 const modules = [Navigation, Thumbs, Pagination, Zoom]
 
@@ -44,6 +53,7 @@ const allImages = computed(() => {
   if (shopPages.value.images && shopPages.value.images.length) {
     images.push(...shopPages.value.images);
   }
+
 
   return images;
 });
@@ -80,6 +90,61 @@ const updateImageByColor = (color) => {
     mainSwiper.value.slideTo(index);
   }
 };
+
+// for cart e rakhun button
+// Add to cart function
+const addToCart = async () => {
+  try {
+    selectedVariants.value = {}
+    const variantInputs = document.querySelectorAll('.burmanRadio__input:checked')
+
+    // Collect selected variants
+    variantInputs.forEach(el => {
+      const variantNum = el.name.split('_')[1]
+      selectedVariants.value[`variant_${variantNum}`] = el.value
+    })
+
+    // Validate variants if product has variants
+    if (hasVariants.value) {
+      const selectedCount = Object.keys(selectedVariants.value).length
+      if (selectedCount !== variantOptions.value.length) {
+        throw new Error('Please select all required variants')
+      }
+    }
+
+    // Prepare product data
+    const product = {
+      product_id: shopPages.value.id,
+      slug: shopPages.value.slug,
+      name: shopPages.value.name,
+      image: allImages.value[0]?.image || shopPages.value.main_image,
+      price: displayPrice.value,
+      quantity: quantity.value,
+      discount: shopPages.value.price - displayPrice.value,
+      ...(shopPages.value.is_variant == 1 && {
+        variant_1: selectedVariants.value.variant_1 || null,
+        variant_2: selectedVariants.value.variant_2 || null,
+        variant_3: selectedVariants.value.variant_3 || null
+      })
+    }
+
+    // Add to cart
+    await store.addToCart(product)
+
+    // Show success toast
+    $toast.success('পণ্য কার্টে যোগ করা হয়েছে!', {
+      position: 'top-right',
+      duration: 3000
+    })
+
+  } catch (error) {
+    console.error('Error adding to cart:', error)
+    $toast.error(error.message || 'কার্টে যোগ করতে ব্যর্থ হয়েছে', {
+      position: 'top-right',
+      duration: 4000
+    })
+  }
+}
 
 //for checkout page
 const router = useRouter()
@@ -121,55 +186,26 @@ const hasVariants = computed(() => {
   return shopPages.value?.is_variant == 1 && variantOptions.value.length > 0
 })
 
-// async function orderNow() {
-//   try {
-//     selectedVariants.value = {};
-//     const variantInputs = document.querySelectorAll('.burmanRadio__input:checked');
-
-//     // Collect selected variants
-//     variantInputs.forEach(el => {
-//       const variantNum = el.name.split('_')[1];
-//       selectedVariants.value[`variant_${variantNum}`] = el.value;
-//     });
-
-//     // Prepare product data for cart
-//     const product = {
-//       product_id: shopPages.value.id,
-//       slug: shopPages.value.slug,
-//       name: shopPages.value.name,
-//       image: allImages.value[0]?.image || shopPages.value.main_image,
-//       price: displayPrice.value,
-//       quantity: quantity.value,
-//       discount: shopPages.value.price - displayPrice.value,
-//       ...(shopPages.value.is_variant == 1 && {
-//         variant_1: selectedVariants.value.variant_1 || null,
-//         variant_2: selectedVariants.value.variant_2 || null,
-//         variant_3: selectedVariants.value.variant_3 || null
-//       })
-//     };
-
-//     // Add to cart
-//     await store.addToCart(product);
-    
-//     // Redirect to checkout page
-//     router.push('/checkout');
-//   } catch (error) {
-//     console.error('Error in orderNow:', error);
-//     alert(error.message || 'Failed to add to cart');
-//   }
-// }
-
 
 async function orderNow() {
   try {
     selectedVariants.value = {};
     const variantInputs = document.querySelectorAll('.burmanRadio__input:checked');
 
-    // Collect selected variants
-    variantInputs.forEach(el => {
-      const variantNum = el.name.split('_')[1];
-      selectedVariants.value[`variant_${variantNum}`] = el.value;
-    });
+    // Check if product has variants
+    if (hasVariants.value) {
+      // Collect selected variants
+      variantInputs.forEach(el => {
+        const variantNum = el.name.split('_')[1];
+        selectedVariants.value[`variant_${variantNum}`] = el.value;
+      });
+
+      // Validate that all required variants are selected
+      const selectedCount = Object.keys(selectedVariants.value).length;
+      if (selectedCount !== variantOptions.value.length) {
+        throw new Error(`Please select all required options (${variantOptions.value.join(', ')})`);
+      }
+    }
 
     // Prepare product data for cart
     const product = {
@@ -178,7 +214,7 @@ async function orderNow() {
       name: shopPages.value.name,
       image: allImages.value[0]?.image || shopPages.value.main_image,
       price: displayPrice.value,
-      quantity: quantity.value, // Keep the selected quantity
+      quantity: quantity.value,
       discount: shopPages.value.price - displayPrice.value,
       ...(shopPages.value.is_variant == 1 && {
         variant_1: selectedVariants.value.variant_1 || null,
@@ -187,18 +223,34 @@ async function orderNow() {
       })
     };
 
-    // Add to cart - this will replace if same product/variant exists
+    // Add to cart
     await store.addToCart(product);
-    
-    // Optionally redirect to checkout page
-    router.push('/checkout');
+
+    // Only redirect if cart is not empty
+    if (store.cartItems.length > 0) {
+      router.push('/checkout');
+    } else {
+      $toast.error('কার্টে কোন পণ্য নেই', {
+        position: 'top-right',
+        duration: 3000
+      });
+    }
   } catch (error) {
     console.error('Error in orderNow:', error);
-    alert(error.message || 'Failed to add to cart');
+    $toast.error(error.message || 'কার্টে যোগ করতে ব্যর্থ হয়েছে', {
+      position: 'top-right',
+      duration: 4000
+    });
   }
 }
+onMounted(async () => {
+  await shopPage.fetchShopPage({ slug })
+  console.log('shopPages:', shopPages.value)
+  activeIndex.value = 0;
 
-// Computed property for displaying price
+})
+
+
 const displayPrice = computed(() => {
   if (!shopPages.value) return 0;
 
@@ -256,6 +308,23 @@ watch(
   },
   { deep: true }
 )
+
+
+
+// Add a computed property to check if xsmall products exist
+const hasXsmallProducts = computed(() => {
+  if (!shopPages.value || !shopPages.value.variant_value) return false;
+
+  try {
+    const variantValues = JSON.parse(shopPages.value.variant_value);
+    return variantValues.some(variant =>
+      variant.variant_name.toLowerCase() === 'xsmall' &&
+      variant.variant_items.some(item => item.stock > 0)
+    );
+  } catch {
+    return false;
+  }
+});
 </script>
 
 <template>
@@ -265,6 +334,7 @@ watch(
 
       <div class="col-lg-6 col-md-6 col-sm-8 col-12 img_section">
         <div class="row">
+
           <!-- Desktop Thumbnail: left side (hidden on mobile) -->
           <div class="col-md-2 d-none d-md-block nav_image1 pe-0">
             <div class="image mb-2" v-for="(img, index) in allImages" :key="img.id || index">
@@ -333,7 +403,8 @@ watch(
             <div v-for="(option, index) in variantOptions" :key="index" class="d-flex" v-if="shopPages.is_variant == 1">
               <h4 class="pop medium">{{ option }}:</h4>
               <div class="sizes d-flex flex-wrap align-items-center">
-                <div v-for="(value, i) in variantValues[index]?.split(',')" :key="i" class="burmanRadio me-2">
+                <div v-for="(value, i) in variantValues[index]?.split(',')" :key="i" class="burmanRadio me-2"
+                  :class="{ 'required-highlight': hasVariants && !selectedVariants[`variant_${index + 1}`] }">
                   <input type="radio" class="burmanRadio__input" :id="`variant_${index + 1}_${value.trim()}`"
                     :name="`variant_${index + 1}`" :value="value.trim()" required
                     @change="option.toLowerCase() === 'color' ? updateImageByColor(value.trim()) : null" />
@@ -343,12 +414,12 @@ watch(
                 </div>
               </div>
             </div>
-         
+
 
             <div class="align-items-center flex-wrap mt-2 col-lg-6">
               <input type="hidden" name="product_id" value="122">
               <div class="d-flex justify-content-between align-items-start mb-1" style="width: 100%;">
-       
+
 
                 <!-- // Update the quantity input in template: -->
                 <div class="quantity_box mb-2 quantityBtnDesign me-2" style="overflow: hidden;">
@@ -357,31 +428,30 @@ watch(
                     max="12" readonly>
                   <button type="button" class="plus btn" @click="increaseQuantity">+</button>
                 </div>
-                <!-- <button class="btn rounded-5 flex-fill ord_btn orderBtnDesign btn_design" @click.prevent="orderNow">
+
+                <button class="btn rounded-5 flex-fill ord_btn orderBtnDesign btn_design" @click.prevent="orderNow">
                   <div class="cart_btn bangali bold ord_bt">
-                    <i class="fa-solid fa-cart-plus text-white mx-2"></i>
+                    <i class="fa fa-cart-shopping"></i>
                     <span>অর্ডার করুন</span>
                   </div>
-                </button> -->
-                          <button class="btn rounded-5 flex-fill ord_btn orderBtnDesign btn_design" @click.prevent="orderNow">
-  <div class="cart_btn bangali bold ord_bt">
-    <i class="fa fa-cart-shopping"></i>
-    <span>অর্ডার করুন</span>
-  </div>
-</button>
-
-      
+                </button>
               </div>
-              
-              <div class="btn_submit">
+
+              <!-- <div class="btn_submit">
                 <button class="btn mt-lg-2 semi text-cap col-12 add_to_cart btn_design rounded-5"> <i
                     class="fa-solid fa-cart-plus text-white mx-2"></i> কার্টে রাখুন</button>
+              </div> -->
+              <div class="btn_submit">
+                <button class="btn mt-lg-2 semi text-cap col-12 add_to_cart btn_design rounded-5"
+                  @click.prevent="addToCart">
+                  <i class="fa-solid fa-cart-plus text-white mx-2"></i> কার্টে রাখুন
+                </button>
               </div>
               <div class="call_now">
-                <a href="tel: 01615597820"
+                <router-link to="tel: 01615597820"
                   class="btn btn-warning mt-lg-1 semi text-cap col-12 add_to_cart rounded-5 btn_design"
                   style="background: #00276C;color: #ffffff;border: none;"><i class="fas fa-phone"
-                    style="padding-right: 7px;"></i> 01615597820</a>
+                    style="padding-right: 7px;"></i> 01615597820</router-link>
               </div>
             </div>
           </form>
@@ -617,18 +687,18 @@ watch(
             <div class="product_btn_position content">
 
               <!-- No need for <form>, use Vue methods instead -->
-                <router-link :to="{ name: 'ProductDetail', params: { slug: item.slug } }">
-              <button @click="goToCheckout" class="submit_button btn btn-light d-block">
-                
-                <div class="cart_btn bangali bold ord_bt">
-                  <i class="fa fa-cart-shopping"></i>
-                  <span>অর্ডার করুন</span>
-                </div>
-              </button>
+              <router-link :to="{ name: 'ProductDetail', params: { slug: item.slug } }">
+                <button @click="goToCheckout" class="submit_button btn btn-light d-block">
+
+                  <div class="cart_btn bangali bold ord_bt">
+                    <i class="fa fa-cart-shopping"></i>
+                    <span>অর্ডার করুন</span>
+                  </div>
+                </button>
               </router-link>
 
             </div>
-            
+
           </div>
 
           <div class="labels d-none">
@@ -637,7 +707,7 @@ watch(
           </div>
 
           <div class="content px-2 text-center">
-            <!-- <a href="andaaz-luxury-lawn-vol-08-by-ramsha-12.html" id="product_show" :data-productid="item.id" -->
+            <!--<router-link to="andaaz-luxury-lawn-vol-08-by-ramsha-12.html" id="product_show" :data-productid="item.id" -->
             <router-link :to="{ name: 'ProductDetail', params: { slug: item.slug } }">
               <!-- :data-categoryid="item.id" :data-productname="item.name"> -->
               <div class="title">
@@ -663,6 +733,7 @@ watch(
 </template>
 
 <style scoped>
+/*  */
 .swiper-button-next,
 .swiper-button-prev {
   width: 24px;

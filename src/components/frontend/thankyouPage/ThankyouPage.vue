@@ -1,27 +1,5 @@
 <template>
-  <!-- <div class="container-xl" style="min-height: 800px">
-    <section class="h-100 gradient-custom">
-      <div class="container py-5" style="clip-path: polygon(0 0, 100% 0, 100% 80%, 50% 100%, 0 80%);background: #00276C;">
-        <div class="d-flex my-5 justify-content-center flex-wrap flex-column align-items-center gap-5 thanks_section">
-          <img src="https://newfashion.softitglobal.com/images/check-mark-1292787_1280.webp" width="70" alt="">
-          <h2 class="bold" style="color: #fff;">অভিনন্দন !!!</h2>
-          <h2 class="pop bold text-center" style="color: #fff;">
-            আপনার অর্ডারটি সফলভাবে গৃহীত হয়েছে। <br> 
-            Order ID #{{ order?.id || 'Loading...' }}
-          </h2>
-          <h5 class="text-center" style="color: #fff;">কিছুক্ষণের মাঝে আপনাকে মেসেজ অথবা কল করা হবে।</h5>
-          <a href="https://newfashion.softitglobal.com" class="btn btn-warning bold">Shop More</a>
-          <a 
-            :href="`https://newfashion.softitglobal.com/sales/gen_invoice/${order?.id || ''}`" 
-            class="btn btn-dark orange-bg bold"
-            v-if="order"
-          >
-            Print Invoice
-          </a>
-        </div>
-      </div>
-    </section>
-  </div> -->
+ 
 <div v-if="loading" class="text-center py-5 text-white">
   <h2>Loading your order details...</h2>
 
@@ -38,14 +16,14 @@
           Order ID #{{ order?.id }}
         </h2>
         <h5 class="text-center" style="color: #fff;">কিছুক্ষণের মাঝে আপনাকে মেসেজ অথবা কল করা হবে।</h5>
-        <a href="https://newfashion.softitglobal.com" class="btn btn-warning bold">Shop More</a>
-        <a 
-          :href="`https://newfashion.softitglobal.com/sales/gen_invoice/${order?.id}`" 
+        <router-link to="https://newfashion.softitglobal.com" class="btn btn-warning bold">Shop More</router-link>
+        <router-link
+          to="`https://newfashion.softitglobal.com/sales/gen_invoice/${order?.id}`" 
           class="btn btn-dark orange-bg bold"
           v-if="order"
         >
           Print Invoice
-        </a>
+        </router-link>
       </div>
     </div>
   </section>

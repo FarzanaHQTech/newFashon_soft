@@ -1,42 +1,92 @@
 <script setup>
 import { onMounted, computed } from 'vue'
 import { useCartCheckoutStore } from '../../../stores/cartCheckout'
-import {  IMAGE_BASE_URL } from '../../../api'
+import { IMAGE_BASE_URL } from '../../../api'
 import { useRouter } from 'vue-router'
 import { watch } from 'vue'
+import { storeToRefs } from 'pinia'
 const store = useCartCheckoutStore()
-
+const { cartItems, subtotal, loading, selectedShippingCharge, shippingCharge } = storeToRefs(store)
 const router = useRouter()
-
-
-
-
 onMounted(async () => {
   console.log('Initializing checkout...');
 
-  try {
+  // Debug: Log initial cart state
+  console.log('Initial cart state:', store.cartItems);
 
-    // Check if ae have any local cart data first
-    if (store.cartItems.length > 0) {
-      console.log('Using existing cart items:', store.cartItems);
-      return;
+    await store.fetchShippingCharge();
+  // Set default shipping charge if needed
+  if (store.shippingCharge.length > 0 && !store.selectedShippingCharge) {
+    store.selectedShippingCharge = store.shippingCharge[0].shipping_charge;
+  }
+  // Debug: Check localStorage content
+  const localStorageCart = localStorage.getItem('cart_backup');
+  console.log('LocalStorage cart data:', localStorageCart);
+
+  // First try to restore from localStorage if cart is empty
+  if (cartItems.value.length === 0) {
+    console.log('Attempting to restore cart from localStorage...');
+    const restored = store.restoreCartFromLocalStorage();
+    console.log('Restoration result:', restored ? 'success' : 'failed');
+  }
+
+  // Debug: Log state after localStorage restoration
+  console.log('Cart after localStorage restoration:', store.cartItems);
+
+  try {
+    // If we still have no items, try fetching from server
+    if (store.cartItems.length === 0) {
+      console.log('Attempting to fetch cart from server...');
+      await store.fetchCart();
+      console.log('Fetched cart items:', store.cartItems);
+
+      // If fetch succeeded but cart is empty, check localStorage again
+      if (store.cartItems.length === 0) {
+        console.warn('Cart empty after fetch, rechecking localStorage...');
+        store.restoreCartFromLocalStorage();
+      }
     }
 
-    await store.fetchCart();
-    console.log('Fetched cart items:', store.cartItems);
-
+    // Final check - if still empty, redirect
     if (store.cartItems.length === 0) {
-      console.warn('Cart is empty after fetch. Checking localStorage...');
-      // Additional fallback checks can go here
+      console.warn('Cart is empty after all attempts, redirecting...');
+      router.push('/');
+    } else {
+      console.log('Checkout initialized with cart items:', store.cartItems);
     }
   } catch (error) {
     console.error('Checkout initialization failed:', error);
+
+    // Additional error details
     if (error.response) {
-      console.error('Response data:', error.response.data);
-      console.error('Response status:', error.response.status);
+      console.error('API Response:', {
+        status: error.response.status,
+        data: error.response.data,
+        headers: error.response.headers
+      });
+    } else if (error.request) {
+      console.error('No response received:', error.request);
+    } else {
+      console.error('Request setup error:', error.message);
     }
+
+    // Final fallback - try localStorage one more time
+    console.log('Attempting final fallback to localStorage...');
+    store.restoreCartFromLocalStorage();
+
+    // If still empty after all attempts, redirect
+    if (store.cartItems.length === 0) {
+      router.push('/');
+    }
+  } finally {
+    // Debug: Log final cart state
+    console.log('Final cart state:', store.cartItems);
+    console.log('Cart count:', store.cartCount);
+    console.log('LocalStorage cart:', localStorage.getItem('cart_backup'));
   }
 });
+
+
 
 const uniqueCartCount = computed(() => {
   const seen = new Set();
@@ -63,46 +113,10 @@ const confirmOrder = async () => {
 };
 
 
-// const handleSubmit = async () => {
-//   try {
-//     // Validate inputs
-//     if (!store.customer.name || !store.customer.mobile || !store.customer.address) {
-//       throw new Error('Please fill all required fields');
-//     }
 
-//     if (store.cartCount === 0) {
-//       throw new Error('Your cart is empty');
-//     }
-
-//     // Process checkout
-//     const result = await store.processCheckout();
-
-//     // Check for success message
-
-//     if (result.message === 'Order placed successfully') {
-//       router.push({
-//         name: 'ThankYou',
-//         params: { order_id: result.order_id }
-//       });
-//       return;
-//     }
-
-//     // If we get here, there might be an unexpected response
-//     throw new Error(result.message || 'Order processing completed with unexpected response');
-
-//   } catch (error) {
-//     console.error('Checkout error:', error);
-
-//     // Show the actual error message from the response if available
-//     const errorMessage = error.response?.data?.message ||
-//       error.message ||
-//       'Checkout failed for unknown reason';
-
-//     alert(errorMessage);
-//   }
-// };
 const handleSubmit = async () => {
   try {
+
     // Validate inputs
     if (!store.customer.name || !store.customer.mobile || !store.customer.address) {
       throw new Error('Please fill all required fields');
@@ -119,7 +133,7 @@ const handleSubmit = async () => {
     if (result.message === 'Order placed successfully') {
       // Clear the cart after successful order
       await store.clearCart();
-      
+
       // Redirect to thank you page
       router.push({
         name: 'ThankYou',
@@ -190,17 +204,17 @@ const getVariantText = (variants) => {
 
               <table class="table table-bordered">
                 <thead>
-                  <tr>
-                    <th scope="col" class="fontSize">ছবি</th>
-                    <th scope="col" class="fontSize">পন্যের নাম</th>
-                    <th scope="col" class="fontSize">সাইজ/কালার</th>
-                    <th scope="col" class="fontSize">পরিমান</th>
-                    <th scope="col" class="fontSize">পন্যের দাম</th>
+                  <tr class=" text-center ">
+                    <th scope="col" class="fw-semibold fontSize">ছবি</th>
+                    <th scope="col" class="fw-semibold fontSize">পন্যের নাম</th>
+                    <th scope="col" class="fw-semibold fontSize">সাইজ/কালার</th>
+                    <th scope="col" class="fw-semibold fontSize">পরিমান</th>
+                    <th scope="col" class="fw-semibold fontSize">পন্যের দাম</th>
                   </tr>
                 </thead>
                 <tbody>
                   +
-            
+
                   <!-- <tr v-for="item in store.cartItems"
                     :key="item.product_id + (item.variant_1 || '') + (item.variant_2 || '') + (item.variant_3 || '')">
                     <th scope="row" class="fontSize">
@@ -220,13 +234,56 @@ const getVariantText = (variants) => {
                       <template v-if="item.variant_1 || item.variant_2 || item.variant_3">
                         {{[item.variant_1, item.variant_2, item.variant_3].filter(v => v).join(' / ')}}
                       </template>
+<template v-else>
+                        N/A
+                      </template>
+</td>
+<td>
+  <div class="d-flex mb-4 align-items-start" style="max-width: 300px">
+    <button @click="store.updateQuantity(item.product_id, item.quantity - 1)" class="btn btn-primary me-2 qtybtn minus"
+      :disabled="item.quantity <= 1">
+      <i class="fas fa-minus"></i>
+    </button>
+    <div class="form-outline">
+      <input :value="item.quantity" style="width: 40px;" type="text" readonly class="form-control quantity">
+    </div>
+    <button @click="store.updateQuantity(item.product_id, item.quantity + 1)" class="btn btn-primary ms-2 qtybtn plus">
+      <i class="fas fa-plus"></i>
+    </button>
+  </div>
+</td>
+<td class="fontSize">
+  <strong>{{ (item.price ).toFixed(2) }} ৳</strong>
+  <span v-if="item.discount > 0">
+    <br>Discount: <strong>{{ (item.discount * item.quantity).toFixed(2) }} ৳</strong>
+  </span>
+</td>
+</tr> -->
+                  <tr v-for="(item, index) in store.cartItems" :key="index">
+                    <th scope="row" class="fontSize">
+                      <div class="d-flex">
+                        <div class="remove">
+                          <button @click="store.removeItem(store.generateCartItemKey(item))"
+                            class="btn btn-sm text-danger remove-item" type="button">
+                            <i class="fas fa-times"></i>
+                          </button>
+                        </div>
+                        <img :src="getImageUrl(item.image)" alt="" class="rounded border"
+                          style="height: 60px;width: 60px;" @error="handleImageError">
+                      </div>
+                    </th>
+                    <td class="fontSize">{{ item.name }}</td>
+                    <td class="fontSize">
+                      <template v-if="item.variant_1 || item.variant_2 || item.variant_3">
+                        {{[item.variant_1, item.variant_2, item.variant_3].filter(v => v).join(' / ')}}
+                      </template>
                       <template v-else>
                         N/A
                       </template>
                     </td>
                     <td>
                       <div class="d-flex mb-4 align-items-start" style="max-width: 300px">
-                        <button @click="store.updateQuantity(item.product_id, item.quantity - 1)"
+                        <button @click="store.updateQuantity(store.generateCartItemKey(item), item.quantity - 1)"
                           class="btn btn-primary me-2 qtybtn minus" :disabled="item.quantity <= 1">
                           <i class="fas fa-minus"></i>
                         </button>
@@ -234,65 +291,20 @@ const getVariantText = (variants) => {
                           <input :value="item.quantity" style="width: 40px;" type="text" readonly
                             class="form-control quantity">
                         </div>
-                        <button @click="store.updateQuantity(item.product_id, item.quantity + 1)"
+                        <button @click="store.updateQuantity(store.generateCartItemKey(item), item.quantity + 1)"
                           class="btn btn-primary ms-2 qtybtn plus">
                           <i class="fas fa-plus"></i>
                         </button>
                       </div>
                     </td>
                     <td class="fontSize">
-                      <strong>{{ (item.price ).toFixed(2) }} ৳</strong>
+                      <strong>{{ (item.price).toFixed(2) }} ৳</strong>
                       <span v-if="item.discount > 0">
                         <br>Discount: <strong>{{ (item.discount * item.quantity).toFixed(2) }} ৳</strong>
                       </span>
                     </td>
-                  </tr> -->
-        <tr v-for="(item, index) in store.cartItems" :key="index">
-        <th scope="row" class="fontSize">
-          <div class="d-flex">
-            <div class="remove">
-              <button @click="store.removeItem(store.generateCartItemKey(item))" 
-                      class="btn btn-sm text-danger remove-item" type="button">
-                <i class="fas fa-times"></i>
-              </button>
-            </div>
-            <img :src="getImageUrl(item.image)" alt="" class="rounded border" 
-                 style="height: 60px;width: 60px;" @error="handleImageError">
-          </div>
-        </th>
-        <td class="fontSize">{{ item.name }}</td>
-        <td class="fontSize">
-          <template v-if="item.variant_1 || item.variant_2 || item.variant_3">
-            {{[item.variant_1, item.variant_2, item.variant_3].filter(v => v).join(' / ')}}
-          </template>
-          <template v-else>
-            N/A
-          </template>
-        </td>
-        <td>
-          <div class="d-flex mb-4 align-items-start" style="max-width: 300px">
-            <button @click="store.updateQuantity(store.generateCartItemKey(item), item.quantity - 1)"
-                    class="btn btn-primary me-2 qtybtn minus" :disabled="item.quantity <= 1">
-              <i class="fas fa-minus"></i>
-            </button>
-            <div class="form-outline">
-              <input :value="item.quantity" style="width: 40px;" type="text" readonly
-                     class="form-control quantity">
-            </div>
-            <button @click="store.updateQuantity(store.generateCartItemKey(item), item.quantity + 1)"
-                    class="btn btn-primary ms-2 qtybtn plus">
-              <i class="fas fa-plus"></i>
-            </button>
-          </div>
-        </td>
-        <td class="fontSize">
-          <strong>{{ (item.price ).toFixed(2) }} ৳</strong>
-          <span v-if="item.discount > 0">
-            <br>Discount: <strong>{{ (item.discount * item.quantity).toFixed(2) }} ৳</strong>
-          </span>
-        </td>
-      </tr>
-                  
+                  </tr>
+
                   <!-- Summary Rows -->
                   <tr>
                     <td colspan="4" class="text-end" style="font-weight: bold;">সাবটোটাল</td>
@@ -302,10 +314,16 @@ const getVariantText = (variants) => {
                     <td colspan="4" class="text-end" style="font-weight: bold;">কুপন ডিসকাউন্ট</td>
                     <td class="prices" style="font-weight: bold;">{{ store.couponDiscount }} ৳</td>
                   </tr>
-                  <tr>
+                  <!-- <tr>
                     <td colspan="4" class="text-end" style="font-weight: bold;">ডেলিভারি চার্জ</td>
                     <td class="prices" style="font-weight: bold;">
                       {{ store.shippingCharge }} ৳
+                    </td>
+                  </tr> -->
+                  <tr>
+                    <td colspan="4" class="text-end" style="font-weight: bold;">ডেলিভারি চার্জ</td>
+                    <td class="prices" style="font-weight: bold;">
+                      {{ store.selectedShippingCharge || 0 }} ৳
                     </td>
                   </tr>
                   <tr>
@@ -322,34 +340,37 @@ const getVariantText = (variants) => {
       </div>
 
       <!-- Billing Form -->
-      <div class="col-md-6 col-lg-6">
-        <div class="card">
+      <div class="col-md-6 col-lg-6 ">
+        <div class="card ">
           <div class="card-header">
-            <h4 class="mb-3">Billing address</h4>
+            <p class="mb-3 fw-semibold fs-5">Billing address</p>
           </div>
           <div class="card-body">
             <form @submit.prevent="handleSubmit" class="needs-validation">
               <div class="row g-3">
                 <div class="col-sm-12">
-                  <label for="firstName" class="form-label">আপনার নাম</label>
+                  <label for="firstName" class="form-label fw-semibold">আপনার নাম</label>
                   <input v-model="store.customer.name" type="text" class="form-control p-2"
                     placeholder="আপনার নাম লিখুন" required>
                 </div>
                 <div class="col-sm-12">
-                  <label for="firstName" class="form-label">আপনার মোবাইল নাম্বার</label>
+                  <label for="firstName" class="form-label fw-semibold">আপনার মোবাইল নাম্বার</label>
                   <input v-model="store.customer.mobile" type="tel" class="form-control"
                     placeholder="আপনার  মোবাইল নাম্বার লিখুন" maxlength="11" minlength="11" required>
                 </div>
                 <div class="col-12">
-                  <label for="address" class="form-label">আপনার সম্পূর্ন ঠিকানা</label>
+                  <label for="address" class="form-label fw-semibold">আপনার সম্পূর্ন ঠিকানা</label>
                   <input v-model="store.customer.address" type="text" class="form-control p-4"
                     placeholder="ঠিকানা লিখুন" required>
                 </div>
                 <div class="col-12">
-                  <label for="shipping_charge" class="form-label">ডেলিভারি চার্জ</label>
-                  <select v-model="store.shippingCharge" class="form-select shadow-none" id="shipping_charge">
-                    <option value="80">ঢাকার মধ্যে (80)</option>
-                    <option value="150">ঢাকার বাহিরে (150)</option>
+                  <label for="shipping_charge" class="form-label fw-semibold">ডেলিভারি চার্জ</label>
+                  <select v-model="store.selectedShippingCharge" class="form-select shadow-none" id="shipping_charge"
+                    required>
+                    <option value="">Select delivery area</option>
+                    <option v-for="charge in store.shippingCharge" :key="charge.id" :value="charge.shipping_charge">
+                      {{ charge.shipping_title }} ({{ charge.shipping_charge }}৳)
+                    </option>
                   </select>
                 </div>
                 <button :disabled="store.loading || store.cartCount === 0"

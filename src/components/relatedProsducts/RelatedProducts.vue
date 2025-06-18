@@ -116,11 +116,11 @@ function goToCheckout() {
         <div class="products mt-3">
             <div class="product" v-for="item in girlsFashions" :key="item.index">
                 <div class="image">
-                    <a href="andaaz-luxury-lawn-vol-08-by-ramsha-12.html" id="product_show" :data-productid="item.id"
+                   <router-link to="andaaz-luxury-lawn-vol-08-by-ramsha-12.html" id="product_show" :data-productid="item.id"
                         :data-categoryid="item.id" :data-productname="item.name">
                         <img :src="item.images" alt="" class="first" />
                         <img :src="item.images" alt="" class="second" />
-                    </a>
+                </router-link>
                     <div class="product_btn_position content">
                         
                         <!-- No need for <form>, use Vue methods instead -->
@@ -142,13 +142,13 @@ function goToCheckout() {
                 </div>
 
                 <div class="content px-2 text-center">
-                    <a href="andaaz-luxury-lawn-vol-08-by-ramsha-12.html" id="product_show" :data-productid="item.id"
+                   <router-link to="andaaz-luxury-lawn-vol-08-by-ramsha-12.html" id="product_show" :data-productid="item.id"
                         :data-categoryid="item.id" :data-productname="item.name">
                         <div class="title">
                             <!-- Andaaz Luxury Lawn vol-08 by Ramsha-12 -->
                             {{ item.name }}
                         </div>
-                    </a>
+                    </router-link>
                     <div class="price">
                         <span class="current_price" style="color: #00276c">{{ item.currentPrice }}</span>
                     </div>

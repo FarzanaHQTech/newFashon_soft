@@ -47,33 +47,46 @@ function startCountdown(elementId, endDate, design = false) {
     <!-- Carousel Section -->
     <div class="row">
       <div class="col-lg-12 flex-grow-1 min-h-430">
-        <div id="main_carousel" class="carousel slide pt-2 h-100" data-bs-ride="carousel">
-          <!-- Carousel Indicators (dots only) -->
-          <ol class="carousel-indicators">
-            <li 
-              v-for="(slider, index) in sliders"
-              :key="index"
-              :data-bs-target="'#main_carousel'"
-              :data-bs-slide-to="index"
-              :class="{ active: index === 0 }"
-            ></li>
-          </ol>
+     <div id="main_carousel" class="carousel slide pt-2 h-100" data-bs-ride="carousel">
+  <!-- Carousel Indicators (dots only) -->
+  <div class="carousel-indicators">
+    <button 
+      v-for="(slider, index) in sliders"
+      type="button"
+      :key="index"
+      :data-bs-target="'#main_carousel'"
+      :data-bs-slide-to="index"
+      :class="{ active: index === 0 }"
+      aria-current="true"
+      :aria-label="'Slide ' + (index + 1)"
+    ></button>
+  </div>
 
-          <!-- Carousel Images -->
-          <div class="carousel-inner h-100" role="listbox">
-            <div 
-              v-for="(slider, index) in sliders"
-              :key="slider.id"
-              :class="['carousel-item', 'h-100', { active: index === 0 }]"
-              data-bs-interval="2000"
-            >
-              <router-link to="/">
-                <div class="bg_image mobileHide" :style="{ backgroundImage: `url(${IMAGE_BASE_URL}/sliders/${slider.image})` }"></div>
-                <div class="bg_image mobileShow" :style="{ backgroundImage: `url(${IMAGE_BASE_URL}/sliders/${slider.mobile_image})` }"></div>
-              </router-link>
-            </div>
-          </div>
-        </div>
+  <!-- Carousel Images -->
+  <div class="carousel-inner h-100" role="listbox">
+    <div 
+      v-for="(slider, index) in sliders"
+      :key="slider.id"
+      :class="['carousel-item', 'h-100', { active: index === 0 }]"
+      data-bs-interval="2000"
+    >
+      <router-link to="/">
+        <div class="bg_image mobileHide" :style="{ backgroundImage: `url(${IMAGE_BASE_URL}/sliders/${slider.image})` }"></div>
+        <div class="bg_image mobileShow" :style="{ backgroundImage: `url(${IMAGE_BASE_URL}/sliders/${slider.mobile_image})` }"></div>
+      </router-link>
+    </div>
+  </div>
+
+  <!-- Carousel Controls (arrows) -->
+  <button class="carousel-control-prev" type="button" data-bs-target="#main_carousel" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Previous</span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#main_carousel" data-bs-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Next</span>
+  </button>
+</div>
       </div>
     </div>
 

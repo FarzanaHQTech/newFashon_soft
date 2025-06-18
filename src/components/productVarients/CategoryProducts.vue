@@ -3,7 +3,6 @@ import { ref, onMounted, computed } from 'vue';
 import { useHomeCategoryStore } from '../../stores/girlsWomenStore';
 import { IMAGE_BASE_URL } from '../../api';
 import ptsv from '../../assets/pt.svg';
-import { param } from 'jquery';
 
 const homeStore = useHomeCategoryStore();
 
@@ -45,15 +44,15 @@ const handleOrder = (product) => {
               </div>
             </router-link>
 
-            <div class="product_btn_position content">
-              <!-- <router-link to="/product-show/${item.slug}" custom v-slot="{ navigate }"> -->
+            <!-- <router-link to="/product-show/${item.slug}" custom v-slot="{ navigate }"> -->
+            <!-- <div class="product_btn_position content">
               <router-link :to="{ name: 'ProductDetail', params: { slug: item.slug } }">
                 <div @click="() => handleNavigate(item, navigate)">
                   <img :src="`${IMAGE_BASE_URL}/images/product/small/${item.main_image}`" alt="" class="first" />
                   <img :src="`${IMAGE_BASE_URL}/images/product/small/${item.main_image}`" class="second" />
                 </div>
               </router-link>
-            </div>
+            </div> -->
 
             <router-link :to="{ name: 'ProductDetail', params: { slug: item.slug } }">
             <div class="product_btn_position content">
@@ -67,28 +66,6 @@ const handleOrder = (product) => {
             </router-link>
           </div>
 
-          <!-- <div class="labels d-none">
-            <div class="tag bg-dark text-light">
-              -39%
-            </div>
-            <div class="tag bg-danger text-light">
-              Sold Out
-            </div>
-          </div>
-
-          <div class="content px-2 text-center">
-            <a href="product-show/asim-jofa-luxury-lawn-2020-collections-122.html" id="product_show"
-              data-productid="122" data-categoryid="73" :data-productname="item.name">
-              <div class="title">{{ item.name }}</div>
-            </a>
-            <div class="price">
-
-              <span class="current_price" style="color: #00276C;">{{ item.currentPrice }}</span>
-            </div>
-
-          </div> -->
-
-
 
           <div class="labels d-none">
             <div class="tag bg-dark text-light">
@@ -100,7 +77,7 @@ const handleOrder = (product) => {
           </div>
 
           <div class="content px-2 text-center">
-            <router-link :to="`/product/${item.id}`" custom v-slot="{ navigate }">
+            <router-link :to="{name:'ProductDetail',params:{slug:item.slug}}" custom v-slot="{ navigate }">
               <div @click="navigate" class="title">{{ item.name }}</div>
             </router-link>
             <div class="price">

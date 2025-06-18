@@ -96,30 +96,30 @@ onMounted(() => {
                   <font-awesome-icon icon="book" /> PAGE
                 </h5>
                 <ul class="quickLink ps-lg-4 ps-3">
-                  <li><a :href="`about-site.html`">About Ecom</a></li>
-                  <li><a :href="`delivery-policy.html`">Delivery Policy</a></li>
-                  <li><a :href="`terms-condition.html`">Terms &amp; Condition</a></li>
-                  <li><a :href="`return-policy.html`">Return Policy</a></li>
+                  <li><router-link to="`about-site.html`">About Ecom</router-link></li>
+                  <li><router-link to="`delivery-policy.html`">Delivery Policy</router-link></li>
+                  <li><router-link to="`terms-condition.html`">Terms &amp; Condition</router-link></li>
+                  <li><router-link to="`return-policy.html`">Return Policy</router-link></li>
                 </ul>
                 <h5>
                   <font-awesome-icon icon="star" /> FOLLOW US
                 </h5>
                 <div class="socials">
-                  <a :href="``" class="btn btn-sm btn-primary me-2">
+                  <router-link to="``" class="btn btn-sm btn-primary me-2">
                     <font-awesome-icon :icon="['fab', 'facebook']" />
-                  </a>
-                  <a :href="``" class="btn btn-sm btn-danger me-2">
+                  </router-link>
+                  <router-link to="``" class="btn btn-sm btn-danger me-2">
                     <font-awesome-icon :icon="['fab', 'youtube']" />
-                  </a>
-                  <a :href="``" class="btn btn-sm btn-success me-2">
+                  </router-link>
+                  <router-link to="``" class="btn btn-sm btn-success me-2">
                     <font-awesome-icon :icon="['fab', 'instagram']" />
-                  </a>
-                  <a :href="``" class="btn btn-sm btn-success me-2">
+                  </router-link>
+                  <router-link to="``" class="btn btn-sm btn-success me-2">
                     <font-awesome-icon :icon="['fab', 'tiktok']" />
-                  </a>
-                  <a :href="``" class="btn btn-sm btn-success me-2">
+                  </router-link>
+                  <router-link to="``" class="btn btn-sm btn-success me-2">
                     <span class="x">𝕏</span>
-                  </a>
+                  </router-link>
                 </div>
               </div>
             </div>
@@ -127,9 +127,9 @@ onMounted(() => {
               <div class="widget">
                 <img :src="posadmin" style="max-width:100%; margin-bottom:20px" />
                 <div>
-                  <a href="order-tracking.html" class="btn btn-success">
+                  <router-link to="order-tracking.html" class="btn btn-success">
                     <font-awesome-icon icon="search" /> Track Order
-                  </a>
+                  </router-link>
                 </div>
               </div>
             </div>
@@ -141,7 +141,7 @@ onMounted(() => {
         <div class="container-fluid">
           <p class="m-0 pm">
             Develop by
-            <a class="develop" href="https://softitglobal.com">Softitglobal.com</a>
+            <router-link class="develop" to="https://softitglobal.com">Softitglobal.com</router-link>
           </p>
         </div>
       </div>
