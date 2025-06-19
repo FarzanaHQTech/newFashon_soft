@@ -2,7 +2,7 @@
 <template>
   <div class="main-loader-wrapper">
     <div class="loader-content">
-      <img src="../assets/image/logo/20250422011434.png" alt="Logo" class="loader-logo" />
+      <img src="../assets/image/loader/green-circle-ok-check-mark-6uvrba3bd0fi8ue9.gif" alt="Logo" class="loader-logo" />
     </div>
   </div>
 </template>

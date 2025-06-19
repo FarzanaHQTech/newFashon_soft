@@ -27,7 +27,7 @@ const loadPopularProducts = ()=>{
 onMounted(() => {
   loadPopularProducts()
   categoryStore.fetchCategories()
-  console.log(categories);
+  // console.log(categories);
   
 })
 watch(()=>route.query.cat_id,()=>{

@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../components/layouts/Home.vue'
 import { posadminApi } from '../api'
+import FAQ404 from '../components/pages/frontend/FAQ404.vue'
 
 const routes = [
   {
@@ -82,7 +83,12 @@ const routes = [
     meta: {
       preload: true
     }
-  }
+  },
+   {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: FAQ404,
+  },
 ]
 
 const router = createRouter({
@@ -124,17 +130,3 @@ async function prefetchProductData(slug) {
 
 export default router
 
-// const router = createRouter({
-//   // history: createWebHistory(),
-//   history: createWebHistory(import.meta.env.VITE_BASE_URL),
-//   routes,
-
-//   scrollBehavior(to, from, savedPosition) {
-//     if (savedPosition) {
-//       return { ...savedPosition, behavior: 'auto' } 
-//     } else {
-//       return { top: 0, behavior: 'auto' } 
-//     }
-//   }
-//   });
-// export default router

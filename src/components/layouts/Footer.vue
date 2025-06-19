@@ -5,6 +5,11 @@ import guaranty from '../../assets/image/home_footer/Guaranty1711266536.png';
 import geography from '../../assets/image/home_footer/geography--v11711266536.png';
 import payment from '../../assets/image/home_footer/payment1711266536.png';
 import { onMounted } from 'vue';
+import { useSiteApi } from '../../stores/siteApi';
+import { storeToRefs } from 'pinia';
+import { SITE_IMAGE_BASE_URL } from '../../api';
+const siteInfoData =  useSiteApi()
+const {siteInfo} = storeToRefs(siteInfoData)
 
 onMounted(() => {
   const actionButton = document.querySelector('.action-button');
@@ -13,6 +18,8 @@ onMounted(() => {
       event.currentTarget.classList.toggle('active');
     });
   }
+
+  siteInfoData.fetchSiteInfo()
 });
 </script>
 
@@ -77,15 +84,15 @@ onMounted(() => {
                 </h5>
                 <ul class="contact ps-lg-4 ps-3">
                   <li>
-                    <span>
-                      <font-awesome-icon icon="map-marker-alt" /> Address:
-                    </span>
+                    <span> <font-awesome-icon icon="map-marker-alt" /> Address :    </span>{{ siteInfo.address?? "Bangladesh" }}
+                      <!-- <span v-if="siteInfo.address">  :</span> -->
+                 
                   </li>
                   <li>
-                    <span><font-awesome-icon icon="phone" /> Hotline:</span> 01615597820
+                    <span><font-awesome-icon icon="phone" /> Hotline:</span> {{ siteInfo.contact ??  "01615597820"}}
                   </li>
                   <li>
-                    <span><font-awesome-icon icon="envelope" /> E-mail:</span> softitglobal@gmail.com
+                    <span><font-awesome-icon icon="envelope" /> E-mail:</span> {{ siteInfo.email ??  "softitglobal@gmail.com"}}
                   </li>
                 </ul>
               </div>
@@ -125,7 +132,8 @@ onMounted(() => {
             </div>
             <div class="col-md-4 mb-3">
               <div class="widget">
-                <img :src="posadmin" style="max-width:100%; margin-bottom:20px" />
+                <!-- <img :src="posadmin" style="max-width:100%; margin-bottom:20px" /> -->
+                <img :src="SITE_IMAGE_BASE_URL + siteInfo.logo" style="max-width:100%; margin-bottom:20px" />
                 <div>
                   <router-link to="order-tracking.html" class="btn btn-success">
                     <font-awesome-icon icon="search" /> Track Order
@@ -141,7 +149,7 @@ onMounted(() => {
         <div class="container-fluid">
           <p class="m-0 pm">
             Develop by
-            <router-link class="develop" to="https://softitglobal.com">Softitglobal.com</router-link>
+            <router-link class="develop" to="https://softitglobal.com"> {{ siteInfo.copyright ??  "Softitglobal.com"}}</router-link>
           </p>
         </div>
       </div>

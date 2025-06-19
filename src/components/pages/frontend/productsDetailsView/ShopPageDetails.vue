@@ -245,7 +245,7 @@ async function orderNow() {
 }
 onMounted(async () => {
   await shopPage.fetchShopPage({ slug })
-  console.log('shopPages:', shopPages.value)
+  // console.log('shopPages:', shopPages.value)
   activeIndex.value = 0;
 
 })
@@ -286,7 +286,7 @@ watch(selectedVariants, async (newVal) => {
 
 onMounted(async () => {
   await shopPage.fetchShopPage({ slug })
-  console.log('shopPages:', shopPages.value)
+  // console.log('shopPages:', shopPages.value)
   activeIndex.value = 0;
 })
 
@@ -296,7 +296,7 @@ watch(
   async (newSlug, oldSlug) => {
     if (newSlug !== oldSlug) {
       await shopPage.fetchShopPage({ slug: newSlug })
-      console.log('Updated slug:', newSlug)
+      // console.log('Updated slug:', newSlug)
     }
   }
 )

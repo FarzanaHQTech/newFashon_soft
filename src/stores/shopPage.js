@@ -24,7 +24,7 @@ async fetchShopPage({ slug = "", page = 1 } = {}) {
     this.relatedProducts = res.data.related_products; // product details
     this.pagination = res.data.pagination || null; // optional
     this.currentPage = page;
-    console.log("Shop Product  Data:", res.data);
+
   } catch (error) {
     console.error("Fetch error", error);
     this.error = error.message || "Network Error";

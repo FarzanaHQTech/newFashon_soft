@@ -16,19 +16,7 @@ export const useCategoryStore = defineStore("products", {
   }),
 
   actions: {
-    // async fetchProductt(categoryId, page = 1) {
-    //   try {
-    //     const res = await api.get(`/category-products2/${categoryId}?page=${page}`);
-    //     this.categoryProducts = res.data.products.data;
-    //     this.currentPage = res.data.products.current_page;
-    //     this.lastPage = res.data.products.last_page;
-    //     this.productsCount = res.data.products.total;
-    //     console.log("products with id", res);
-    //   } catch (error) {
-    //     console.error("Fetch failed:", error);
-    //     this.error = error;
-    //   }
-    // }
+
 
     async fetchProduct(categoryId, page = 1) {
   try {

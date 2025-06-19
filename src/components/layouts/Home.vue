@@ -70,10 +70,17 @@ function startCountdown(elementId, endDate, design = false) {
       :class="['carousel-item', 'h-100', { active: index === 0 }]"
       data-bs-interval="2000"
     >
-      <router-link to="/">
-        <div class="bg_image mobileHide" :style="{ backgroundImage: `url(${IMAGE_BASE_URL}/sliders/${slider.image})` }"></div>
-        <div class="bg_image mobileShow" :style="{ backgroundImage: `url(${IMAGE_BASE_URL}/sliders/${slider.mobile_image})` }"></div>
-      </router-link>
+ 
+       <router-link to="/">
+    <div
+      class="bg_image mobileHide"
+      :style="{ backgroundImage: `url(${IMAGE_BASE_URL}/sliders/${slider.image})` }"
+    ></div>
+    <div
+      class="bg_image mobileShow"
+      :style="{ backgroundImage: `url(${IMAGE_BASE_URL}/sliders/${slider.mobile_image})` }"
+    ></div>
+  </router-link>
     </div>
   </div>
 
@@ -97,17 +104,17 @@ function startCountdown(elementId, endDate, design = false) {
   </div>
 </template>
 
-<style scoped>
+<style >
 
 
 .bg_image {
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
   width: 100%;
-  height: 400px;
+  aspect-ratio: 3 / 1;
 }
 
-/* Responsive display for desktop and mobile */
 .mobileHide {
   display: block;
 }
@@ -122,5 +129,11 @@ function startCountdown(elementId, endDate, design = false) {
   .mobileShow {
     display: block;
   }
+  .bg_image {
+    aspect-ratio: 3 / 2;
+  }
 }
+
+
 </style>
+
