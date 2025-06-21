@@ -244,7 +244,7 @@ const onCategoryChange = () => {
   <!-- Mobile Menu Sidebar -->
   <div :class="['mobile-menu-sidebar', { 'mobile-menu-sidebar--show': showMobileMenu }]">
     <div class="mobile-menu-header p-3">
-      <div class="d-flex justify-content-between align-items-center mb-3">
+      <div class="d-flex justify-content-between align-items-center ">
         <router-link to="/" class="nav-link fw-semibold" style="color: #f14705;" @click="closeMobileMenu">Home</router-link>
         <button class="btn-close" @click="closeMobileMenu">×</button>
       </div>

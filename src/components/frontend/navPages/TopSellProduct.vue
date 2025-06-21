@@ -27,7 +27,7 @@ watch(() => route.query.cat_id, () => {
 
 <template>
   <div class="container-fluid" style="min-height: 800px">
-    <div class="products shopProducts mt-3">  
+    <div class="products shopProducts">  
 
   <!-- Show message when no products found -->
 
