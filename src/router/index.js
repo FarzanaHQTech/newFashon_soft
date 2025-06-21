@@ -129,4 +129,3 @@ async function prefetchProductData(slug) {
 // preloadImportantRoutes()
 
 export default router
-

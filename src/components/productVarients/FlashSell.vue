@@ -1,8 +1,6 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-// import { posadminApi } from '../api/index';
+import { ref, onMounted, nextTick } from 'vue'
 import { IMAGE_BASE_URL, posadminApi } from '../../api'
-
 
 const flasSells = ref([])
 const currentPage = ref(1)
@@ -10,9 +8,17 @@ const lastPage = ref(1)
 const isLoading = ref(false)
 const allLoaded = ref(false)
 const lastDate = ref(null)
-
-
 const isFlashSellActive = ref(false)
+
+const countdownTime = ref({
+  days: 0,
+  hours: 0,
+  minutes: 0,
+  seconds: 0,
+})
+
+let countdownInterval = null
+
 function checkFlashActive() {
   if (!lastDate.value) {
     isFlashSellActive.value = false
@@ -23,48 +29,29 @@ function checkFlashActive() {
   isFlashSellActive.value = end > now
 }
 
-
-let countdownInterval = null
-
-function startCountdown(elementId, endDate) {
-  const countdownElement = document.getElementById(elementId)
-  if (!countdownElement) return
-
-  // Clear previous interval if exists
-  if (countdownInterval) {
-    clearInterval(countdownInterval)
-  }
+function startCountdown(endDate) {
+  if (countdownInterval) clearInterval(countdownInterval)
 
   const targetDate = new Date(endDate).getTime()
-  if (isNaN(targetDate)) {
-    countdownElement.innerHTML = 'Invalid date'
-    return
-  }
+  if (isNaN(targetDate)) return
 
   function updateCountdown() {
     const now = new Date().getTime()
     const distance = targetDate - now
 
     if (distance < 0) {
-      countdownElement.innerHTML = 'Expired'
+      countdownTime.value = { days: 0, hours: 0, minutes: 0, seconds: 0 }
       clearInterval(countdownInterval)
-       isFlashSellActive.value = false
+      isFlashSellActive.value = false
       return
     }
 
-    const days = Math.floor(distance / (1000 * 60 * 60 * 24))
-    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
-    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))
-    const seconds = Math.floor((distance % (1000 * 60)) / 1000)
-
-    countdownElement.innerHTML = `
-      <div class="countdown_box">
-        <div class="count_item"><div class="number">${days}</div><div class="label">Days</div></div>
-        <div class="count_item"><div class="number">${hours}</div><div class="label">Hrs</div></div>
-        <div class="count_item"><div class="number">${minutes}</div><div class="label">Min</div></div>
-        <div class="count_item"><div class="number">${seconds}</div><div class="label">Sec</div></div>
-      </div>
-    `
+    countdownTime.value = {
+      days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+      hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+      minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+      seconds: Math.floor((distance % (1000 * 60)) / 1000),
+    }
   }
 
   updateCountdown()
@@ -91,7 +78,8 @@ const fetchFlashSell = async (page = 1) => {
       }
 
       if (lastDate.value) {
-        startCountdown('promoCountdown2', lastDate.value)
+        await nextTick()
+        startCountdown(lastDate.value)
       }
     }
   } catch (error) {
@@ -101,152 +89,137 @@ const fetchFlashSell = async (page = 1) => {
   }
 }
 
-
-
-onMounted(() => {
-  fetchFlashSell(1)
-
-  // Auto-check every 1 minute if flash sell is still active
-  setInterval(() => {
-    checkFlashActive()
-  }, 60000)
-})
-
 const loadMore = () => {
   if (currentPage.value < lastPage.value && !isLoading.value) {
     fetchFlashSell(currentPage.value + 1)
   }
 }
+
+onMounted(() => {
+  fetchFlashSell()
+  setInterval(checkFlashActive, 60000)
+})
 </script>
 
-<template  >
-  <div v-if="isFlashSellActive">
-  <div class="category_products flash-sale-container">
-    <div class="banner rounded-2">
-      <div class="text-center w-100">
-        <div class="title">Flash Sell</div>
-        <img :src="ptsv" style="width: 200px;" />
-        <span class="promo-count mx-2" id="promoCountdown2" data-date="2025-05-31"></span>
-      </div>
+<template>
+  <section v-if="isFlashSellActive" class="flash-sale">
+    <div class="banner text-center">
+      <h2 class="title">Flash Sell</h2>
+      <span class="promo-count">
+        <div class="countdown_box">
+          <div class="count_item" v-for="(val, key) in countdownTime" :key="key">
+            <div class="number">{{ val }}</div>
+            <div class="label">{{ key.charAt(0).toUpperCase() + key.slice(1) }}</div>
+          </div>
+        </div>
+      </span>
     </div>
-  </div>
 
-  <div class="products mt-3 flash-sale-products">
-    <div class="product" v-for="item in flasSells" :key="item.id">
-      <div class="image">
-        <router-link :to="{ name: 'ProductDetail', params: { slug: item.slug } }">
-          <!-- id="product_show"
-          :data-productid="item.id"
-          :data-categoryid="item.category_id"
-          :data-productname="item.name" -->
-          <img :src="`${IMAGE_BASE_URL}/images/product/small/${item.main_image}`" :alt="item.name" class="first" />
-        </router-link>
-        <router-link :to="{ name: 'ProductDetail', params: { slug: item.slug } }">
+    <div class="products mt-3 flash-sale-products">
+      <article class="product" v-for="item in flasSells" :key="item.id">
+        <div class="image">
+          <router-link :to="{ name: 'ProductDetail', params: { slug: item.slug } }">
+            <img
+              :src="`${IMAGE_BASE_URL}/images/product/small/${item.main_image}`"
+              :alt="`${item.name} product image`"
+              class="first"
+            />
+          </router-link>
 
-          <img :src="`${IMAGE_BASE_URL}/images/product/small/${item.main_image}`" :alt="item.name" class="second" />
-        </router-link>
-        <div class="product_btn_position content">
-          <form method="POST" action="https://newfashion.softitglobal.com/carts" id="cart_form">
-            <input type="hidden" name="_token" value="xsED4Nne1eihR0J1Q2QMZ66RViuU99odXVearmOw" autocomplete="off" />
-            <input type="hidden" name="product_id" :value="item.id" />
-            <input type="hidden" name="quantity" value="1" />
-            <input type="hidden" id="action_type" name="action_type" value="" />
-
+          <div class="product_btn_position content">
             <router-link :to="{ name: 'ProductDetail', params: { slug: item.slug } }">
-            <div class="d-flex justify-content-between">
-              <button type="submit" class="submit_button btn btn-light d-block" data-type="order_now">
+              <button class="submit_button btn btn-light d-block">
                 <div class="cart_btn bangali bold ord_bt">
                   <i class="fa fa-cart-shopping"></i><span> অর্ডার করুন</span>
                 </div>
               </button>
-            </div>
             </router-link>
-            
-          </form>
+          </div>
         </div>
-      </div>
 
-      <div class="content px-2 text-center">
-        <a :href="`product-show/${item.name.toLowerCase().replace(/ /g, '-').replace(/[^\w-]+/g, '')}.html`"
-          id="product_show" :data-productid="item.id" :data-categoryid="item.category_id" :data-productname="item.name">
-          <div class="title">{{ item.name }}</div>
-        </a>
-        <div class="price">
-          <span class="current_price" style="color: #00276C; font-weight: bold;">
-            {{ item.price }} Tk
-          </span>
-          <del v-if="item.promotion && item.promotion_price" style="color: red;">
-            {{ item.wprice }} Tk
-          </del>
+        <div class="content px-2 text-center">
+          <router-link :to="{ name: 'ProductDetail', params: { slug: item.slug } }">
+            <h3 class="title">{{ item.name }}</h3>
+          </router-link>
+          <div class="price">
+            <span class="current_price">
+              {{ item.price }} Tk
+            </span>
+            <del v-if="item.promotion && item.promotion_price" class="original_price">
+              {{ item.wprice }} Tk
+            </del>
+          </div>
         </div>
-        <!-- <div class="price">
-          <span class="current_price" style="color: #00276C; font-weight: bold;">
-            {{ item.promotion && item.promotion_price ? item.promotion_price : item.price }}
-          </span>
-          <del v-if="item.promotion && item.promotion_price" style="color: red;">
-            {{ item.price }} Tk
-          </del>
-        </div> -->
-      </div>
+      </article>
     </div>
-  </div>
 
-  <div class="text-center mt-3">
-    <button class="btn btn-danger load-more-flash-sale" :disabled="isLoading || allLoaded" @click="loadMore">
-      {{ allLoaded ? "All Products Loaded" : "Load More Flash Deals" }}
-    </button>
-  </div>
-  </div>
+    <div class="text-center mt-3">
+      <button class="btn btn-danger load-more-flash-sale" :disabled="isLoading || allLoaded" @click="loadMore">
+        {{ allLoaded ? "All Products Loaded" : "Load More Flash Deals" }}
+      </button>
+    </div>
+  </section>
 </template>
 
 <style scoped>
-.promo-count {
-  padding: 2px 10px;
-  color: #000;
-  border-radius: 2px;
-  font-size: 20px;
-  display: block;
+.flash-sale .title {
+  font-size: 40px;
+  font-weight: bold;
+  margin-bottom: 15px;
 }
-
-:deep(.countdown_box),
-:deep(.countdown_box2) {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
+.promo-count {
+  font-size: 20px;
   margin-top: 10px;
 }
 
-:deep(.count_item) {
+.countdown_box {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.count_item {
   background-color: #eee;
   padding: 8px;
   border-radius: 6px;
   font-weight: bold;
   width: 60px;
   text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  transition: all 0.3s ease;
 }
-
-:deep(.count_item .number) {
+.count_item .number {
   font-size: 20px;
-  color: #00276C;
-  font-weight: bold;
+  color: #00276c;
 }
-
-:deep(.count_item .label) {
+.count_item .label {
   font-size: 12px;
   color: #555;
   margin-top: 2px;
 }
 
-.category_products .banner .title {
-  font-size: 40px;
+.product {
+  margin-bottom: 20px;
+  padding: 10px;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.product:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.current_price {
+  color: #00276c;
   font-weight: bold;
+}
+.original_price {
+  color: red;
 }
 
 @media (max-width: 768px) {
-  .category_products .banner .title {
+  .flash-sale .title {
     font-size: 30px;
   }
 }

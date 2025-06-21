@@ -82,6 +82,12 @@ function handleImageError(event, id) {
 </template>
 
 <style scoped>
+.ctgName {
+  color: #000;         /* dark black */
+  font-weight: 600;    /* semi-bold */
+  margin-top: 0.5rem;
+  text-decoration: none; /* remove underline just in case */
+}
 .popular_product {
   font-size: 22px;
   font-weight: 600;
@@ -128,4 +134,6 @@ function handleImageError(event, id) {
   /* Right chevron */
   color: black;
 }
+
+
 </style>

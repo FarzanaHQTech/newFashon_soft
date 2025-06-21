@@ -1,4 +1,4 @@
-<!-- FullPageLoader.vue -->
+<!-- 
 <template>
   <div class="main-loader-wrapper">
     <div class="loader-content">
@@ -25,5 +25,31 @@
 @keyframes bounce {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
+}
+</style> -->
+<template>
+  <div class="bouncing-dots">
+    <div v-for="i in 3" :key="i" :style="`--delay: ${i * 0.2}s`"></div>
+  </div>
+</template>
+
+<style>
+.bouncing-dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  gap: 8px;
+}
+.bouncing-dots div {
+  width: 12px;
+  height: 12px;
+  background: #6a5acd;
+  border-radius: 50%;
+  animation: bounce 1s infinite var(--delay);
+}
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
 }
 </style>

@@ -1,39 +1,30 @@
+<script setup lang="ts">
+import Layout from './components/layouts/Layout.vue';
+import { onMounted } from 'vue'
+import { useLoadingStore } from './stores/loadingStore'
+
+const loadingStore = useLoadingStore()
+
+onMounted(() => {
+  setTimeout(() => {
+    loadingStore.isInitialLoading = false
+  }, 1000) // optional delay for smooth loader
+})
+</script>
+
 <template>
   <div id="app" v-cloak>
-    <Layout>
-      <router-view v-slot="{ Component }">
-        <keep-alive :include="['Home', 'TopSellProducts', 'CartCountStore']">
+   <Layout>
+    <router-view v-slot="{ Component }">
+        <keep-alive include="Home,TopSellProducts">
           <component :is="Component" />
         </keep-alive>
       </router-view>
-    </Layout>
+  </Layout>
   </div>
 </template>
 
-<script setup>
-import Layout from './components/layouts/Layout.vue'
-import { onMounted } from 'vue'
-import { useCartCheckoutStore } from './stores/cartCheckout'
-
-const cartStore = useCartCheckoutStore()
-
-onMounted(async () => {
-  try {
-    await cartStore.initializeCart();
-  } catch (error) {
-    console.error("Failed to initialize cart:", error);
-  }
-});
-</script>
-
 <style>
-[v-cloak] { 
-  display: none; 
-}
-
-#app {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
+[v-cloak] { display: none; }
+#app { min-height: 100vh; display: flex; flex-direction: column; }
 </style>
