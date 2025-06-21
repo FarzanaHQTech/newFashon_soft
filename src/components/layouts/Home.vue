@@ -72,14 +72,32 @@ function startCountdown(elementId, endDate, design = false) {
     >
  
        <router-link to="/">
-    <div
+    <!-- <div
       class="bg_image mobileHide"
       :style="{ backgroundImage: `url(${IMAGE_BASE_URL}/sliders/${slider.image})` }"
     ></div>
     <div
       class="bg_image mobileShow"
       :style="{ backgroundImage: `url(${IMAGE_BASE_URL}/sliders/${slider.mobile_image})` }"
-    ></div>
+    ></div> -->
+    <img
+  class="bg_image mobileHide"
+  :src="`${IMAGE_BASE_URL}/sliders/${slider.image}`"
+  alt="slider image"
+  width="1200"
+  height="400"
+  loading="lazy"
+/>
+
+<img
+  class="bg_image mobileShow"
+  :src="`${IMAGE_BASE_URL}/sliders/${slider.mobile_image}`"
+  alt="slider image"
+  width="1200"
+ 
+  loading="lazy"
+/>
+
   </router-link>
     </div>
   </div>
