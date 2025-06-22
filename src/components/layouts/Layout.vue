@@ -1,7 +1,7 @@
 <template>
   <div>
-    <FullPageLoader v-if="isInitialLoading" />
-    <div v-else class="app-wrapper">
+    <!-- <FullPageLoader v-if="isInitialLoading" /> -->
+    <div class="app-wrapper">
       <Header />
       <main class="main-wrapper">
         <transition name="fade" mode="out-in">
@@ -20,6 +20,6 @@ import FullPageLoader from '../FullPageLoader.vue'
 import { useLoadingStore } from '../../stores/loadingStore'
 import { storeToRefs } from 'pinia'
 
-const loadingStore = useLoadingStore()
-const { isInitialLoading } = storeToRefs(loadingStore)
+// const loadingStore = useLoadingStore()
+// const { isInitialLoading } = storeToRefs(loadingStore)
 </script>

@@ -11,14 +11,14 @@ export default defineConfig(({ mode }) => {
     plugins: [
       vue(),
 
-      // ✅ GZIP compression for production
+      //  GZIP compression for production
       compression({
         algorithm: 'gzip',
         ext: '.gz',
         deleteOriginFile: false
       }),
 
-      // ✅ Optional: Analyze bundle size
+      //  Optional: Analyze bundle size
       visualizer({
         open: false, // change to true if you want it to open automatically
         filename: 'dist/report.html',
@@ -28,7 +28,7 @@ export default defineConfig(({ mode }) => {
     build: {
       target: "es2015",
       minify: "esbuild",
-      cssCodeSplit: true, // ✅ Separate CSS per component
+      cssCodeSplit: true, //  Separate CSS per component
       sourcemap: false, // disable in production
       rollupOptions: {
         output: {
@@ -51,7 +51,7 @@ export default defineConfig(({ mode }) => {
     },
     resolve: {
       alias: {
-        '@': '/src', // ✅ cleaner import paths
+        '@': '/src', // cleaner import paths
       },
     },
   };

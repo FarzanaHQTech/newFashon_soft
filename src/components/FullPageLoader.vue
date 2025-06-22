@@ -27,6 +27,7 @@
   50% { transform: translateY(-10px); }
 }
 </style> -->
+
 <template>
   <div class="bouncing-dots">
     <div v-for="i in 3" :key="i" :style="`--delay: ${i * 0.2}s`"></div>

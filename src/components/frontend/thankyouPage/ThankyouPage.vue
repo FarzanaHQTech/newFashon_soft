@@ -16,7 +16,7 @@
           Order ID #{{ order?.id }}
         </h2>
         <h5 class="text-center" style="color: #fff;">কিছুক্ষণের মাঝে আপনাকে মেসেজ অথবা কল করা হবে।</h5>
-        <router-link to="https://newfashion.softitglobal.com" class="btn btn-warning bold">Shop More</router-link>
+        <router-link to="/" class="btn btn-warning bold">Shop More</router-link>
         <router-link
           to="`https://newfashion.softitglobal.com/sales/gen_invoice/${order?.id}`" 
           class="btn btn-dark orange-bg bold"

@@ -31,9 +31,9 @@ watch(() => route.query.cat_id, () => {
 
   <!-- Show message when no products found -->
 
-<div class="d-flex justify-content-center align-items-center mt-5 w-100 ">
+<div class="d-flex justify-content-center align-items-center  w-100 ">
   <div v-if="topProductsShops.length === 0" class="text-center">
-    <div class="alert alert-warning p-4 shadow-sm rounded-3 mx-auto " style="max-width: 600px;">
+    <div class="alert alert-warning p-4 shadow-sm rounded-3 mx-auto mt-5" style="max-width: 600px;">
       <h4 class="mb-3">
         <i class="fa fa-box-open me-2"></i>দুঃখিত! কোনো পণ্য খুঁজে পাওয়া যায়নি
       </h4>
