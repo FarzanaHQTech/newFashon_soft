@@ -65,7 +65,7 @@ export const useFlashNewStore = defineStore('navShopNewPage', {
     //     this.loading = false;
     //   }
     // },
-  async fetchTopSellPage(page = 1, cat_id = null) {
+  async fetchTopSellPage(page = 1, cat_id = null , q='') {
   this.loading = true;
   this.error = null;
   try {
@@ -84,7 +84,33 @@ export const useFlashNewStore = defineStore('navShopNewPage', {
     this.loading = false;
   }
 }
+,
 
+async fetchTopSellPage(page = 1, cat_id = null, q = '') {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        let url = `/shop?page=${page}`;
+        if (cat_id !== null && cat_id !== '') {
+          url += `&cat_id=${encodeURIComponent(cat_id)}`;
+        }
+        if (q && q.trim()) {
+          url += `&q=${encodeURIComponent(q.trim())}`;
+        }
+
+        const res = await posadminApi.get(url);
+        console.log(" Fetched:", res.data);
+        this.topProductsShops = res.data.data;
+        this.pagination = res.data.pagination;
+        this.currentPage = page;
+      } catch (error) {
+        console.error(" Fetch error:", error);
+        this.error = error.message || "Network Error";
+      } finally {
+        this.loading = false;
+      }
+    },
 
     
   }

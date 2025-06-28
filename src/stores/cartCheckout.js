@@ -1,12 +1,12 @@
 import { defineStore } from "pinia";
-import { frontendApi } from "../api";
+import { frontendApi, posadminApi } from "../api";
 import { useRouter } from "vue-router";
 
 export const useCartCheckoutStore = defineStore("cartCheckout", {
   state: () => ({
     cartItems: [],
-    couponCode: "",
-    couponDiscount: 0,
+   couponCode: '',                  // <-- already present
+  couponDetails: null,   
     selectedShippingCharge: '', 
     shippingCharge: [],         // To store the list of charges
     customer: {
@@ -23,36 +23,47 @@ export const useCartCheckoutStore = defineStore("cartCheckout", {
   }),
 
   getters: {
-    subtotal() {
-      // Keep quantity multiplication for pricing
-      return this.cartItems.reduce(
-        (sum, item) => sum + item.price * item.quantity,
-        0
-      );
-    },
-    totalDiscount() {
-      return this.cartItems.reduce(
-        (sum, item) => sum + (item.discount || 0) * item.quantity,
-        0
-      );
-    },
-   grandTotal() {
-    const subtotal = Number(this.subtotal) || 0;
-    const discount = Number(this.couponDiscount) || 0;
-    const shipping = Number(this.selectedShippingCharge) || 0;
-    
-    return (subtotal - discount + shipping);
+  subtotal() {
+    return this.cartItems.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0
+    );
+  },
+  totalDiscount() {
+    return this.cartItems.reduce(
+      (sum, item) => sum + (item.discount || 0) * item.quantity,
+      0
+    );
   },
 
-    cartCount() {
+  // FIXED: Calculate the coupon discount dynamically
+  computedCouponDiscount() {
+    const subtotal = this.subtotal;
+    if (this.couponType === 'percentage') {
+      // Assuming you store percentage amount in couponDetails.amount
+      return (subtotal * (this.couponDetails?.amount || 0)) / 100;
+    }
+    return this.couponDiscount || 0;
+  },
+
+  grandTotal() {
+    const subtotal = Number(this.subtotal) || 0;
+    const shipping = Number(this.selectedShippingCharge) || 0;
+    const discount = this.computedCouponDiscount;
+
+    return Math.max(subtotal - discount + shipping, 0);
+  },
+  cartCount() {
       // Count each product as 1 item
       return this.cartItems.length;
     },
     uniqueCartCount() {
       return this.cartItems.length;
     },
-  
-  },
+},
+
+
+
 
   actions: {
 
@@ -394,18 +405,33 @@ async fetchShippingCharge() {
       }
     },
 
-    async applyCoupon(code) {
-      try {
-        const response = await frontendApi.post("/apply-coupon", { code });
-        this.couponCode = code;
-        this.couponDiscount = response.data.discount || 0;
-        return response.data;
-      } catch (error) {
-        console.error("Coupon error:", error);
-        throw error;
-      }
-    },
+async applyCoupon(code) {
+  try {
+    const response = await frontendApi.post('/apply-coupon', { couponCode: code });
 
+    this.couponCode = response.data.couponCode || '';
+    this.couponDiscount = response.data.discountAmount || 0;
+    this.couponType = response.data.couponDetails?.type || 'fixed';
+    this.couponDetails = response.data.couponDetails || null;  // store full coupon details
+
+    if (response.data.message) {
+      alert(response.data.message);
+    }
+
+    // Debug output
+    console.log('Coupon applied:', {
+      type: this.couponType,
+      discountAmount: this.couponDiscount,
+      details: this.couponDetails,
+      computedDiscount: this.computedCouponDiscount,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error('Coupon error:', error);
+    throw error;
+  }
+}
 
   },
 });

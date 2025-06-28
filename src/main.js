@@ -21,6 +21,9 @@ import { FontAwesomeIcon } from './plugins/fontawesome.js';
 import { useToast } from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-sugar.css';
 
+
+
+
 const app = createApp(App);
 const pinia = createPinia();
 const head = createHead();
@@ -30,7 +33,13 @@ app.use(router);
 app.use(head);
 app.component('font-awesome-icon', FontAwesomeIcon);
 
+//for bearer token
 axios.defaults.withCredentials = true;
+axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('auth_token')}`;
+
+// axios.defaults.withCredentials = true;
+
+
 const toast = useToast();
 app.config.globalProperties.$toast = toast;
 app.provide('toast', toast);

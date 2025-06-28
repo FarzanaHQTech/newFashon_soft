@@ -377,3 +377,21 @@ body{
     visibility: visible;
     opacity: 1;
 }
+
+/* Header always on top */
+header.header {
+  position: relative;
+  z-index: 1000;
+}
+
+/* Ensure slider is not overlapping header */
+#main_carousel {
+  position: relative;
+  z-index: 1;
+}
+
+/* In case carousel items are breaking layout */
+.carousel-item {
+  position: relative;
+  z-index: 1;
+}

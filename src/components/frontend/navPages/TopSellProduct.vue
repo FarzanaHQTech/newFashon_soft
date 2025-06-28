@@ -1,28 +1,32 @@
-
 <script setup>
-import { onMounted, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { IMAGE_BASE_URL } from '../../../api';
 import { useFlashNewStore } from '../../../stores/navShopPage';
+import { IMAGE_BASE_URL } from '../../../api';
 
 const route = useRoute();
-const topSallProducts = useFlashNewStore();
-const { topProductsShops } = storeToRefs(topSallProducts);
+const flashStore = useFlashNewStore();
+const { topProductsShops, loading } = storeToRefs(flashStore);
 
-// Function to fetch products (filtered if cat_id exists)
-const loadProducts = async () => {
+const searchQuery = ref('');
+const selectedCategoryId = ref(null);
+
+const loadProducts = () => {
   const catId = route.query.cat_id || null;
-  await topSallProducts.fetchTopSellPage(1, catId); // assuming fetchTopSellPage accepts (page, cat_id)
+  const q = route.query.q || '';
+  selectedCategoryId.value = catId;
+  searchQuery.value = q;
+  flashStore.fetchTopSellPage(1, catId, q);
 };
 
-// Fetch on mount
 onMounted(loadProducts);
 
-// Watch for route changes (e.g., when clicking on a new category)
-watch(() => route.query.cat_id, () => {
-  loadProducts();
-});
+// Re-fetch when query changes
+watch(
+  () => [route.query.cat_id, route.query.q],
+  loadProducts
+);
 </script>
 
 <template>

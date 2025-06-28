@@ -14,19 +14,24 @@ import CartSidebarStore from '../frontend/CartSidebarStore.vue'
 import { useSiteApi } from '../../stores/siteApi'
 import { SITE_IMAGE_BASE_URL } from '../../api'
 const siteStore = useSiteApi();
-const {siteInfo} = storeToRefs(siteStore);
+const { siteInfo } = storeToRefs(siteStore);
+
+
+
 
 //browse Categories menues
 const browseCategories = useFlashNewStore()
 const { topProductsShops } = storeToRefs(browseCategories)
 const route = useRoute()
+const router = useRouter();
 // Function to load data based on cat_id
 const loadTopProducts = () => {
   const catId = route.query.cat_id || null;
   browseCategories.fetchTopSellPage(1, catId);
 };
 
-const selectedCategoryId = ref('')
+const selectedCategoryId = ref('');
+const searchQuery = ref('');
 // category Stores in search bar
 
 const categoryStore = useCategoryStore()
@@ -78,7 +83,13 @@ onMounted(async () => {
 })
 
 
-
+const onSearchSubmit = (e) => {
+  e.preventDefault();
+  const query = {};
+  if (selectedCategoryId.value) query.cat_id = selectedCategoryId.value;
+  if (searchQuery.value.trim()) query.q = searchQuery.value.trim();
+  router.push({ path: '/shop', query });
+};
 // Re-run when cat_id changes and match search category
 watch(() => route.query.cat_id, (newVal) => {
   selectedCategoryId.value = newVal || '';
@@ -88,6 +99,10 @@ const onCategoryChange = () => {
   route.push({ path: '/shop', query: { cat_id: selectedCategoryId.value } });
 };
 
+const showValue = ref(false);
+function toggleAction(){
+  showValue.value = !showValue.value 
+} 
 
 </script>
 <template>
@@ -101,65 +116,65 @@ const onCategoryChange = () => {
         <button class="navbar-toggler d-lg-none mobile-menu-btn" type="button" @click="toggleMobileMenu">
           <i class="fa fa-bars"></i>
         </button>
-      
-         <router-link to="/" class="navbar-brand">
-          <img
-            v-if="siteInfo.logo"
-            :src="SITE_IMAGE_BASE_URL + siteInfo.logo"
-            alt="Ecom Logo"
-          />
-          <img
-            v-else
-            :src="ecomLogo"
-            alt="Default Logo"
-          />
+
+        <router-link to="/" class="navbar-brand">
+          <img v-if="siteInfo.logo" :src="SITE_IMAGE_BASE_URL + siteInfo.logo" alt="Ecom Logo" />
+          <img v-else :src="ecomLogo" alt="Default Logo" />
         </router-link>
-          <!-- Mobile cart icon -->
-          <div class="icon_cart semi btn p-0 me-lg-0 pe-lg-0 display_sm" @click="toggleCartSidebar">
-            <div class="btn badge2 px-0">
-              <img :src="c1" width="40" alt="" style="filter: invert(1);" />
-              <span class="badge text-light" style="background-color: navy;">{{ cartCount }}</span>
-            </div>
+        <!-- Mobile cart icon -->
+        <div class="icon_cart semi btn p-0 me-lg-0 pe-lg-0 display_sm" @click="toggleCartSidebar">
+          <div class="btn badge2 px-0">
+            <img :src="c1" width="40" alt="" style="filter: invert(1);" />
+            <span class="badge text-light" style="background-color: navy;">{{ cartCount }}</span>
           </div>
+        </div>
 
-          <!-- Mobile login icon -->
-          <router-link to="/login" class="btn px-0 d-lg-none" style="color: navy;">
-            <img :src="login" style="width: 30px; filter: invert(1);" alt="Login" />
-          </router-link>
+        <!-- Mobile login icon -->
+        <router-link to="/login" class="btn px-0 d-lg-none" style="color: navy;">
+          <img :src="login" style="width: 30px; filter: invert(1);" alt="Login" />
+        </router-link>
 
-          <!-- category Search form -->
-          <form class="d-flex header_search col-lg-6 m-auto" action="shop.html">
-            <select name="cat_id" class="form-select d-lg-block d-none" v-model="selectedCategoryId"
-              @change="onCategoryChange" :name="cat_id"
-              style="width: 70px; font-size: 14px; border-radius: 5px 0 0 5px; font-weight: 600; background-color: #d5d5d5;">
-              <option value="">All</option>
-              <option v-for="(item, index) in categoryMenu" :key="item.index" :value="item.id">{{ item.name }}</option>
-            </select>
-            <input class="form-control" type="text" placeholder="Search" name="q" />
-          </form>
+        <!-- category Search form -->
+        <!-- category Search form -->
+        <form class="d-flex header_search col-lg-6 m-auto" @submit.prevent="onSearchSubmit">
+          <!-- Category dropdown -->
+          <select class="form-select d-lg-block d-none" v-model="selectedCategoryId"
+            style="width: 70px; font-size: 14px; border-radius: 5px 0 0 5px; font-weight: 600; background-color: #d5d5d5;">
+            <option value="">All</option>
+            <option v-for="item in categoryMenu" :key="item.id" :value="item.id">{{ item.name }}</option>
+          </select>
 
-          <!-- Desktop icons -->
-          <div class="display_lg">
-            <div class="d-lg-flex d-none align-items-center gap-2 ps-lg-3">
-              <router-link to="tel:01615597820" class="font-22" style="font-size: 20px;color: #000">
-                <i class="fa fa-phone"></i> {{ siteInfo.contact ?? '01615597820' }}
-              </router-link>
+          <!-- Search input -->
+          <input v-model="searchQuery" class="form-control " type="text" placeholder="Search" name="q" />
 
-              <!-- Desktop login icon -->
-              <router-link to="/login" class="btn px-0" style="color: navy;">
-                <img :src="login" style="width: 30px; filter: invert(1);" alt="Login" />
-              </router-link>
+          <!-- Search button -->
+          <button type="submit" class="btn  ms-2" style="background-color: #f14705; color: white;">Search</button>
+        </form>
 
-              <!-- Desktop cart icon -->
-              <div class="icon_cart semi btn p-0" @click="toggleCartSidebar">
-                <div class="btn badge2 px-0">
-                  <img :src="c1" width="40" alt="" style="filter: invert(1);" />
-                  <span class="badge text-light bg-dark">{{ cartCount }}</span>
-                </div>
+        <!-- Desktop icons -->
+        <div class="display_lg">
+          <div class="d-lg-flex d-none align-items-center gap-2 ps-lg-3">
+                 <a href="tel:01615597820"   class="font-22" style="font-size: 20px;color: #000">
+            <!-- <router-link to="tel:01615597820" class="font-22"> -->
+              <i class="fa fa-phone"></i> {{ siteInfo.contact ?? '01615597820' }}
+            <!-- </router-link> -->
+            </a>
+
+            <!-- Desktop login icon -->
+            <router-link to="/login" class="btn px-0" style="color: navy;">
+              <img :src="login" style="width: 30px; filter: invert(1);" alt="Login" />
+            </router-link>
+
+            <!-- Desktop cart icon -->
+            <div class="icon_cart semi btn p-0" @click="toggleCartSidebar">
+              <div class="btn badge2 px-0">
+                <img :src="c1" width="40" alt="" style="filter: invert(1);" />
+                <span class="badge text-light bg-dark">{{ cartCount }}</span>
               </div>
             </div>
           </div>
- 
+        </div>
+
       </div>
     </nav>
 
@@ -238,6 +253,46 @@ const onCategoryChange = () => {
         ৳ {{ grandTotal }}
       </p>
     </div>
+
+
+    <!-- multi action message  -->
+    <!-- <div class="multi-action">
+      <button class="action-button active">
+        <span class="fas fa-comment-dots"></span>
+      </button>
+      <ul class="actions">
+        <li><a href="tel:01615597820"><span class="fas fa-phone"></span></a></li>
+        <li><a href="#"><span class="fab fa-facebook-messenger"></span></a></li>
+        <li><a href="https://wa.me/+88"><span class="fab fa-whatsapp"></span></a></li>
+      </ul>
+    </div> -->
+  <div class="multi-action">
+    <button class="action-button" @click="toggleActions">
+      <span class="fas fa-comment-dots"></span>
+    </button>
+    
+    <!-- Toggle 'show' class -->
+    <ul class="actions" :class="{ show: showActions }">
+      <li>
+        <a href="tel:01615597820"><span class="fas fa-phone"></span></a>
+      </li>
+      <li>
+        <a href="https://m.me/yourpageusername" target="_blank" rel="noopener">
+          <span class="fab fa-facebook-messenger"></span>
+        </a>
+      </li>
+      <li>
+        <a href="https://wa.me/8801615597820" target="_blank" rel="noopener">
+          <span class="fab fa-whatsapp"></span>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+
+
+
+
   </header>
 
   <!-- Mobile Menu Sidebar -->
@@ -245,7 +300,8 @@ const onCategoryChange = () => {
   <div :class="['mobile-menu-sidebar', { 'mobile-menu-sidebar--show': showMobileMenu }]">
     <div class="mobile-menu-header p-3">
       <div class="d-flex justify-content-between align-items-center ">
-        <router-link to="/" class="nav-link fw-semibold" style="color: #f14705;" @click="closeMobileMenu">Home</router-link>
+        <router-link to="/" class="nav-link fw-semibold" style="color: #f14705;"
+          @click="closeMobileMenu">Home</router-link>
         <button class="btn-close" @click="closeMobileMenu">×</button>
       </div>
     </div>
@@ -255,7 +311,7 @@ const onCategoryChange = () => {
         <!-- <li class="nav-item">
          
         </li> -->
- 
+
 
         <!-- Dynamic Categories with Images -->
         <li v-for="item in categoryMenu" :key="item.id" class="nav-item mobile-category-item"
@@ -306,15 +362,15 @@ const onCategoryChange = () => {
           </ul>
         </li>
         <div class="ms-3 ">
-             <li class="nav-item ">
-          <router-link to="/shop" class="nav-link fw-bold" @click="closeMobileMenu">Shop Products</router-link>
-        </li>
-        <li class="nav-item">
-          <router-link to="/new-product" class="nav-link fw-bold" @click="closeMobileMenu">New Products</router-link>
-        </li>
-        <li class="nav-item">
-          <router-link to="/flash-sell" class="nav-link fw-bold" @click="closeMobileMenu">Flash Sell</router-link>
-        </li>
+          <li class="nav-item ">
+            <router-link to="/shop" class="nav-link fw-bold" @click="closeMobileMenu">Shop Products</router-link>
+          </li>
+          <li class="nav-item">
+            <router-link to="/new-product" class="nav-link fw-bold" @click="closeMobileMenu">New Products</router-link>
+          </li>
+          <li class="nav-item">
+            <router-link to="/flash-sell" class="nav-link fw-bold" @click="closeMobileMenu">Flash Sell</router-link>
+          </li>
         </div>
       </ul>
     </div>
@@ -326,9 +382,14 @@ const onCategoryChange = () => {
 </template>
 
 <style scoped>
+/* message  */
+
+/* message  */
 .mobile-menu-sidebar {
-  -webkit-overflow-scrolling: touch; /* For smooth scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
+  /* For smooth scrolling on iOS */
 }
+
 /* mobile menu  */
 /* Mobile Menu Toggle Button Styles */
 .mobile-menu-btn {
@@ -401,11 +462,15 @@ const onCategoryChange = () => {
   background-color: #f8f9fa;
   border-bottom: 1px solid #eee;
 }
+
 .mobile-menu-content {
   overflow-y: auto;
-  height: calc(100vh - 50px); /* Adjust based on your header height */
-  padding-bottom: 20px; /* Extra space at bottom */
+  height: calc(100vh - 50px);
+  /* Adjust based on your header height */
+  padding-bottom: 20px;
+  /* Extra space at bottom */
 }
+
 .mobile-category-item {
   border-bottom: 1px solid #eee;
 }
@@ -618,7 +683,7 @@ const onCategoryChange = () => {
 
 @media(max-width: 768px) {
   .navbar-brand {
-    width: auto;
+    /* width: auto; */
   }
 }
 

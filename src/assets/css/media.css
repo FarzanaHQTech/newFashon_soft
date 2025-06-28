@@ -32,6 +32,7 @@
 @media (min-width: 320px) and (max-width: 575px) {
     .banner_img {
         height: auto !important;
+        width: 0;
     }
     .filter_section {
         display: none !important;
@@ -154,7 +155,7 @@
       z-index: 99;
     }
   }
-  @media (max-width: 1020px){
+  @media (max-width: 1020px) and (min-width: 768px){
     .display_sm{
         display: block !important;
         font-size: 20px;
@@ -208,7 +209,7 @@
       display: none;
     }
     .navbar-brand img{
-        width: 135px;
+        width: 170px;
         height: auto;
     }
     .display_lg{

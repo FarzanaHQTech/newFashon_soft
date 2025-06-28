@@ -5,13 +5,14 @@
       <Header />
       <main class="main-wrapper">
         <transition name="fade" mode="out-in">
-          <router-view :key="$route.fullPath" />
+        
         </transition>
       </main>
       <Footer />
     </div>
   </div>
 </template>
+
 
 <script setup>
 import Header from './Header.vue'

@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, computed } from 'vue'
+import { onMounted, computed, ref } from 'vue'
 import { useCartCheckoutStore } from '../../../stores/cartCheckout'
 import { IMAGE_BASE_URL } from '../../../api'
 import { useRouter } from 'vue-router'
@@ -8,13 +8,16 @@ import { storeToRefs } from 'pinia'
 const store = useCartCheckoutStore()
 const { cartItems, subtotal, loading, selectedShippingCharge, shippingCharge } = storeToRefs(store)
 const router = useRouter()
+
+
+
 onMounted(async () => {
   console.log('Initializing checkout...');
 
   // Debug: Log initial cart state
   console.log('Initial cart state:', store.cartItems);
 
-    await store.fetchShippingCharge();
+  await store.fetchShippingCharge();
   // Set default shipping charge if needed
   if (store.shippingCharge.length > 0 && !store.selectedShippingCharge) {
     store.selectedShippingCharge = store.shippingCharge[0].shipping_charge;
@@ -85,7 +88,6 @@ onMounted(async () => {
     console.log('LocalStorage cart:', localStorage.getItem('cart_backup'));
   }
 });
-
 
 
 const uniqueCartCount = computed(() => {
@@ -174,11 +176,42 @@ const handleImageError = (event) => {
   event.target.src = 'path_to_placeholder_image'
 }
 
-const getVariantText = (variants) => {
-  if (!variants) return ''
-  // Implement logic to format variant text based on your data structure
-  return variants.map(v => v.name).join(' / ')
+
+
+const couponApplied = ref(false)
+
+const handleApplyCoupon = async () => {
+  if (!store.couponCode) return;
+
+  try {
+    // await store.applyCoupon(store.couponCode);
+    const response = await store.applyCoupon(store.couponCode);
+
+    if (response.success) {
+      console.log(' Coupon applied:', {
+        message: response.message,
+        discountAmount: response.discountAmount,
+        couponType: store.couponType,
+        couponDetails: store.couponDetails,
+        computedDiscount: store.computedCouponDiscount,
+        couponQuantity: store.quantity,
+        couponQuantityUsed: store.used,
+      });
+      couponApplied.value = true;
+    }
+  } catch (err) {
+    console.error(' Coupon apply failed:', err);
+  }
 }
+
+const handleRemoveCoupon = () => {
+  store.couponCode = '';          // clear input
+  // store.couponDiscount = 0;       // optional
+  store.couponDetails = null;
+  couponApplied.value = false;
+};
+
+
 
 </script>
 
@@ -192,10 +225,23 @@ const getVariantText = (variants) => {
             <h5 class="mb-0">Cart - <span id="cart_number">{{ store.cartCount }}</span></h5>
           </div>
           <div class="card-body cartBody">
+            <!-- Coupon Input & Buttons -->
+            <p v-if="store.couponDetails?.used >= store.couponDetails?.quantity" class="text-danger">
+              This coupon has already been fully used ({{ store.couponDetails.used }}/{{ store.couponDetails.quantity
+              }}).
+            </p>
             <div class="input-group mb-3">
               <input v-model="store.couponCode" type="text" class="form-control couponCode"
-                placeholder="Enter your coupon code">
-              <button @click="store.applyCoupon(store.couponCode)" type="button" class="btn btn-success couponButton">
+                placeholder="Enter your coupon code" />
+
+              <!-- Show Remove if coupon was applied -->
+              <button v-if="couponApplied" @click="handleRemoveCoupon" type="button"
+                class="btn btn-danger couponButton">
+                <i class="fas fa-times"></i>
+              </button>
+
+              <!-- Show Apply Coupon if not yet applied -->
+              <button v-else @click="handleApplyCoupon" type="button" class="btn btn-success couponButton">
                 Apply Coupon
               </button>
             </div>
@@ -213,52 +259,8 @@ const getVariantText = (variants) => {
                   </tr>
                 </thead>
                 <tbody>
-                  +
 
-                  <!-- <tr v-for="item in store.cartItems"
-                    :key="item.product_id + (item.variant_1 || '') + (item.variant_2 || '') + (item.variant_3 || '')">
-                    <th scope="row" class="fontSize">
-                      <div class="d-flex">
-                        <div class="remove">
-                          <button @click="store.removeItem(item.product_id)" class="btn btn-sm text-danger remove-item"
-                            type="button">
-                            <i class="fas fa-times"></i>
-                          </button>
-                        </div>
-                        <img :src="getImageUrl(item.image)" alt="" class="rounded border"
-                          style="height: 60px;width: 60px;" @error="handleImageError">
-                      </div>
-                    </th>
-                    <td class="fontSize">{{ item.name }}</td>
-                    <td class="fontSize">
-                      <template v-if="item.variant_1 || item.variant_2 || item.variant_3">
-                        {{[item.variant_1, item.variant_2, item.variant_3].filter(v => v).join(' / ')}}
-                      </template>
-<template v-else>
-                        N/A
-                      </template>
-</td>
-<td>
-  <div class="d-flex mb-4 align-items-start" style="max-width: 300px">
-    <button @click="store.updateQuantity(item.product_id, item.quantity - 1)" class="btn btn-primary me-2 qtybtn minus"
-      :disabled="item.quantity <= 1">
-      <i class="fas fa-minus"></i>
-    </button>
-    <div class="form-outline">
-      <input :value="item.quantity" style="width: 40px;" type="text" readonly class="form-control quantity">
-    </div>
-    <button @click="store.updateQuantity(item.product_id, item.quantity + 1)" class="btn btn-primary ms-2 qtybtn plus">
-      <i class="fas fa-plus"></i>
-    </button>
-  </div>
-</td>
-<td class="fontSize">
-  <strong>{{ (item.price ).toFixed(2) }} ৳</strong>
-  <span v-if="item.discount > 0">
-    <br>Discount: <strong>{{ (item.discount * item.quantity).toFixed(2) }} ৳</strong>
-  </span>
-</td>
-</tr> -->
+
                   <tr v-for="(item, index) in store.cartItems" :key="index">
                     <th scope="row" class="fontSize">
                       <div class="d-flex">
@@ -298,9 +300,9 @@ const getVariantText = (variants) => {
                       </div>
                     </td>
                     <td class="fontSize">
-                      <strong>{{ (item.price).toFixed(2) }} ৳</strong>
+                      <strong>{{ (item.price) }} ৳</strong>
                       <span v-if="item.discount > 0">
-                        <br>Discount: <strong>{{ (item.discount * item.quantity).toFixed(2) }} ৳</strong>
+                        <br>Discount: <strong>{{ (item.discount * item.quantity) }} ৳</strong>
                       </span>
                     </td>
                   </tr>
@@ -312,8 +314,20 @@ const getVariantText = (variants) => {
                   </tr>
                   <tr>
                     <td colspan="4" class="text-end" style="font-weight: bold;">কুপন ডিসকাউন্ট</td>
-                    <td class="prices" style="font-weight: bold;">{{ store.couponDiscount }} ৳</td>
+                    <td class="prices" style="font-weight: bold;">
+                      <template v-if="store.computedCouponDiscount > 0">
+                        <template v-if="store.couponType === 'percentage'">
+                          - {{ store.computedCouponDiscount.toFixed(2) }} ৳ ({{ store.couponDetails?.amount }}%)
+                        </template>
+                        <template v-else>
+                          - {{ store.computedCouponDiscount.toFixed(2) }} ৳
+                        </template>
+                      </template>
+                      <template v-else>0 ৳</template>
+
+                    </td>
                   </tr>
+
                   <!-- <tr>
                     <td colspan="4" class="text-end" style="font-weight: bold;">ডেলিভারি চার্জ</td>
                     <td class="prices" style="font-weight: bold;">

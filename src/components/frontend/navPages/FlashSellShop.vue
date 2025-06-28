@@ -9,7 +9,9 @@ const flashSellShop = useFlashNewStore();
 const { flashProductsShops } = storeToRefs(flashSellShop); 
 
 onMounted(async () => {
-  await flashSellShop.fetchFlashShopPage(); 
+  await flashSellShop.fetchFlashShopPage()
+//   console.log("Data",flashSellShop.fetchFlashShopPage());
+  ; 
 });
 </script>
 
@@ -19,7 +21,7 @@ onMounted(async () => {
     <div class="products shopProducts mt-3">  
       <div class="product" v-for="(item , index) in flashProductsShops" :key="index">
         <div class="image">
-          <router-link to="`https://newfashion.softitglobal.com/product-show/${item.name}`"
+          <router-link :to="{ name: 'ProductDetail', params: { slug: item.slug } }"
              :data-productid="item.id"
              :data-categoryid="item.category_id"
              :data-productname="item.name">
@@ -52,7 +54,7 @@ onMounted(async () => {
                 </div>
 
                 <div class="content px-2 text-center">
-                    <router-link to="https://newfashion.softitglobal.com/product-show/Regular%20Fit%20Jacquard%20Cotton%20Semi-Formal%20Panjabi"
+                    <router-link  :to="{ name: 'ProductDetail', params: { slug: item.slug } }"
                         id="product_show" :data-productid="item.id" data-categoryid="item.category_id"
                         :data-productname="item.name">
                         <div class="title">{{item.name}}</div>
@@ -61,7 +63,7 @@ onMounted(async () => {
 
 
                         <span class="current_price" style="color: #00276C;font-weight: bold;">{{item.price}} Tk</span>
-                        <!-- <del style="color: red;"> {{item.price}} Tk</del> -->
+
                     </div>
 
                 </div>

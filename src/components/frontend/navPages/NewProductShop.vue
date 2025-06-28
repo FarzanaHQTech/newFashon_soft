@@ -17,13 +17,13 @@ onMounted(async () => {
     <div class="products shopProducts mt-3">  
       <div class="product" v-for="(item , index) in newProductsShops" :key="index">
         <div class="image">
-          <a :href="`https://newfashion.softitglobal.com/product-show/${item.name}`"
+          <router-link :to="{ name: 'ProductDetail', params: { slug: item.slug } }"
              :data-productid="item.id"
              :data-categoryid="item.category_id"
              :data-productname="item.name">
             <img :src="`${IMAGE_BASE_URL}images/product/small/${item.main_image}`" alt="" class="first" />
             <img :src="`${IMAGE_BASE_URL}images/product/small/${item.main_image}`" alt="" class="second" />
-          </a>
+          </router-link>
            <div class="product_btn_position content">
                             <router-link :to="{ name: 'ProductDetail', params: { slug: item.slug } }">
                             <input type="hidden" name="_token" value="LTHwQNjo5ToXg7e35OXohGlNKkBqzc0oghUkFajK"

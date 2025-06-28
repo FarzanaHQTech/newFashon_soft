@@ -51,11 +51,12 @@ useHead({
 
 
 <template>
-  <div class="container-fluid">
+ <div class="container-fluid p-0 m-0">
+  
     <Skeleton v-if="isLoading" />
 
     <template v-else>
-      <div class="row">
+<div class="row g-0">
         <div class="col-lg-12 flex-grow-1 min-h-430">
           <div id="main_carousel" class="carousel slide pt-2 h-100" data-bs-ride="carousel">
             <div class="carousel-indicators">
@@ -69,10 +70,9 @@ useHead({
               <div v-for="(slider, index) in sliders" :key="slider.id"
                 :class="['carousel-item', 'h-100', { active: index === 0 }]" data-bs-interval="2000">
                 <router-link to="/">
-                  <img class="bg_image mobileHide" :src="`${IMAGE_BASE_URL}/sliders/${slider.image}`" alt="slider image"
-                    width="1200" height="400" loading="lazy" decoding="async" />
-                  <img class="bg_image mobileShow" :src="`${IMAGE_BASE_URL}/sliders/${slider.mobile_image}`" alt="slider image"
-                    width="600" loading="lazy" decoding="async" />
+                <img class="bg_image mobileHide" :src="`${IMAGE_BASE_URL}/sliders/${slider.image}`" alt="slider image" loading="lazy" decoding="async" />
+<img class="bg_image mobileShow" :src="`${IMAGE_BASE_URL}/sliders/${slider.mobile_image}`" alt="slider image" loading="lazy" decoding="async" />
+
                 </router-link>
               </div>
             </div>
@@ -99,31 +99,94 @@ useHead({
 
 <style>
 .bg_image {
+  width: 100%;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  width: 100%;
-  aspect-ratio: 3 / 1;
   object-fit: cover;
-}
-
-.mobileHide {
   display: block;
 }
 
-.mobileShow {
-  display: none;
+/* ✅ Large Desktop: width ≥ 1200px */
+@media (min-width: 1200px) {
+  .carousel-item {
+    min-height: 430px;
+  }
+
+  .bg_image {
+    height: 100%;
+    aspect-ratio: 3 / 1;
+  }
+
+  .mobileHide {
+    display: block;
+  }
+
+  .mobileShow {
+    display: none;
+  }
 }
 
-@media (max-width: 768px) {
+/* ✅ Standard Tablet/Desktop: 1000px–1199.98px */
+@media (min-width: 1000px) and (max-width: 1199.98px) {
+  .carousel-item {
+    min-height: 430px;
+  }
+
+  .bg_image {
+    height: 100%;
+    width: 100%;
+    aspect-ratio: 3 / 1;
+  }
+
+  .mobileHide {
+    display: block;
+  }
+
+  .mobileShow {
+    display: none;
+  }
+}
+
+/* ✅ Tablet/iPad: 768px–999.98px */
+@media (min-width: 768px) and (max-width: 999.98px) {
+  .carousel-item {
+    min-height: 400px;
+  }
+
+  .bg_image {
+    height: 100%;
+    aspect-ratio: 3 / 1;
+  }
+
   .mobileHide {
     display: none;
   }
+
   .mobileShow {
     display: block;
   }
+}
+
+/* ✅ Mobile: width ≤ 767.98px */
+@media (max-width: 767.98px) {
+  .carousel-item {
+    min-height: auto;
+  }
+
   .bg_image {
+    height: 100%;
     aspect-ratio: 3 / 2;
   }
+
+  .mobileHide {
+    display: none;
+  }
+
+  .mobileShow {
+    display: block;
+  }
 }
+
+
 </style>

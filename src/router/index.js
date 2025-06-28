@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../components/layouts/Home.vue'
 import { posadminApi } from '../api'
 import FAQ404 from '../components/pages/frontend/FAQ404.vue'
+import { useAuthStore } from '../stores/Auth/customer_reg'
 
 const routes = [
   {
@@ -20,10 +21,19 @@ const routes = [
       preload: true
     }
   },
+
   {
     path: '/registration',
     name: 'Registration',
     component: () => import('../components/pages/frontend/loginRegistration/Registration.vue'),
+    meta: {
+      preload: true
+    }
+  },
+  {
+    path: '/customer/dashboard',
+    name: 'Customer-Dashboard',
+    component: () => import('../components/backend/dashboard/CustomerDashboard.vue'),
     meta: {
       preload: true
     }
@@ -100,22 +110,26 @@ const router = createRouter({
   }
 })
 router.beforeEach(async (to, from, next) => {
-  // Show loading state if needed (handled in App.vue)
-  
-  // Preload component if it's a dynamic import
-  if (typeof to.matched[0]?.components?.default === 'function') {
-    await to.matched[0].components.default();
+  const auth = useAuthStore()
+
+  // Redirect unauthenticated users away from customer pages
+  if (to.path.startsWith('/customer') && !auth.token) {
+    return next('/login')
   }
-  
-  // Prefetch API data for specific routes
+
+  // Preload dynamic component if needed
+  if (typeof to.matched[0]?.components?.default === 'function') {
+    await to.matched[0].components.default()
+  }
+
+  // Prefetch API data
   if (to.name === 'ProductDetail') {
     const slug = to.params.slug
     await prefetchProductData(slug)
   }
-  
+
   next()
 })
-
 async function prefetchProductData(slug) {
   try {
     await posadminApi.get(`/product/${slug}`)

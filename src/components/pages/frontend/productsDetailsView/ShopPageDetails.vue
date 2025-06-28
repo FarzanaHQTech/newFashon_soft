@@ -28,7 +28,7 @@ const store = useCartCheckoutStore();
 // State management
 const isLoading = ref(false);
 const activeIndex = ref(0);
-const defaultSize = 'https://newfashion.softitglobal.com/assets/image/size.png'
+const defaultSize = 'https:/https://vue.softitglobalbd.xyz//assets/image/size.png'
 const thumbsSwiper = ref(null);
 const mainSwiper = ref(null);
 const selectedVariants = ref({})
@@ -39,27 +39,104 @@ onMounted(async () => {
   shopPage.shopPages = null;
   shopPage.relatedProducts = [];
   await loadProductData();
+  // console.log("ShopPage details", shopPage.shopPages);
+
 })
 
-// Watch for slug changes
-watch(
-  () => route.params.slug,
-  async (newSlug, oldSlug) => {
-    if (newSlug !== oldSlug) {
-      await loadProductData();
+watch(selectedVariants, async (newVal) => {
+  if (!hasVariants.value || !shopPages.value) return;
+
+  try {
+    const variantNames = Object.values(newVal);
+    if (variantNames.length < variantOptions.value.length) return;
+
+    const productId = shopPages.value.id;
+    const variant_1 = variantNames[0] || '';
+    const variant_2 = variantNames[1] || '';
+
+    const response = await posadminApi.get('/get-variant-price', {
+      params: {
+        productId,
+        variant_1,
+        variant_2
+      }
+    });
+
+    // console.log(' Variant price API response:', response.data);
+
+    // if (response.data.status) {
+    //   // Create a new object to ensure reactivity
+    //   const updatedShopPage = {
+    //     ...shopPages.value,
+    //     variant_id: response.data.variant_id,
+    //     is_promotion: false,
+    //     promotion_price: null,
+    //     price: response.data.variantPrice
+    //   };
+    if (response.data.status) {
+  shopPages.value = {
+    ...shopPages.value,
+    variant_id: response.data.variant_id,
+    price: response.data.variantPrice
+    // Do not override is_promotion or promotion_price!
+  };
+
+
+
+      // Replace the entire object
+      shopPages.value = updatedShopPage;
+
+      // console.log('Updated price:', updatedShopPage.price);
     }
+
+  } catch (error) {
+    console.error(' Error fetching variant price:', error);
   }
-)
+}, { deep: true });
+
+// const displayPrice = computed(() => {
+//   if (!shopPages.value) {
+//     console.log('No shop page data');
+//     return 0;
+//   }
+
+//   console.log('Current price values:', {
+//     price: shopPages.value.price,
+//     is_promotion: shopPages.value.is_promotion,
+//     promotion_price: shopPages.value.promotion_price
+//   });
+
+//   if (shopPages.value.is_promotion && shopPages.value.promotion_price) {
+//     return shopPages.value.promotion_price;
+//   }
+//   return shopPages.value.price;
+// });
+
 
 // Centralized data loading function
+const displayPrice = computed(() => {
+  if (shopPages.value?.promotion == 1 && shopPages.value?.promotion_price) {
+    return shopPages.value.promotion_price
+  }
+  return shopPages.value?.price
+})
+
+
+
 async function loadProductData() {
   isLoading.value = true;
   try {
     // Clear previous data immediately
     shopPage.shopPages = null;
     shopPage.relatedProducts = [];
-    
+
     await shopPage.fetchShopPage({ slug: route.params.slug });
+
+    const product = shopPage.shopPages;
+if (product && product.promosion_price && !product.promotion_price) {
+  product.promotion_price = product.promosion_price;
+}
+console.log('🧪 product data:', shopPage.shopPages);
     activeIndex.value = 0;
   } catch (error) {
     console.error('Error loading product:', error);
@@ -93,9 +170,7 @@ const allImages = computed(() => {
 });
 
 // Swiper controls
-const setThumbsSwiper = (swiper) => {
-  thumbsSwiper.value = swiper;
-};
+
 
 const setMainSwiper = (swiper) => {
   mainSwiper.value = swiper;
@@ -145,51 +220,17 @@ const hasVariants = computed(() => {
   return shopPages.value?.is_variant == 1 && variantOptions.value.length > 0
 })
 
-const hasXsmallProducts = computed(() => {
-  if (!shopPages.value || !shopPages.value.variant_value) return false;
-  try {
-    const variantValues = JSON.parse(shopPages.value.variant_value);
-    return variantValues.some(variant =>
-      variant.variant_name.toLowerCase() === 'xsmall' &&
-      variant.variant_items.some(item => item.stock > 0)
-    );
-  } catch {
-    return false;
-  }
-});
 
 // Price calculations
-const displayPrice = computed(() => {
-  if (!shopPages.value) return 0;
-  if (shopPages.value.is_promotion && shopPages.value.promotion_price) {
-    return shopPages.value.promotion_price;
-  }
-  return shopPages.value.price;
-});
+// const displayPrice = computed(() => {
+//   if (!shopPages.value) return 0;
+//   if (shopPages.value.is_promotion && shopPages.value.promotion_price) {
+//     return shopPages.value.promotion_price;
+//   }
+//   return shopPages.value.price;
+// });
 
-// Watch for variant changes and update price
-watch(selectedVariants, async (newVal) => {
-  if (!hasVariants.value || !shopPages.value) return;
 
-  try {
-    const variantNames = Object.values(newVal);
-    if (variantNames.length !== variantOptions.value.length) return;
-
-    const response = await frontendApi.post('/variable-price', {
-      productId: shopPages.value.id,
-      variant_1: variantNames[0] || null,
-      variant_2: variantNames[1] || null,
-      variant_3: variantNames[2] || null
-    });
-
-    shopPages.value.price = response.data.variantPrice;
-    shopPages.value.promotion_price = response.data.promotional_price;
-  } catch (error) {
-    console.error('Error updating variant price:', error);
-  }
-}, { deep: true });
-
-// Quantity controls
 const increaseQuantity = () => {
   if (quantity.value < 12) quantity.value++
 }
@@ -201,7 +242,7 @@ const decreaseQuantity = () => {
 // Cart functions
 const addToCart = async () => {
   try {
-    selectedVariants.value = {}
+    // selectedVariants.value = {}
     const variantInputs = document.querySelectorAll('.burmanRadio__input:checked')
 
     // Collect selected variants
@@ -254,8 +295,21 @@ const addToCart = async () => {
 
 async function orderNow() {
   try {
-    selectedVariants.value = {};
+    // selectedVariants.value = {};
     const variantInputs = document.querySelectorAll('.burmanRadio__input:checked');
+
+    // Clear existing variants first
+    Object.keys(selectedVariants.value).forEach(key => {
+      delete selectedVariants.value[key]
+    })
+
+    // Collect selected variants
+    variantInputs.forEach(el => {
+      const variantNum = el.name.split('_')[1]
+      selectedVariants.value[`variant_${variantNum}`] = el.value
+    })
+
+
 
     if (hasVariants.value) {
       variantInputs.forEach(el => {
@@ -316,7 +370,7 @@ async function orderNow() {
     <!-- Main Content -->
     <div v-else class="row justify-content-between">
       <!-- Product Images Section -->
-      <div class="col-lg-6 col-md-6 col-sm-8 col-12 img_section">
+      <div class="col-lg-6 col-md-6  col-12 img_section">
         <div class="row">
           <!-- Desktop Thumbnail: left side (hidden on mobile) -->
           <div class="col-md-2 d-none d-md-block nav_image1 pe-0">
@@ -341,9 +395,8 @@ async function orderNow() {
             </swiper>
 
             <!-- Mobile Thumbnail: below main image -->
-            <div class="d-block d-md-none nav_images mt-3">
-              <swiper :modules="modules" :spaceBetween="10" :slidesPerView="4" :freeMode="true"
-                class="mobile-thumb-swiper">
+            <div class="d-block d-md-none nav_images mt-3 mb-3">
+              <swiper :modules="modules" :slidesPerView="4" :freeMode="true" class="mobile-thumb-swiper">
                 <swiper-slide v-for="(img, index) in allImages" :key="img.id || index" @click="onThumbClick(index)">
                   <img :src="`${IMAGE_BASE_URL}/images/product/xsmall/${img.image}`"
                     :class="{ 'border border-primary': activeIndex === index }" class="img-fluid cursor-pointer" />
@@ -361,15 +414,26 @@ async function orderNow() {
             {{ shopPages.name }}
           </h2>
           <span><i class="fa fa-eye"></i> {{ shopPages.view_count }} </span>
-          <h4 class="pop bold">
-            <span v-if="shopPages.is_promotion && shopPages.promotion_price"
-              class="text-decoration-line-through text-muted me-2">
-              {{ shopPages.price }} Tk
-            </span>
-            <span id="pro_price">
-              {{ shopPages.is_promotion && shopPages.promotion_price ? shopPages.promotion_price : shopPages.price }} Tk
-            </span>
-          </h4>
+       
+
+       <h4 class="pop bold">
+
+  <!-- Show promotion price if it's valid -->
+<template v-if="shopPages.promotion == 1 && shopPages.promotion_price">
+
+  <span class="me-2"> {{ shopPages.promotion_price }} Tk</span>
+<del class="text-danger">{{ shopPages.price }} Tk</del>
+  </template>
+
+  <!-- Show normal price if no promotion -->
+  <template v-else>
+    <span class="text-dark">{{ shopPages.price }} Tk</span>
+  </template>
+
+</h4>
+
+
+
           <div class="size_chart mt-3 d-none">
             <img :src="defaultSize" alt="" class="" />
           </div>
@@ -379,13 +443,20 @@ async function orderNow() {
 
           <form method="POST" id="order_submit">
             <!-- size and color -->
+
+
             <div v-for="(option, index) in variantOptions" :key="index" class="d-flex" v-if="shopPages.is_variant == 1">
               <h4 class="pop medium">{{ option }}:</h4>
               <div class="sizes d-flex flex-wrap align-items-center">
                 <div v-for="(value, i) in variantValues[index]?.split(',')" :key="i" class="burmanRadio me-2"
                   :class="{ 'required-highlight': hasVariants && !selectedVariants[`variant_${index + 1}`] }">
+                  <!-- <input type="radio" class="burmanRadio__input" :id="`variant_${index + 1}_${value.trim()}`"
+                    :name="`variant_${index + 1}`" :value="value.trim()" required
+                    @change="option.toLowerCase() === 'color' ? updateImageByColor(value.trim()) : null" /> -->
+                  <!-- In your template, modify the radio inputs: -->
                   <input type="radio" class="burmanRadio__input" :id="`variant_${index + 1}_${value.trim()}`"
                     :name="`variant_${index + 1}`" :value="value.trim()" required
+                    v-model="selectedVariants[`variant_${index + 1}`]"
                     @change="option.toLowerCase() === 'color' ? updateImageByColor(value.trim()) : null" />
                   <label :for="`variant_${index + 1}_${value.trim()}`" class="burmanRadio__label">
                     {{ value.trim() }}
@@ -799,9 +870,11 @@ async function orderNow() {
   0% {
     box-shadow: 0 0 0 0 rgba(220, 53, 69, 0.4);
   }
+
   70% {
     box-shadow: 0 0 0 10px rgba(220, 53, 69, 0);
   }
+
   100% {
     box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
   }

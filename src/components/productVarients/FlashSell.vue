@@ -143,10 +143,11 @@ onMounted(() => {
           </router-link>
           <div class="price">
             <span class="current_price">
-              {{ item.price }} Tk
+                {{ item.promotion_price }} Tk
             </span>
-            <del v-if="item.promotion && item.promotion_price" class="original_price">
-              {{ item.wprice }} Tk
+            <del v-if="item.promotion && item.promotion_price" class="original_price" style="color: red;">
+           
+               {{ item.price }} Tk
             </del>
           </div>
         </div>

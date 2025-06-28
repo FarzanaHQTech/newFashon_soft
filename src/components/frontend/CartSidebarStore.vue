@@ -68,8 +68,8 @@ const getImageUrl = (imagePath) => {
           <div class="cart-item-details">
             <h6>{{ item.name }}</h6>
             <div class="d-flex justify-content-between">
-              <span>{{ item.quantity }} × {{ item.price.toFixed(2) }}৳</span>
-              <span>{{ (item.price * item.quantity).toFixed(2) }}৳</span>
+              <span>{{ item.quantity }} × {{ item.price }}৳</span>
+              <span>{{ (item.price * item.quantity) }}৳</span>
             </div>
             <div class="quantity_box d-flex mt-2">
               <button class="btn btn-sm" @click="changeQty(generateCartItemKey(item), item.quantity - 1)">-</button>
@@ -100,7 +100,7 @@ const getImageUrl = (imagePath) => {
     <div v-if="cartItems.length > 0" class="cart-sidebar-footer">
       <div class="cart-total">
         <span>Subtotal:</span>
-        <span>{{ subtotal.toFixed(2) }}৳</span>
+        <span>{{ subtotal }}৳</span>
       </div>
       <router-link to="/checkout" class="btn btn-info w-100" @click="emit('close')">
         Checkout
