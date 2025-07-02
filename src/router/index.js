@@ -3,6 +3,7 @@ import Home from '../components/layouts/Home.vue'
 import { posadminApi } from '../api'
 import FAQ404 from '../components/pages/frontend/FAQ404.vue'
 import { useAuthStore } from '../stores/Auth/customer_reg'
+import { useCustomerStore } from '../stores/Auth/customerDash'
 
 const routes = [
   {
@@ -38,6 +39,34 @@ const routes = [
       preload: true
     }
   },
+  {
+    path: '/customer/my-orders',
+    name: 'MyOrders',
+    component: () => import('../components/backend/dashboard/CustomerOrder.vue'),
+    meta: {
+      preload: true
+    }
+  },
+{
+  path: '/customer/profile-edit/:id',
+  name: 'Profile-Edit',
+  component: () => import('../components/backend/dashboard/ProfileUpdate.vue'),
+  props: true, // important!
+  meta: {
+    preload: true
+  }
+},
+{
+  path: '/customer/changePassword/:id',
+  name: 'Change-Password',
+  component: () => import('../components/backend/dashboard/ChangePassword.vue'),
+  props: true, // important!
+  meta: {
+    preload: true
+  }
+},
+
+
   {
     path: '/product-show/:slug',
     name: 'ProductDetail',
@@ -110,9 +139,13 @@ const router = createRouter({
   }
 })
 router.beforeEach(async (to, from, next) => {
-  const auth = useAuthStore()
+  const auth = useCustomerStore()
 
-  // Redirect unauthenticated users away from customer pages
+ if (!auth.token) {
+    auth.restoreAuth()
+  }
+
+  //  Protect dashboard routes
   if (to.path.startsWith('/customer') && !auth.token) {
     return next('/login')
   }

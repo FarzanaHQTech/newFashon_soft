@@ -1,3 +1,42 @@
+
+<script setup>
+import { ref, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
+import { frontendApi } from '../../../api';
+import { useCustomerStore } from '../../../stores/Auth/customerDash';
+import { storeToRefs } from 'pinia';
+
+const route = useRoute();
+const orderId = route.params.order_id;
+const order = ref(null);
+const loading = ref(true);
+const error = ref(null);
+const customerInfo = useCustomerStore()
+const {user} = storeToRefs(customerInfo)
+
+onMounted(async () => {
+  try {
+
+    const response = await frontendApi.get(`/thank-you/${orderId}`);
+    console.log('Order details:', response.data.order);
+
+    if (response.data.order) {
+      order.value = response.data.order; // 
+    } else {
+      throw new Error('Order data not found in response');
+    }
+  } catch (err) {
+    console.error('Failed to load order:', err);
+    error.value = err.response?.data?.message || err.message || 'Failed to load order details';
+  } finally {
+    loading.value = false;
+  }
+      customerInfo.getUserFromStorage()
+});
+
+</script>
+
+
 <template>
  
 <div v-if="loading" class="text-center py-5 text-white">
@@ -17,13 +56,19 @@
         </h2>
         <h5 class="text-center" style="color: #fff;">কিছুক্ষণের মাঝে আপনাকে মেসেজ অথবা কল করা হবে।</h5>
         <router-link to="/" class="btn btn-warning bold">Shop More</router-link>
-        <router-link
-          to="`https://newfashion.softitglobal.com/sales/gen_invoice/${order?.id}`" 
+        <router-link v-if="user.value"
+          to="customer/my-orders" 
+          class="btn btn-dark orange-bg bold"
+        >
+          Show Order
+        </router-link>
+        <!-- <router-link
+          to="`https://vue.softitglobalbd.xyz//sales/gen_invoice/${order?.id}`" 
           class="btn btn-dark orange-bg bold"
           v-if="order"
         >
           Print Invoice
-        </router-link>
+        </router-link> -->
       </div>
     </div>
   </section>
@@ -33,35 +78,6 @@
 
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
-import { frontendApi } from '../../../api';
-
-const route = useRoute();
-const orderId = route.params.order_id;
-const order = ref(null);
-const loading = ref(true);
-const error = ref(null);
-
-onMounted(async () => {
-  try {
-    const response = await frontendApi.get(`/thank-you/${orderId}`);
-    console.log('Order details:', response.data.order);
-
-    if (response.data.order) {
-      order.value = response.data.order; // 
-    } else {
-      throw new Error('Order data not found in response');
-    }
-  } catch (err) {
-    console.error('Failed to load order:', err);
-    error.value = err.response?.data?.message || err.message || 'Failed to load order details';
-  } finally {
-    loading.value = false;
-  }
-});
-</script>
 
 <style scoped>
 .thanks_section {

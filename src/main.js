@@ -20,9 +20,11 @@ import toastr from 'toastr';
 import { FontAwesomeIcon } from './plugins/fontawesome.js';
 import { useToast } from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-sugar.css';
+import './assets/css/customerDash.css'
+import { useCustomerStore } from './stores/Auth/customerDash.js';
 
 
-
+// import { useAuthStore } from './stores/Auth/customer_reg'
 
 const app = createApp(App);
 const pinia = createPinia();
@@ -35,7 +37,7 @@ app.component('font-awesome-icon', FontAwesomeIcon);
 
 //for bearer token
 axios.defaults.withCredentials = true;
-axios.defaults.headers.common['Authorization'] = `Bearer ${localStorage.getItem('auth_token')}`;
+axios.defaults.headers.common['Authorization'] = `Bearer ${sessionStorage.getItem('auth_token')}`;
 
 // axios.defaults.withCredentials = true;
 
@@ -58,5 +60,5 @@ router.afterEach(() => {
     loadingStore && loadingStore.stopLoading();
   }, 200);
 });
-
+useCustomerStore().restoreAuth(); 
 app.mount('#app');

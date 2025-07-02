@@ -1,0 +1,77 @@
+    .usersidebardiv{
+        padding:10px;
+    }
+    .usermainbody {
+        padding: 10px;
+    }
+    .usersidebar {
+        background: white;
+        padding: 10px;
+        border: 1px solid #dadada;
+    }
+    ul#usersidebar {
+    padding: 0;
+    margin: 0;
+    }
+    ul#usersidebar li {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    text-decoration: none;
+    }
+    ul#usersidebar li a {
+    color: #333;
+    padding: 2px 0;
+    text-decoration: none;
+    display: block;
+    font-size: 14px;
+    }
+    .profiledetails {
+    padding: 0px;
+    background: white;
+    margin-bottom: 15px;
+    border: 1px solid #dadada;
+    }
+    .dashboardcountinfo {
+    width: 20%;
+    border-right: 1px solid #dcdcdc;
+    }
+    a.editPrifilebtn {
+        padding: 5px 0px 4px;
+        text-align: center;
+        background: #0066bf;
+        transition-duration: 0.3s;
+        display: block;
+        margin-bottom: 5px;
+        text-decoration: none;
+        color: #ffffff;
+    }
+    .dashbaordInfo {
+    background: white;
+    padding: 15px;
+    border: 1px solid #dadada;
+    }
+    .usercontent {
+    background: white;
+    padding: 15px;
+    border: 1px solid #dadada;
+    }
+    @media only screen and (max-width: 991px) {
+      
+        .dashboardcountinfo p {
+            font-size: 10px;
+        }
+        
+    }
+    
+    @media only screen and (max-width: 767px) {
+        .dashboardcountinfo p {
+            font-size: 8px;
+        }
+    }
+    
+    @media only screen and (max-width: 575px) {
+        .dashboardcountinfo p {
+            font-size: 6px;
+        }
+    }

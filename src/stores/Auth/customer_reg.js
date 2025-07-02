@@ -31,28 +31,28 @@ export const useAuthStore = defineStore('auth', {
         return false
       }
     },
-      async customer(formData) {
-         if(!this.token) return
-      try {
+    //   async customer(formData) {
+    //      if(!this.token) return
+    //   try {
        
-        const response = await posadminApi.post('/user', {
-          headers:{
-             Authorization:`Bearer${this.toke}`
-          }
+    //     const response = await posadminApi.post('/user', {
+    //       headers:{
+    //          Authorization:`Bearer${this.toke}`
+    //       }
          
-        })
-         this.token = null
-        this.user = null
-        localStorage.removeItem('token')
-      } catch (error) {
-        if (error.response && error.response.data.errors) {
-          this.errors = error.response.data.errors
-        } else {
-          this.errors = { general: ['Something went wrong.'] }
-        }
-        return false
-      }
-    }
+    //     })
+    //      this.token = null
+    //     this.user = null
+    //     localStorage.removeItem('token')
+    //   } catch (error) {
+    //     if (error.response && error.response.data.errors) {
+    //       this.errors = error.response.data.errors
+    //     } else {
+    //       this.errors = { general: ['Something went wrong.'] }
+    //     }
+    //     return false
+    //   }
+    // }
   }
 })
 

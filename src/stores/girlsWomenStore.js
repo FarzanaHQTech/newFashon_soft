@@ -52,7 +52,7 @@ async fetchCategories(page = 1) {
 
   try {
     const res = await posadminApi.get(`/home?page=${page}`);
-    console.log('API Response:', res.data);
+    // console.log('API Response:', res.data);
     
     if (res.data.success) {
       // First filter out categories with no products

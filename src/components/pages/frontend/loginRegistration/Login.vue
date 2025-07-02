@@ -65,43 +65,18 @@
      
 </template>
 
-<!-- <script setup>
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useLoginStore } from '../../../../stores/Auth/login'
-import { storeToRefs } from 'pinia'
 
-const router = useRouter()
-const loginStore = useLoginStore()
-const { error } = storeToRefs(loginStore)
-
-const form = ref({
-  email: '',
-  password: '',
-  remember: false,
-})
-
-const submitLogin = async () => {
-  console.log('Submitting login...', form.value)
-  const success = await loginStore.fetchLoginUser(form.value)
-  if (success) {
-    router.push('/customer/dashboard')
-  }
-}
-</script> -->
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useLoginStore } from '../../../../stores/Auth/login'
 import { useAuthStore } from '../../../../stores/Auth/customer_reg'
-// import { useLoginStore } from '../../../../stores/Auth/login'
-// import { useAuthStore } from '../../../../stores/Auth/customer_reg'
-// import { useAuthStore } from '../../../stores/Auth/customer_reg'
+import { useToast } from 'vue-toast-notification'
 
 const router = useRouter()
 const loginStore = useLoginStore()
 // const authStore = useAuthStore()
-
+const toast = useToast()
 const form = ref({
   email: '',
   password: '',
@@ -114,10 +89,11 @@ const submitLogin = async () => {
 
   console.log('Login result:', success) // This was showing undefined
   if (success) {
-    alert('Login Success')
-    router.push('/customer/dashboard')
+      router.push('/customer/dashboard')
+    toast.success('Successfully Login ')
   } else {
-    alert('Login failed. Please check your credentials.')
+     toast.error('Login failed. Please check your credentials.')
+
   }
 }
 

@@ -15,6 +15,9 @@ import 'swiper/css/zoom'
 import 'swiper/css/navigation'
 import { useToast } from 'vue-toast-notification'
 
+import ptsv from '../../../../../src/assets/image/size.png'
+
+
 // Initialize toast
 const $toast = useToast()
 const modules = [Navigation, Thumbs, Pagination, Zoom]
@@ -64,15 +67,7 @@ watch(selectedVariants, async (newVal) => {
 
     // console.log(' Variant price API response:', response.data);
 
-    // if (response.data.status) {
-    //   // Create a new object to ensure reactivity
-    //   const updatedShopPage = {
-    //     ...shopPages.value,
-    //     variant_id: response.data.variant_id,
-    //     is_promotion: false,
-    //     promotion_price: null,
-    //     price: response.data.variantPrice
-    //   };
+  
     if (response.data.status) {
   shopPages.value = {
     ...shopPages.value,
@@ -94,57 +89,64 @@ watch(selectedVariants, async (newVal) => {
   }
 }, { deep: true });
 
-// const displayPrice = computed(() => {
-//   if (!shopPages.value) {
-//     console.log('No shop page data');
-//     return 0;
-//   }
 
-//   console.log('Current price values:', {
-//     price: shopPages.value.price,
-//     is_promotion: shopPages.value.is_promotion,
-//     promotion_price: shopPages.value.promotion_price
-//   });
-
-//   if (shopPages.value.is_promotion && shopPages.value.promotion_price) {
-//     return shopPages.value.promotion_price;
-//   }
-//   return shopPages.value.price;
-// });
-
-
-// Centralized data loading function
 const displayPrice = computed(() => {
   if (shopPages.value?.promotion == 1 && shopPages.value?.promotion_price) {
     return shopPages.value.promotion_price
   }
   return shopPages.value?.price
 })
+  async function loadProductData() {
+    isLoading.value = true;
+    try {
+      // Clear previous data
+      shopPage.shopPages = null;
+      shopPage.relatedProducts = [];
 
+      // Load new data
+      await shopPage.fetchShopPage({ slug: route.params.slug });
 
-
-async function loadProductData() {
-  isLoading.value = true;
-  try {
-    // Clear previous data immediately
-    shopPage.shopPages = null;
-    shopPage.relatedProducts = [];
-
-    await shopPage.fetchShopPage({ slug: route.params.slug });
-
-    const product = shopPage.shopPages;
-if (product && product.promosion_price && !product.promotion_price) {
-  product.promotion_price = product.promosion_price;
-}
-console.log('🧪 product data:', shopPage.shopPages);
-    activeIndex.value = 0;
-  } catch (error) {
-    console.error('Error loading product:', error);
-    router.push('/404');
-  } finally {
-    isLoading.value = false;
+      const product = shopPage.shopPages;
+      if (product && product.promosion_price && !product.promotion_price) {
+        product.promotion_price = product.promosion_price;
+      }
+      
+      activeIndex.value = 0;
+    } catch (error) {
+      console.error('Error loading product:', error);
+      router.push('/404');
+    } finally {
+      isLoading.value = false;
+    }
   }
-}
+
+watch(() => route.params.slug, async (newSlug) => {
+  if (newSlug) {
+    await loadProductData();
+  }
+}, { immediate: true });
+// async function loadProductData() {
+//   isLoading.value = true;
+//   try {
+//     // Clear previous data immediately
+//     shopPage.shopPages = null;
+//     shopPage.relatedProducts = [];
+
+//     await shopPage.fetchShopPage({ slug: route.params.slug });
+
+//     const product = shopPage.shopPages;
+// if (product && product.promosion_price && !product.promotion_price) {
+//   product.promotion_price = product.promosion_price;
+// }
+// // console.log(' product data:', shopPage.shopPages);
+//     activeIndex.value = 0;
+//   } catch (error) {
+//     console.error('Error loading product:', error);
+//     router.push('/404');
+//   } finally {
+//     isLoading.value = false;
+//   }
+// }
 
 // Combine main image and additional images for gallery
 const allImages = computed(() => {
@@ -220,15 +222,6 @@ const hasVariants = computed(() => {
   return shopPages.value?.is_variant == 1 && variantOptions.value.length > 0
 })
 
-
-// Price calculations
-// const displayPrice = computed(() => {
-//   if (!shopPages.value) return 0;
-//   if (shopPages.value.is_promotion && shopPages.value.promotion_price) {
-//     return shopPages.value.promotion_price;
-//   }
-//   return shopPages.value.price;
-// });
 
 
 const increaseQuantity = () => {
@@ -370,7 +363,7 @@ async function orderNow() {
     <!-- Main Content -->
     <div v-else class="row justify-content-between">
       <!-- Product Images Section -->
-      <div class="col-lg-6 col-md-6  col-12 img_section">
+      <div class="col-lg-6 col-md-8  col-12 img_section">
         <div class="row">
           <!-- Desktop Thumbnail: left side (hidden on mobile) -->
           <div class="col-md-2 d-none d-md-block nav_image1 pe-0">
@@ -465,7 +458,7 @@ async function orderNow() {
               </div>
             </div>
 
-            <div class="align-items-center flex-wrap mt-2 col-lg-6">
+            <div class="align-items-center flex-wrap mt-2 col-lg-8">
               <input type="hidden" name="product_id" :value="shopPages.id">
               <div class="d-flex justify-content-between align-items-start mb-1" style="width: 100%;">
                 <!-- Quantity controls -->
@@ -485,7 +478,7 @@ async function orderNow() {
               </div>
 
               <div class="btn_submit">
-                <button class="btn mt-lg-2 semi text-cap col-12 add_to_cart btn_design rounded-5"
+                <button class="btn mt-lg-2 semi text-cap col-12 add_to_cart btn_design rounded-5 mb-2"
                   @click.prevent="addToCart">
                   <i class="fa-solid fa-cart-plus text-white mx-2"></i> কার্টে রাখুন
                 </button>
@@ -525,7 +518,7 @@ async function orderNow() {
               </h2>
               <div id="flush-collapseTwo1" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
                 <div class="accordion-body">
-                  <img :src="shopPages.size_chart ?? defaultSize" alt="size">
+                  <img :src="shopPages.size_chart ?? ptsv" alt="size">
                 </div>
               </div>
             </div>
@@ -591,7 +584,7 @@ async function orderNow() {
       <div class="banner rounded-2">
         <div class="ps-lg-5 text-center w-100">
           <div class="title">Related Products</div>
-          <img :src="ptsv" style="width: 200px" />
+          <!-- <img :src="ptsv" style="width: 200px" /> -->
         </div>
       </div>
       <div class="products mt-3">
@@ -736,7 +729,7 @@ async function orderNow() {
 
 @media (max-width: 700px) {
   .orderBtnDesign {
-    width: 65%;
+    width: 80%;
     flex-grow: 1;
     margin-left: auto;
   }

@@ -100,7 +100,7 @@ async fetchTopSellPage(page = 1, cat_id = null, q = '') {
         }
 
         const res = await posadminApi.get(url);
-        console.log(" Fetched:", res.data);
+        // console.log(" Fetched:", res.data);
         this.topProductsShops = res.data.data;
         this.pagination = res.data.pagination;
         this.currentPage = page;

@@ -13,11 +13,9 @@ import { watch } from 'vue'
 import CartSidebarStore from '../frontend/CartSidebarStore.vue'
 import { useSiteApi } from '../../stores/siteApi'
 import { SITE_IMAGE_BASE_URL } from '../../api'
+import { useCustomerStore } from '../../stores/Auth/customerDash'
 const siteStore = useSiteApi();
 const { siteInfo } = storeToRefs(siteStore);
-
-
-
 
 //browse Categories menues
 const browseCategories = useFlashNewStore()
@@ -42,6 +40,7 @@ const { categoryMenu } = storeToRefs(categoryStore)
 const { cartCount, grandTotal, cartItems, subtotal } = storeToRefs(cartStore)
 
 const showCartSidebar = ref(false)
+
 const showMobileMenu = ref(false)
 
 // Methods
@@ -72,13 +71,18 @@ const getImageUrl = (imagePath) => {
   }
   return `${IMAGE_BASE_URL}/images/product/large/${imagePath}`;
 }
-
+const authStore = useCustomerStore()
+const { user } = storeToRefs(authStore)
 // Initialize on component mount
 onMounted(async () => {
   loadTopProducts();
   await cartStore.fetchCart()
   await categoryStore.fetchCategoriesMenu()
   await siteStore.fetchSiteInfo()
+  if(sessionStorage.getItem('auth_user')){
+
+    authStore.getUserFromStorage()
+  }
 
 })
 
@@ -99,10 +103,13 @@ const onCategoryChange = () => {
   route.push({ path: '/shop', query: { cat_id: selectedCategoryId.value } });
 };
 
-const showValue = ref(false);
+const showActions = ref(false); // Rename this
 function toggleAction(){
-  showValue.value = !showValue.value 
-} 
+  showActions.value = !showActions.value 
+}
+
+//login
+const isLoggedIn = ref(!!sessionStorage.getItem('auth_user'))
 
 </script>
 <template>
@@ -130,9 +137,13 @@ function toggleAction(){
         </div>
 
         <!-- Mobile login icon -->
-        <router-link to="/login" class="btn px-0 d-lg-none" style="color: navy;">
-          <img :src="login" style="width: 30px; filter: invert(1);" alt="Login" />
-        </router-link>
+        <router-link
+      :to="isLoggedIn ? '/customer/dashboard' : '/login'"
+      class="btn px-0 d-lg-none"
+      style="color: navy;"
+       >
+  <img :src="login" style="width: 30px; filter: invert(1);" alt="Login" />
+</router-link>
 
         <!-- category Search form -->
         <!-- category Search form -->
@@ -161,9 +172,14 @@ function toggleAction(){
             </a>
 
             <!-- Desktop login icon -->
-            <router-link to="/login" class="btn px-0" style="color: navy;">
-              <img :src="login" style="width: 30px; filter: invert(1);" alt="Login" />
-            </router-link>
+           <router-link
+  :to="isLoggedIn ? '/customer/dashboard' : '/login'"
+  class="btn px-0"
+  style="color: navy;"
+>
+  <img :src="login" style="width: 30px; filter: invert(1);" alt="Login" />
+</router-link>
+<span>{{ user?.name || '' }}</span>
 
             <!-- Desktop cart icon -->
             <div class="icon_cart semi btn p-0" @click="toggleCartSidebar">
@@ -311,8 +327,6 @@ function toggleAction(){
         <!-- <li class="nav-item">
          
         </li> -->
-
-
         <!-- Dynamic Categories with Images -->
         <li v-for="item in categoryMenu" :key="item.id" class="nav-item mobile-category-item"
           :class="{ 'has-submenu': item.sub_categories && item.sub_categories.length }">

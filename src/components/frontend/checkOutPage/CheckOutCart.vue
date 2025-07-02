@@ -5,17 +5,30 @@ import { IMAGE_BASE_URL } from '../../../api'
 import { useRouter } from 'vue-router'
 import { watch } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useCustomerStore } from '../../../stores/Auth/customerDash'
 const store = useCartCheckoutStore()
 const { cartItems, subtotal, loading, selectedShippingCharge, shippingCharge } = storeToRefs(store)
 const router = useRouter()
 
-
+const authStore = useCustomerStore()
+const { user } = storeToRefs(authStore)
+const userId = JSON.parse(sessionStorage.getItem('auth_user'))?.id || ''
 
 onMounted(async () => {
-  console.log('Initializing checkout...');
+ authStore.getUserFromStorage();                                       
+
+  if (authStore.user) {
+    const u = authStore.user;
+    store.customer.name = u.name || '';
+    store.customer.mobile = u.phone || u.phone_number || '';
+    store.customer.address = u.address || '';
+  }
+
+
+  // console.log('Initializing checkout...');
 
   // Debug: Log initial cart state
-  console.log('Initial cart state:', store.cartItems);
+  // console.log('Initial cart state:', store.cartItems);
 
   await store.fetchShippingCharge();
   // Set default shipping charge if needed
@@ -24,7 +37,7 @@ onMounted(async () => {
   }
   // Debug: Check localStorage content
   const localStorageCart = localStorage.getItem('cart_backup');
-  console.log('LocalStorage cart data:', localStorageCart);
+  // console.log('LocalStorage cart data:', localStorageCart);
 
   // First try to restore from localStorage if cart is empty
   if (cartItems.value.length === 0) {
@@ -34,7 +47,7 @@ onMounted(async () => {
   }
 
   // Debug: Log state after localStorage restoration
-  console.log('Cart after localStorage restoration:', store.cartItems);
+  // console.log('Cart after localStorage restoration:', store.cartItems);
 
   try {
     // If we still have no items, try fetching from server
@@ -90,29 +103,29 @@ onMounted(async () => {
 });
 
 
-const uniqueCartCount = computed(() => {
-  const seen = new Set();
-  store.cartItems.forEach(item => {
-    seen.add(`${item.product_id}_${item.slug}`);
-  });
-  return seen.size;
-});
+// const uniqueCartCount = computed(() => {
+//   const seen = new Set();
+//   store.cartItems.forEach(item => {
+//     seen.add(`${item.product_id}_${item.slug}`);
+//   });
+//   return seen.size;
+// });
 
-const confirmOrder = async () => {
-  try {
-    // Send order data to backend
-    await axios.post('/api/confirm-order', { items: store.cartItems });
+// const confirmOrder = async () => {
+//   try {
+//     // Send order data to backend
+//     await axios.post('/api/confirm-order', { items: store.cartItems });
 
-    // Clear cart and localStorage
-    store.cartItems = [];
-    localStorage.removeItem('cart');
+//     // Clear cart and localStorage
+//     store.cartItems = [];
+//     localStorage.removeItem('cart');
 
-    // Redirect or show success
-    router.push('/thank-you');
-  } catch (error) {
-    console.error('Order error:', error);
-  }
-};
+//     // Redirect or show success
+//     router.push('/thank-you');
+//   } catch (error) {
+//     console.error('Order error:', error);
+//   }
+// };
 
 
 

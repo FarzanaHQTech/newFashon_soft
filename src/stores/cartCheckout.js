@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import { frontendApi, posadminApi } from "../api";
+import { frontendApi, posadminApi ,csrfApi} from "../api";
 import { useRouter } from "vue-router";
 
 export const useCartCheckoutStore = defineStore("cartCheckout", {
@@ -135,14 +135,14 @@ async fetchShippingCharge() {
     this.loading = true;
     const res = await frontendApi.get('/checkoutGet');
     this.shippingCharge = res.data.shipping_charges;
-    console.log("shipping charge", res.data);
+    // console.log("shipping charge", res.data);
     
     // Set first shipping option as default if none selected
     if (this.shippingCharge.length > 0 && !this.selectedShippingCharge) {
       this.selectedShippingCharge = this.shippingCharge[0].shipping_charge;
     }
     
-    console.log("Shipping charges:", this.shippingCharge);
+    // console.log("Shipping charges:", this.shippingCharge);
   } catch (error) {
     console.error("Shipping charge fetch error", error);
     throw error;
@@ -250,16 +250,85 @@ async fetchShippingCharge() {
       }
     },
 
-    async processCheckout() {
-      this.loading = true;
-      try {
-        const orderData = {
+//     async processCheckout() {
+//       this.loading = true;
+   
+// //end new
+//       try {
+//         await csrfApi.get('/sanctum/csrf-cookie');
+    
+//     const token = sessionStorage.getItem('auth_token');
+//     if (!token) {
+//       throw new Error('Not authenticated');
+//     }
+
+//         const orderData = {
+//       name: this.customer.name,
+//       mobile: this.customer.mobile,
+//       address: this.customer.address,
+//       shipping_charge: this.selectedShippingCharge, // Changed from this.shippingCharge
+//       paying_method: this.payingMethod,
+//       cart_items: this.cartItems.map((item) => ({
+//         product_id: item.product_id,
+//         variant_id: item.variant_id || null,
+//         quantity: item.quantity,
+//         price: item.price,
+//         discount: item.discount || 0,
+//       })),
+//     };
+// const response = await posadminApi.post("/checkout", orderData, {
+//       headers: {
+//         Authorization: `Bearer ${token}`
+//       }
+//     });
+//     // const response = await posadminApi.post("/checkout", orderData);
+//     console.log('checkout data',response.data );
+    
+//         if (response.data.success) {
+//           await this.clearCart();
+//           this.updateHeaderCart();
+//         }
+
+//         return response.data;
+//       } catch (error) {
+//         console.error("Checkout error:", error);
+//         this.error = error.response?.data?.message || "Checkout failed";
+//         throw error;
+//       } finally {
+//         this.loading = false;
+//       }
+//     },
+
+async processCheckout() {
+  this.loading = true;
+  
+  try {
+    // 1. First get CSRF token
+    await csrfApi.get('/sanctum/csrf-cookie');
+    
+    // 2. Get auth token
+    const token = sessionStorage.getItem('auth_token');
+    // if (!token) {
+    //   throw new Error('Authentication token not found');
+    // }
+
+    // 3. Get CSRF token from cookies
+    const getCookie = (name) => {
+      const value = `; ${document.cookie}`;
+      const parts = value.split(`; ${name}=`);
+      if (parts.length === 2) return parts.pop().split(';').shift();
+      return null;
+    };
+    const csrfToken = getCookie('XSRF-TOKEN');
+
+    // 4. Prepare order data
+    const orderData = {
       name: this.customer.name,
       mobile: this.customer.mobile,
       address: this.customer.address,
-      shipping_charge: this.selectedShippingCharge, // Changed from this.shippingCharge
+      shipping_charge: this.selectedShippingCharge,
       paying_method: this.payingMethod,
-      cart_items: this.cartItems.map((item) => ({
+      cart_items: this.cartItems.map(item => ({
         product_id: item.product_id,
         variant_id: item.variant_id || null,
         quantity: item.quantity,
@@ -268,22 +337,40 @@ async fetchShippingCharge() {
       })),
     };
 
-    const response = await frontendApi.post("/checkout", orderData);
+    // 5. Make the authenticated request
+    
+    const response = await posadminApi.post("/checkout", orderData, {
 
-        if (response.data.success) {
-          await this.clearCart();
-          this.updateHeaderCart();
-        }
+      // headers: {
+      //   'Authorization': `Bearer ${token}`,
+      //   'X-XSRF-TOKEN': csrfToken
+      // }
+    headers: {
+  ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+  'X-XSRF-TOKEN': csrfToken
+}
 
-        return response.data;
-      } catch (error) {
-        console.error("Checkout error:", error);
-        this.error = error.response?.data?.message || "Checkout failed";
-        throw error;
-      } finally {
-        this.loading = false;
-      }
-    },
+    });
+
+    if (response.data.success) {
+      await this.clearCart();
+      this.updateHeaderCart();
+    }
+
+    return response.data;
+  } catch (error) {
+    console.error("Checkout failed:", {
+      message: error.message,
+      response: error.response?.data,
+      status: error.response?.status,
+      headers: error.response?.headers
+    });
+    throw error;
+  } finally {
+    this.loading = false;
+  }
+},
+
 
     async clearCart() {
       this.cartItems = [];

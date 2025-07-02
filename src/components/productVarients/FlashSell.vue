@@ -59,7 +59,7 @@ function startCountdown(endDate) {
 }
 
 const fetchFlashSell = async (page = 1) => {
-  if (isLoading.value || allLoaded.value) return
+  if (isLoading.value|| allLoaded.value) return
 
   try {
     isLoading.value = true
@@ -90,7 +90,7 @@ const fetchFlashSell = async (page = 1) => {
 }
 
 const loadMore = () => {
-  if (currentPage.value < lastPage.value && !isLoading.value) {
+  if (currentPage.value < lastPage.value ) {
     fetchFlashSell(currentPage.value + 1)
   }
 }
@@ -155,8 +155,10 @@ onMounted(() => {
     </div>
 
     <div class="text-center mt-3">
-      <button class="btn btn-danger load-more-flash-sale" :disabled="isLoading || allLoaded" @click="loadMore">
-        {{ allLoaded ? "All Products Loaded" : "Load More Flash Deals" }}
+      
+      <button v-if="!allLoaded" class="btn btn-danger load-more-flash-sale"  @click="loadMore">
+        <!-- {{ allLoaded ? "All Products Loaded" : "Load More Flash Deals" }} -->
+          Load More Flash Deals
       </button>
     </div>
   </section>

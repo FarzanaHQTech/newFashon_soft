@@ -1,15 +1,28 @@
 <script setup>
-import posadmin from '../../assets/image/ecommerce_settings/ecom3logo17441769441747306879.png';
+import ecomLogo from '../../assets/image/ecommerce_settings/ecom3logo17441769441747306879.png'
 import home_footer from '../../assets/image/home_footer/FreeDelivery17112665361734178775.png';
 import guaranty from '../../assets/image/home_footer/Guaranty1711266536.png';
 import geography from '../../assets/image/home_footer/geography--v11711266536.png';
 import payment from '../../assets/image/home_footer/payment1711266536.png';
-import { onMounted } from 'vue';
+import { onMounted, watch } from 'vue';
 import { useSiteApi } from '../../stores/siteApi';
 import { storeToRefs } from 'pinia';
 import { SITE_IMAGE_BASE_URL } from '../../api';
-const siteInfoData =  useSiteApi()
-const {siteInfo} = storeToRefs(siteInfoData)
+import { useMobileMenuStore } from '../../stores/mobileMenu';
+import MobileMenu from './MobileMenu.vue';
+
+const siteInfoData = useSiteApi()
+const { siteInfo } = storeToRefs(siteInfoData)
+
+// Mobile menu store
+const mobileMenuStore = useMobileMenuStore();
+const { showMobileMenu } = storeToRefs(mobileMenuStore);
+const { toggleMobileMenu } = mobileMenuStore; // Get the action directly
+
+// Debug watch - should be outside onMounted
+// watch(showMobileMenu, (newVal) => {
+//   console.log('Mobile menu state changed:', newVal);
+// });
 
 onMounted(() => {
   const actionButton = document.querySelector('.action-button');
@@ -18,7 +31,6 @@ onMounted(() => {
       event.currentTarget.classList.toggle('active');
     });
   }
-
   siteInfoData.fetchSiteInfo()
 });
 </script>
@@ -133,7 +145,8 @@ onMounted(() => {
             <div class="col-md-4 mb-3">
               <div class="widget">
                 <!-- <img :src="posadmin" style="max-width:100%; margin-bottom:20px" /> -->
-                <img :src="SITE_IMAGE_BASE_URL + siteInfo.logo" style="max-width:100%; margin-bottom:20px" />
+                <img v-if="siteInfo.log" :src="SITE_IMAGE_BASE_URL + siteInfo.logo " style="max-width:100%; margin-bottom:20px" />
+                <img v-else :src="ecomLogo" style="max-width:100%; margin-bottom:20px" />
                 <div>
                   <router-link to="order-tracking.html" class="btn btn-success">
                     <font-awesome-icon icon="search" /> Track Order
@@ -153,13 +166,47 @@ onMounted(() => {
           </p>
         </div>
       </div>
-    </footer>
+
+      <!-- footer nav  -->
+    
+    <!-- footer nav -->
+    <div class="footer-nav">
+      <div class="m-nav-main">
+        <div class="button-shop">
+          <router-link to="/" class="footerBtn">
+            <i class="fa fa-home"></i>
+            <span style="color: #00276C;">Home</span> 
+          </router-link>
+        </div>
+        
+        <div class="button-shop">
+          <a @click="toggleMobileMenu" class="footerBtn side_menu_toggler">
+            <i class="fa-solid fa-bars"></i>
+            <span style="color: #00276C;">Categories</span>
+          </a>
+        </div>
+        
+        <div class="button-shop">
+          <router-link to="/shop" class="footerBtn">
+            <i class="fa fa-store"></i>
+            <span style="color: #00276C;">All Product</span>
+          </router-link>
+        </div>
+        
+        <div class="button-shop">
+          <a href="tel:01615597820" class="footerBtn">
+            <i class="fa-solid fa-phone-volume"></i>
+            <span style="color: #00276C;">Call</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Include the mobile menu sidebar component -->
+    <MobileMenu />
+</footer>
   </div>
 </template>
-
-<style>
-/* Your existing styles */
-</style>
 
 <style>
 /* General styles */

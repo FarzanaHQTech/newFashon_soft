@@ -127,11 +127,11 @@ const handleLoadMore = async (categoryId) => {
     <template v-else>
       <!-- Product Modal Component -->
       <!-- <ProductModal v-if="selectedProduct" :product="selectedProduct" /> -->
-      <ProductModal 
-  ref="productModalRef" 
-  v-if="selectedProduct" 
-  :product="selectedProduct" 
-/>
+        <ProductModal 
+    ref="productModalRef" 
+    v-if="selectedProduct" 
+    :product="selectedProduct" 
+  />
       <template v-if="categoriesWithProducts.length">
         <div class="category_products" v-for="category in categoriesWithProducts" 
              :key="category.id" :data-category-id="category.id">

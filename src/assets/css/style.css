@@ -59,6 +59,17 @@
         --font-12: 9px;
     }
 }
+@font-face {
+  font-family: 'MyFont';
+  src: url('/fonts/myFont.woff2') format('woff2');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+body {
+  font-family: 'MyFont', sans-serif;
+}
 *{
     margin: 0;
     padding: 0;

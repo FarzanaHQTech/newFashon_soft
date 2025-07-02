@@ -2,43 +2,24 @@
 import { onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '../../../stores/Auth/customer_reg'
-import { posadminApi } from '../../../api' // ✅ correct instance
+import { posadminApi } from '../../../api' //  correct instance
 import { useRouter } from 'vue-router'
+import CustomerMenu from './CustomerMenu.vue'
+import { useCustomerStore } from '../../../stores/Auth/customerDash'
 
 const router = useRouter()
-const authStore = useAuthStore()
+const authStore = useCustomerStore()
 const { user } = storeToRefs(authStore)
+const userId = JSON.parse(sessionStorage.getItem('auth_user'))?.id || ''
 
-onMounted(async () => {
-  const token = localStorage.getItem('auth_token')
-  console.log('auth_token:', token)
+onMounted(() => {
+  authStore.getUserFromStorage()
 
-  if (token) {
-    try {
-      const res = await posadminApi.get('/vue/user', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        }
-      })
-      authStore.$patch({ user: res.data }) // ✅ update user store
-      console.log('User data loaded:', res.data)
-    } catch (error) {
-      console.error('Failed to fetch user:', error)
-      if (error.response?.status === 401) {
-        router.push('/login')
-      }
-    }
-  } else {
+  if (!user.value) {
     router.push('/login')
   }
-  
-  const logout = () => {
-  localStorage.removeItem('auth_token')
-  localStorage.removeItem('auth_user')
-  useAuthStore().$reset()
-  window.location.href = '/login'
-}
 })
+
 </script>
 
 
@@ -46,21 +27,9 @@ onMounted(async () => {
   <div class="userdashboard">
     <div class="container">
       <div class="row" style="margin:0;">
-        <div class="col-lg-3 usersidebardiv">
-          <div class="usersidebar">
-            <p style="margin: 0;font-size: 20px;color: #333;">Shortcuts</p>
-            <ul id="usersidebar">
-              <li><router-link to="/customer/dashboard">My Dashboard</router-link></li>
-              <li><router-link to="/customer/profile-edit">Edit Profile</router-link></li>
-              <li><router-link to="/customer/change-password">Change Password</router-link></li>
-              <li><router-link to="/customer/my-orders">My Orders</router-link></li>
-              <li><router-link to="/customer/my-reviews">My Review</router-link></li>
-              <li>
-                <a href="#" @click.prevent="logout">Log Out</a>
-              </li>
-            </ul>
-          </div>
-        </div>
+
+    
+        <CustomerMenu/>
 
         <div class="col-lg-9 usermainbody">
           <div class="usercontent">
@@ -79,7 +48,7 @@ onMounted(async () => {
                 </div>
                 <div class="col-md-4">
                   <div class="parsonalprofile">
-                    <router-link to="/customer/profile-edit" class="editPrifilebtn">Edit Profile</router-link>
+                    <router-link :to="`/customer/profile-edit/${userId}`" class="editPrifilebtn">Edit Profile</router-link>
                     <router-link to="/customer/change-password" class="editPrifilebtn">Change Password</router-link>
                   </div>
                 </div>
@@ -125,7 +94,7 @@ onMounted(async () => {
                       </tr>
                       <tr>
                         <td>Mobile</td>
-                        <td>: {{ user?.mobile || '-' }}</td>
+                        <td>: {{ user?.phone || '-' }}</td>
                       </tr>
                       <tr>
                         <td style="width:30%;">Address</td>
@@ -139,95 +108,14 @@ onMounted(async () => {
 
           </div>
         </div>
+
+
       </div>
     </div>
   </div>
 </template>
 
-<!-- <script setup>
-
-</script> -->
-
-
-
-
 <style scoped>
-    .usersidebardiv{
-        padding:10px;
-    }
-    .usermainbody {
-        padding: 10px;
-    }
-    .usersidebar {
-        background: white;
-        padding: 10px;
-        border: 1px solid #dadada;
-    }
-    ul#usersidebar {
-    padding: 0;
-    margin: 0;
-    }
-    ul#usersidebar li {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    text-decoration: none;
-    }
-    ul#usersidebar li a {
-    color: #333;
-    padding: 2px 0;
-    text-decoration: none;
-    display: block;
-    font-size: 14px;
-    }
-    .profiledetails {
-    padding: 0px;
-    background: white;
-    margin-bottom: 15px;
-    border: 1px solid #dadada;
-    }
-    .dashboardcountinfo {
-    width: 20%;
-    border-right: 1px solid #dcdcdc;
-    }
-    a.editPrifilebtn {
-        padding: 5px 0px 4px;
-        text-align: center;
-        background: #0066bf;
-        transition-duration: 0.3s;
-        display: block;
-        margin-bottom: 5px;
-        text-decoration: none;
-        color: #ffffff;
-    }
-    .dashbaordInfo {
-    background: white;
-    padding: 15px;
-    border: 1px solid #dadada;
-    }
-    .usercontent {
-    background: white;
-    padding: 15px;
-    border: 1px solid #dadada;
-    }
-    @media only screen and (max-width: 991px) {
-      
-        .dashboardcountinfo p {
-            font-size: 10px;
-        }
-        
-    }
-    
-    @media only screen and (max-width: 767px) {
-        .dashboardcountinfo p {
-            font-size: 8px;
-        }
-    }
-    
-    @media only screen and (max-width: 575px) {
-        .dashboardcountinfo p {
-            font-size: 6px;
-        }
-    }
+
     
 </style>
