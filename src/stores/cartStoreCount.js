@@ -1,6 +1,6 @@
 // stores/useCartStore.js
 import { defineStore } from 'pinia'
-import { frontendApi } from '../api';
+import { posadminApi } from '../api';
 
 export const useCartStore = defineStore('cart', {
   state: () => ({
@@ -15,7 +15,7 @@ export const useCartStore = defineStore('cart', {
   actions: {
     async fetchCart() {
       try {
-        const res = await frontendApi.get('/cartGet');
+        const res = await posadminApi.get('/cartGet');
         this.items = res.data.cart || {};
         this.total = res.data.total_amount;
         this.count = res.data.item;
@@ -25,7 +25,7 @@ export const useCartStore = defineStore('cart', {
     },
     async addToCart(payload) {
       try {
-        const res = await frontendApi.post('/cart/store', payload);
+        const res = await posadminApi.post('/cart/store', payload);
         this.items = res.data.cart;
         this.total = res.data.total_amount;
         this.count = res.data.item;
@@ -37,7 +37,7 @@ export const useCartStore = defineStore('cart', {
     
     async removeFromCart(id) {
       try {
-        await frontendApi.delete(`/cart/delete/${id}`);
+        await posadminApi.delete(`/cart/delete/${id}`);
         await this.fetchCart(); // re-fetch cart
       } catch (err) {
         console.error('Remove from cart failed:', err);
@@ -45,7 +45,7 @@ export const useCartStore = defineStore('cart', {
     },
     async updateQuantity(id, quantity) {
       try {
-        await frontendApi.put(`/cart/update/${id}`, { quantity });
+        await posadminApi.put(`/cart/update/${id}`, { quantity });
         await this.fetchCart();
       } catch (err) {
         console.error('Update quantity failed:', err);

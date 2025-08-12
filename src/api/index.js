@@ -1,12 +1,11 @@
 import axios from 'axios';
 
-// ⚠️ This only affects `axios` default instance — not custom ones.
+//  This only affects `axios` default instance — not custom ones.
 axios.defaults.withCredentials = true
 axios.defaults.xsrfCookieName = 'XSRF-TOKEN'
 axios.defaults.xsrfHeaderName = 'X-XSRF-TOKEN'
 
 //  Best practice: also include these in custom instances
-// api.js - Update with these exact settings
 export const posadminApi = axios.create({
   baseURL: 'https://vue.softitglobalbd.xyz/posadmin/api/vue',
   headers: {
@@ -20,23 +19,6 @@ export const posadminApi = axios.create({
 });
 
 
-export const frontendApi = axios.create({
-  baseURL: 'https://vue.softitglobalbd.xyz/posadmin/api/vue',
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  },
-  withCredentials: true,
-  xsrfCookieName: 'XSRF-TOKEN',
-  xsrfHeaderName: 'X-XSRF-TOKEN',
-});
-
-// export const csrfApi = axios.create({
-//   baseURL: 'https://vue.softitglobalbd.xyz/posadmin', // Sanctum cookie route
-//   withCredentials: true,
-//   xsrfCookieName: 'XSRF-TOKEN',
-//   xsrfHeaderName: 'X-XSRF-TOKEN',
-// });
 export const csrfApi = axios.create({
   baseURL: 'https://vue.softitglobalbd.xyz/posadmin',
   withCredentials: true,

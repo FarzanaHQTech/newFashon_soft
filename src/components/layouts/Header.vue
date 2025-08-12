@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import ecomLogo from '../../assets/image/ecommerce_settings/ecom3logo17441769441747306879.png'
 import c1 from '../../assets/image/c1.png'
 import login from '../../assets/image/login.png'
@@ -79,7 +79,7 @@ onMounted(async () => {
   await cartStore.fetchCart()
   await categoryStore.fetchCategoriesMenu()
   await siteStore.fetchSiteInfo()
-  if(sessionStorage.getItem('auth_user')){
+  if (sessionStorage.getItem('auth_user')) {
 
     authStore.getUserFromStorage()
   }
@@ -104,12 +104,14 @@ const onCategoryChange = () => {
 };
 
 const showActions = ref(false); // Rename this
-function toggleAction(){
-  showActions.value = !showActions.value 
+function toggleAction() {
+  showActions.value = !showActions.value
 }
 
 //login
-const isLoggedIn = ref(!!sessionStorage.getItem('auth_user'))
+
+// ✅ Computed logged-in status based on user
+const isLoggedIn = computed(() => !!user.value)
 
 </script>
 <template>
@@ -137,13 +139,10 @@ const isLoggedIn = ref(!!sessionStorage.getItem('auth_user'))
         </div>
 
         <!-- Mobile login icon -->
-        <router-link
-      :to="isLoggedIn ? '/customer/dashboard' : '/login'"
-      class="btn px-0 d-lg-none"
-      style="color: navy;"
-       >
-  <img :src="login" style="width: 30px; filter: invert(1);" alt="Login" />
-</router-link>
+        <router-link :to="isLoggedIn ? '/customer/dashboard' : '/login'" class="btn px-0 d-lg-none"
+          style="color: navy;">
+          <img :src="login" style="width: 30px; filter: invert(1);" alt="Login" />
+        </router-link>
 
         <!-- category Search form -->
         <!-- category Search form -->
@@ -165,21 +164,17 @@ const isLoggedIn = ref(!!sessionStorage.getItem('auth_user'))
         <!-- Desktop icons -->
         <div class="display_lg">
           <div class="d-lg-flex d-none align-items-center gap-2 ps-lg-3">
-                 <a href="tel:01615597820"   class="font-22" style="font-size: 20px;color: #000">
-            <!-- <router-link to="tel:01615597820" class="font-22"> -->
+            <a href="tel:01615597820" class="font-22" style="font-size: 20px;color: #000">
+              <!-- <router-link to="tel:01615597820" class="font-22"> -->
               <i class="fa fa-phone"></i> {{ siteInfo.contact ?? '01615597820' }}
-            <!-- </router-link> -->
+              <!-- </router-link> -->
             </a>
 
             <!-- Desktop login icon -->
-           <router-link
-  :to="isLoggedIn ? '/customer/dashboard' : '/login'"
-  class="btn px-0"
-  style="color: navy;"
->
-  <img :src="login" style="width: 30px; filter: invert(1);" alt="Login" />
-</router-link>
-<span>{{ user?.name || '' }}</span>
+            <router-link :to="isLoggedIn ? '/customer/dashboard' : '/login'" class="btn px-0" style="color: navy;">
+              <img :src="login" style="width: 30px; filter: invert(1);" alt="Login" />
+            </router-link>
+            <span>{{ user?.name || '' }}</span>
 
             <!-- Desktop cart icon -->
             <div class="icon_cart semi btn p-0" @click="toggleCartSidebar">
@@ -269,8 +264,6 @@ const isLoggedIn = ref(!!sessionStorage.getItem('auth_user'))
         ৳ {{ grandTotal }}
       </p>
     </div>
-
-
     <!-- multi action message  -->
     <!-- <div class="multi-action">
       <button class="action-button active">
@@ -282,28 +275,29 @@ const isLoggedIn = ref(!!sessionStorage.getItem('auth_user'))
         <li><a href="https://wa.me/+88"><span class="fab fa-whatsapp"></span></a></li>
       </ul>
     </div> -->
-  <div class="multi-action">
-    <button class="action-button" @click="toggleActions">
-      <span class="fas fa-comment-dots"></span>
-    </button>
-    
-    <!-- Toggle 'show' class -->
-    <ul class="actions" :class="{ show: showActions }">
-      <li>
-        <a href="tel:01615597820"><span class="fas fa-phone"></span></a>
-      </li>
-      <li>
-        <a href="https://m.me/yourpageusername" target="_blank" rel="noopener">
-          <span class="fab fa-facebook-messenger"></span>
-        </a>
-      </li>
-      <li>
-        <a href="https://wa.me/8801615597820" target="_blank" rel="noopener">
-          <span class="fab fa-whatsapp"></span>
-        </a>
-      </li>
-    </ul>
-  </div>
+
+    <div class="multi-action">
+      <button class="action-button" @click="toggleActions">
+        <span class="fas fa-comment-dots"></span>
+      </button>
+
+      <!-- Toggle 'show' class -->
+      <ul class="actions" :class="{ show: showActions }">
+        <li>
+          <a href="tel:01615597820"><span class="fas fa-phone"></span></a>
+        </li>
+        <li>
+          <a href="https://m.me/yourpageusername" target="_blank" rel="noopener">
+            <span class="fab fa-facebook-messenger"></span>
+          </a>
+        </li>
+        <li>
+          <a href="https://wa.me/8801615597820" target="_blank" rel="noopener">
+            <span class="fab fa-whatsapp"></span>
+          </a>
+        </li>
+      </ul>
+    </div>
 
 
 

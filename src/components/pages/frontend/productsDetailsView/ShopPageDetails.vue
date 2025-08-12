@@ -3,7 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { useShopPage } from '../../../../stores/shopPage'
 import { storeToRefs } from 'pinia'
 import { onMounted } from 'vue'
-import { frontendApi, IMAGE_BASE_URL, posadminApi } from '../../../../api'
+import { posadminApi, IMAGE_BASE_URL } from '../../../../api'
 import { useRoute, useRouter } from 'vue-router'
 import { useCartCheckoutStore } from '../../../../stores/cartCheckout'
 import { Swiper, SwiperSlide } from 'swiper/vue'
@@ -23,7 +23,8 @@ const $toast = useToast()
 const modules = [Navigation, Thumbs, Pagination, Zoom]
 
 const shopPage = useShopPage();
-const { shopPages, relatedProducts } = storeToRefs(shopPage);
+const { shopPages, relatedProducts, productReviews } = storeToRefs(shopPage);
+
 const route = useRoute();
 const router = useRouter();
 const store = useCartCheckoutStore();
@@ -37,6 +38,12 @@ const mainSwiper = ref(null);
 const selectedVariants = ref({})
 const quantity = ref(1)
 
+
+// Initialize product_id and slug from route params or data source
+shopPage.reviewForm.product_id = route.params.productId || null;
+shopPage.slug = route.params.slug || '';
+
+
 // Immediately clear data when component mounts to prevent stale data
 onMounted(async () => {
   shopPage.shopPages = null;
@@ -47,6 +54,7 @@ onMounted(async () => {
 })
 
 watch(selectedVariants, async (newVal) => {
+    shopPage.reviewForm.review = newVal
   if (!hasVariants.value || !shopPages.value) return;
 
   try {
@@ -67,16 +75,14 @@ watch(selectedVariants, async (newVal) => {
 
     // console.log(' Variant price API response:', response.data);
 
-  
+
     if (response.data.status) {
-  shopPages.value = {
-    ...shopPages.value,
-    variant_id: response.data.variant_id,
-    price: response.data.variantPrice
-    // Do not override is_promotion or promotion_price!
-  };
-
-
+      shopPages.value = {
+        ...shopPages.value,
+        variant_id: response.data.variant_id,
+        price: response.data.variantPrice
+        // Do not override is_promotion or promotion_price!
+      };
 
       // Replace the entire object
       shopPages.value = updatedShopPage;
@@ -96,57 +102,37 @@ const displayPrice = computed(() => {
   }
   return shopPages.value?.price
 })
-  async function loadProductData() {
-    isLoading.value = true;
-    try {
-      // Clear previous data
-      shopPage.shopPages = null;
-      shopPage.relatedProducts = [];
+async function loadProductData() {
+  isLoading.value = true;
+  try {
+    // Clear previous data
+    shopPage.shopPages = null;
+    shopPage.relatedProducts = [];
 
-      // Load new data
-      await shopPage.fetchShopPage({ slug: route.params.slug });
+    // Load new data
+    await shopPage.fetchShopPage({ slug: route.params.slug });
 
-      const product = shopPage.shopPages;
-      if (product && product.promosion_price && !product.promotion_price) {
-        product.promotion_price = product.promosion_price;
-      }
-      
-      activeIndex.value = 0;
-    } catch (error) {
-      console.error('Error loading product:', error);
-      router.push('/404');
-    } finally {
-      isLoading.value = false;
+    const product = shopPage.shopPages;
+    if (product && product.promosion_price && !product.promotion_price) {
+      product.promotion_price = product.promosion_price;
     }
+
+    activeIndex.value = 0;
+  } catch (error) {
+    console.error('Error loading product:', error);
+    router.push('/404');
+  } finally {
+    isLoading.value = false;
   }
+}
 
 watch(() => route.params.slug, async (newSlug) => {
+
   if (newSlug) {
     await loadProductData();
   }
 }, { immediate: true });
-// async function loadProductData() {
-//   isLoading.value = true;
-//   try {
-//     // Clear previous data immediately
-//     shopPage.shopPages = null;
-//     shopPage.relatedProducts = [];
 
-//     await shopPage.fetchShopPage({ slug: route.params.slug });
-
-//     const product = shopPage.shopPages;
-// if (product && product.promosion_price && !product.promotion_price) {
-//   product.promotion_price = product.promosion_price;
-// }
-// // console.log(' product data:', shopPage.shopPages);
-//     activeIndex.value = 0;
-//   } catch (error) {
-//     console.error('Error loading product:', error);
-//     router.push('/404');
-//   } finally {
-//     isLoading.value = false;
-//   }
-// }
 
 // Combine main image and additional images for gallery
 const allImages = computed(() => {
@@ -349,6 +335,37 @@ async function orderNow() {
     });
   }
 }
+
+
+
+const hover = ref(0)
+// const rating = ref(0)
+
+//image select handler
+function onImageSelected(event) {
+  const file = event.target.files[0];
+  if (file) {
+    shopPage.reviewForm.image = file;
+  }
+}
+
+// form submit handler
+async function submitReview() {
+  const success = await shopPage.submitReview();
+
+
+  if (success) {
+    $toast.success('Review submitted successfully!');
+  } else {
+    $toast.error(shopPage.reviewError || 'Failed to submit review');
+  }
+}
+
+const rating = computed({
+  get: () => shopPage.reviewForm.review,
+  set: (val) => (shopPage.reviewForm.review = val)
+})
+
 </script>
 
 <template>
@@ -407,23 +424,21 @@ async function orderNow() {
             {{ shopPages.name }}
           </h2>
           <span><i class="fa fa-eye"></i> {{ shopPages.view_count }} </span>
-       
+          <h4 class="pop bold">
 
-       <h4 class="pop bold">
+            <!-- Show promotion price if it's valid -->
+            <template v-if="shopPages.promotion == 1 && shopPages.promotion_price">
 
-  <!-- Show promotion price if it's valid -->
-<template v-if="shopPages.promotion == 1 && shopPages.promotion_price">
+              <span class="me-2"> {{ shopPages.promotion_price }} Tk</span>
+              <del class="text-danger">{{ shopPages.price }} Tk</del>
+            </template>
 
-  <span class="me-2"> {{ shopPages.promotion_price }} Tk</span>
-<del class="text-danger">{{ shopPages.price }} Tk</del>
-  </template>
+            <!-- Show normal price if no promotion -->
+            <template v-else>
+              <span class="text-dark">{{ shopPages.price }} Tk</span>
+            </template>
 
-  <!-- Show normal price if no promotion -->
-  <template v-else>
-    <span class="text-dark">{{ shopPages.price }} Tk</span>
-  </template>
-
-</h4>
+          </h4>
 
 
 
@@ -443,10 +458,7 @@ async function orderNow() {
               <div class="sizes d-flex flex-wrap align-items-center">
                 <div v-for="(value, i) in variantValues[index]?.split(',')" :key="i" class="burmanRadio me-2"
                   :class="{ 'required-highlight': hasVariants && !selectedVariants[`variant_${index + 1}`] }">
-                  <!-- <input type="radio" class="burmanRadio__input" :id="`variant_${index + 1}_${value.trim()}`"
-                    :name="`variant_${index + 1}`" :value="value.trim()" required
-                    @change="option.toLowerCase() === 'color' ? updateImageByColor(value.trim()) : null" /> -->
-                  <!-- In your template, modify the radio inputs: -->
+
                   <input type="radio" class="burmanRadio__input" :id="`variant_${index + 1}_${value.trim()}`"
                     :name="`variant_${index + 1}`" :value="value.trim()" required
                     v-model="selectedVariants[`variant_${index + 1}`]"
@@ -539,13 +551,15 @@ async function orderNow() {
             </div>
             <div class="accordion-item rounded-3 border-0 mb-2 shadow">
               <h2 class="accordion-header">
-                <button class="accordion-button border-bottom collapsed fw-semibold" type="button"
+                <button class="accordion-button border-bottom fw-semibold collapsed" type="button"
                   data-bs-toggle="collapse" data-bs-target="#flush-collapseThree" aria-expanded="false"
                   aria-controls="flush-collapseThree">
                   Reviews
                 </button>
               </h2>
-              <div id="flush-collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
+
+              <div id="flush-collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample"
+                style="">
                 <div class="accordion-body">
                   <div class="wc-tab-inner">
                     <div class="woocommerce-tabs wc-tabs-wrapper" style="background: #dbd3d39e;">
@@ -554,20 +568,109 @@ async function orderNow() {
                           <div class="row">
                             <div class="col-lg-6 mb--20">
                               <div class="axil-comment-area pro-desc-commnet-area pt-3">
-                                <h5 class="title">(<span class="reviewCount">0</span>) Relative Product</h5>
+                                <h5 class="title">(<span class="reviewCount">0</span>) Product Review</h5>
+                                <!-- Start Single Comment  -->
+
                                 <ul class="comment-list">
-                                  <!-- Reviews content -->
+                                  <li v-for="(review, index) in productReviews" :key="index" class="comment">
+                                    <div class="commenter">
+
+                                      <img v-if="review.image" :src="`${IMAGE_BASE_URL}/${review.image}`"
+                                        alt="review image" width="50" height="50" />
+                                      <div class="comment-content">
+                                        <h6 class="commenter-name">{{ review.name }}</h6>
+                                        <div class="rating">
+                                          <i v-for="n in 5" :key="n" class="fa fa-star"
+                                            :class="{ 'text-warning': n <= review.review }"></i>
+                                        </div>
+                                        <p class="comment-text">{{ review.message.replace(/^"|"$/g, '') }}</p>
+                                      </div>
+                                    </div>
+                                  </li>
+                                </ul>
+
+
+
+                                <ul class="comment-list">
+
+                                  <!-- End Single Comment  -->
                                 </ul>
                               </div>
                             </div>
+                            <!-- End .col -->
                             <div class="col-lg-6 mb--20">
+
+
                               <div class="comment-respond pro-des-commend-respond mt--0">
-                                <!-- Review form content -->
+                                <h5 class="title mb--10">Add a Review</h5>
+                                <div class="rating-wrapper d-flex-center mb--10">
+                                  <div class="wrapper">
+                                    <div class="master">
+                                      <div class="rating-component">
+                                        <div class="stars-box">
+                                          <i v-for="n in 5" :key="n" class="star fa fa-star"
+                                            :class="{ hovered: hover >= n || rating >= n }" @mouseover="hover = n"
+                                            @mouseleave="hover = 0" @click="rating = n"></i>
+                                        </div>
+
+                                      </div>
+
+                                      <div class="feedback-tags">
+                                        <div class="tags-box">
+                                          <!-- Submit Form -->
+                                          <form @submit.prevent="submitReview" enctype="multipart/form-data">
+                                            <div class="row">
+                                              <div class="col-12">
+                                                <div class="form-group">
+                                                  <label>Review Notes (Mandatory)</label>
+                                                  <textarea v-model="shopPage.reviewForm.message"
+                                                    placeholder="Your Comment" class="form-control" required></textarea>
+                                                </div>
+                                              </div>
+                                              <div class="col-lg-6 col-md-6 col-12 m-0">
+                                                <div class="form-group">
+                                                  <label>Name <span class="require">*</span></label>
+                                                  <input v-model="shopPage.reviewForm.name" type="text"
+                                                    placeholder="Your Name" class="form-control" required />
+                                                </div>
+                                              </div>
+                                              <div class="col-lg-6 col-md-6 col-12 m-0">
+                                                <div class="form-group">
+                                                  <label>Image <span class="require">*</span></label>
+                                                  <input type="file" class="form-control" @change="onImageSelected"
+                                                    accept="image/png,image/jpeg" required style="padding-top: 12px" />
+                                                </div>
+                                              </div>
+                                              <div class="col-lg-12 mt-2 pb-4">
+                                                <div class="button-box form-submit">
+                                                  <button type="submit" class="axil-btn btn-bg-primary w-auto"
+                                                    :disabled="shopPage.submittingReview">
+                                                    {{ shopPage.submittingReview ? 'Submitting...' : 'Submit Review' }}
+                                                  </button>
+                                                </div>
+                                                <div class="submited-box" v-if="shopPage.submittingReview">
+                                                  <div class="loader"></div>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </form>
+                                          <!-- End Form -->
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
                               </div>
+
                             </div>
                           </div>
                         </div>
+
                       </div>
+
+
+                      <!--  second woocomerce -->
+
                     </div>
                   </div>
                 </div>
@@ -759,7 +862,7 @@ async function orderNow() {
 }
 
 .quantity_box button[type="button"] {
-  padding: 0 5px;
+  padding: 0 10px;
   min-width: 25px;
   min-height: unset;
   height: 42px;
@@ -871,5 +974,88 @@ async function orderNow() {
   100% {
     box-shadow: 0 0 0 0 rgba(220, 53, 69, 0);
   }
+}
+
+/* reviews */
+
+ul.comment-list {
+  margin: 0;
+  padding: 0;
+}
+
+.single-comment {
+  display: flex;
+}
+
+li.comment {
+  list-style: none;
+  margin-bottom: 15px;
+}
+
+dl,
+ol,
+ul {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+
+ol,
+ul {
+  padding-left: 2rem;
+}
+
+.rating-component .stars-box .star.selected {
+  color: #ff5a49;
+}
+
+.fa {
+  display: inline-block;
+  font: normal normal normal 14px / 1 FontAwesome;
+  font-size: inherit;
+  text-rendering: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.feedback-tags .tags-container {
+  display: none;
+}
+
+a.axil-btn,
+button.axil-btn {
+  border-radius: 6px;
+  font-size: var(--font-size-b1);
+  line-height: var(--line-height-b1);
+  font-weight: 700;
+  display: inline-block;
+  padding: 10px 38px;
+  position: relative;
+  transition: all .3s ease-in-out;
+  z-index: 1;
+}
+
+.w-auto {
+  width: auto !important;
+}
+
+.submited-box .loader,
+.submited-box .success-message {
+  display: none;
+}
+
+.submited-box .loader,
+.submited-box .success-message {
+  display: none;
+}
+
+.star {
+  color: #ccc;
+  font-size: 24px;
+  transition: color 0.3s ease;
+  cursor: pointer;
+}
+
+.star.hovered {
+  color: #ff5a49;
 }
 </style>

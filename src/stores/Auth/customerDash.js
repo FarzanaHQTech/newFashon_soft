@@ -1,5 +1,6 @@
 import { defineStore } from "pinia"
 import { csrfApi, posadminApi } from "../../api"
+import { ref } from "vue";
 
 export const useCustomerStore = defineStore('customer', {
   state: () => ({
@@ -11,21 +12,21 @@ export const useCustomerStore = defineStore('customer', {
     updateStatus: null,
     updateMessage: null,
     loading: false,
-       user: null,
+         user: null,
     token: sessionStorage.getItem('auth_token') || null,
-
+    
   }),
   actions: {
 
-     restoreAuth() {
-      const token = sessionStorage.getItem('auth_token');
-      const user = sessionStorage.getItem('auth_user');
+    //  restoreAuth() {
+    //   const token = sessionStorage.getItem('auth_token');
+    //   const user = sessionStorage.getItem('auth_user');
 
-      if (token && user) {
-        this.token = token;
-        this.user = JSON.parse(user);
-      }
-    },
+    //   if (token && user) {
+    //     this.token = token;
+    //     this.user = JSON.parse(user);
+    //   }
+    // },
 
 async updateProfile(data, id) {
   try {
@@ -53,15 +54,29 @@ async updateProfile(data, id) {
     this.loading = false;
   }
 },
- getUserFromStorage() {
-      const storedUser = sessionStorage.getItem('auth_user')
-      if (storedUser) {
-        this.user = JSON.parse(storedUser)
-        // console.log('Loaded user from sessionStorage:', this.user)
-      } else {
-        this.user = null
+    restoreAuth() {
+      const token = sessionStorage.getItem('auth_token')
+      const user = sessionStorage.getItem('auth_user')
+      if (token && user) {
+        this.token = token
+        this.user = JSON.parse(user) //  no `.value`
       }
     },
+    getUserFromStorage() {
+      const storedUser = sessionStorage.getItem('auth_user')
+      this.user = storedUser ? JSON.parse(storedUser) : null // no .value
+    },
+
+
+//  getUserFromStorage() {
+//       const storedUser = sessionStorage.getItem('auth_user')
+//       if (storedUser) {
+//         this.user = JSON.parse(storedUser)
+//         // console.log('Loaded user from sessionStorage:', this.user)
+//       } else {
+//         this.user = null
+//       }
+//     },
 
 
    async updatePassword(data, id) {

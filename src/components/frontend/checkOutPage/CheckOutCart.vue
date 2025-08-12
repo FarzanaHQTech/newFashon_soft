@@ -1,11 +1,12 @@
 <script setup>
 import { onMounted, computed, ref } from 'vue'
-import { useCartCheckoutStore } from '../../../stores/cartCheckout'
 import { IMAGE_BASE_URL } from '../../../api'
 import { useRouter } from 'vue-router'
 import { watch } from 'vue'
+import { useCartCheckoutStore } from '../../../stores/cartCheckout'
 import { storeToRefs } from 'pinia'
 import { useCustomerStore } from '../../../stores/Auth/customerDash'
+import { useToast } from 'vue-toast-notification'
 const store = useCartCheckoutStore()
 const { cartItems, subtotal, loading, selectedShippingCharge, shippingCharge } = storeToRefs(store)
 const router = useRouter()
@@ -13,7 +14,7 @@ const router = useRouter()
 const authStore = useCustomerStore()
 const { user } = storeToRefs(authStore)
 const userId = JSON.parse(sessionStorage.getItem('auth_user'))?.id || ''
-
+const toast = useToast()
 onMounted(async () => {
  authStore.getUserFromStorage();                                       
 
@@ -26,8 +27,6 @@ onMounted(async () => {
 
 
   // console.log('Initializing checkout...');
-
-  // Debug: Log initial cart state
   // console.log('Initial cart state:', store.cartItems);
 
   await store.fetchShippingCharge();
@@ -101,37 +100,8 @@ onMounted(async () => {
     console.log('LocalStorage cart:', localStorage.getItem('cart_backup'));
   }
 });
-
-
-// const uniqueCartCount = computed(() => {
-//   const seen = new Set();
-//   store.cartItems.forEach(item => {
-//     seen.add(`${item.product_id}_${item.slug}`);
-//   });
-//   return seen.size;
-// });
-
-// const confirmOrder = async () => {
-//   try {
-//     // Send order data to backend
-//     await axios.post('/api/confirm-order', { items: store.cartItems });
-
-//     // Clear cart and localStorage
-//     store.cartItems = [];
-//     localStorage.removeItem('cart');
-
-//     // Redirect or show success
-//     router.push('/thank-you');
-//   } catch (error) {
-//     console.error('Order error:', error);
-//   }
-// };
-
-
-
 const handleSubmit = async () => {
   try {
-
     // Validate inputs
     if (!store.customer.name || !store.customer.mobile || !store.customer.address) {
       throw new Error('Please fill all required fields');
@@ -144,12 +114,15 @@ const handleSubmit = async () => {
     // Process checkout
     const result = await store.processCheckout();
 
-    // Check for success message
-    if (result.message === 'Order placed successfully') {
-      // Clear the cart after successful order
-      await store.clearCart();
+    // Handle payment redirects
+    if (result.redirect_url) {
+      window.location.href = result.redirect_url;
+      return;
+    }
 
-      // Redirect to thank you page
+    // Standard success case
+    if (result.success) {
+      await store.clearCart();
       router.push({
         name: 'ThankYou',
         params: { order_id: result.order_id }
@@ -157,15 +130,57 @@ const handleSubmit = async () => {
       return;
     }
 
-    throw new Error(result.message || 'Order processing completed with unexpected response');
+    throw new Error(result.message || 'Order processing failed');
+
   } catch (error) {
     console.error('Checkout error:', error);
-    const errorMessage = error.response?.data?.message ||
-      error.message ||
-      'Checkout failed for unknown reason';
-    alert(errorMessage);
+    const errorMessage = error.message || 'Checkout failed for unknown reason';
+    
+    // Use a more user-friendly notification system
+    toast.error(errorMessage, {
+      position: 'top-right',
+      duration: 5000
+    });
   }
 };
+
+// const handleSubmit = async () => {
+//   try {
+
+//     // Validate inputs
+//     if (!store.customer.name || !store.customer.mobile || !store.customer.address) {
+//       throw new Error('Please fill all required fields');
+//     }
+
+//     if (store.cartCount === 0) {
+//       throw new Error('Your cart is empty');
+//     }
+
+//     // Process checkout
+//     const result = await store.processCheckout();
+
+//     // Check for success message
+//     if (result.message === 'Order placed successfully') {
+//       // Clear the cart after successful order
+//       await store.clearCart();
+
+//       // Redirect to thank you page
+//       router.push({
+//         name: 'ThankYou',
+//         params: { order_id: result.order_id }
+//       });
+//       return;
+//     }
+
+//     throw new Error(result.message || 'Order processing completed with unexpected response');
+//   } catch (error) {
+//     console.error('Checkout error:', error);
+//     const errorMessage = error.response?.data?.message ||
+//       error.message ||
+//       'Checkout failed for unknown reason';
+//     alert(errorMessage);
+//   }
+// };
 
 const getImageUrl = (imagePath) => {
   if (!imagePath) return '/path/to/placeholder.jpg';
@@ -201,6 +216,7 @@ const handleApplyCoupon = async () => {
     const response = await store.applyCoupon(store.couponCode);
 
     if (response.success) {
+      // toast.success(response.message);
       console.log(' Coupon applied:', {
         message: response.message,
         discountAmount: response.discountAmount,
@@ -217,13 +233,13 @@ const handleApplyCoupon = async () => {
   }
 }
 
+
 const handleRemoveCoupon = () => {
   store.couponCode = '';          // clear input
   // store.couponDiscount = 0;       // optional
   store.couponDetails = null;
   couponApplied.value = false;
 };
-
 
 
 </script>

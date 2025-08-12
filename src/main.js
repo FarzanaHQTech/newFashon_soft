@@ -22,6 +22,8 @@ import { useToast } from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-sugar.css';
 import './assets/css/customerDash.css'
 import { useCustomerStore } from './stores/Auth/customerDash.js';
+// import '@fortawesome/fontawesome-free/css/all.min.css';
+
 
 
 // import { useAuthStore } from './stores/Auth/customer_reg'

@@ -19,10 +19,6 @@ const mobileMenuStore = useMobileMenuStore();
 const { showMobileMenu } = storeToRefs(mobileMenuStore);
 const { toggleMobileMenu } = mobileMenuStore; // Get the action directly
 
-// Debug watch - should be outside onMounted
-// watch(showMobileMenu, (newVal) => {
-//   console.log('Mobile menu state changed:', newVal);
-// });
 
 onMounted(() => {
   const actionButton = document.querySelector('.action-button');

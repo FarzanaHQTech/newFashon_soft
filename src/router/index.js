@@ -138,27 +138,21 @@ const router = createRouter({
     return savedPosition || { top: 0, behavior: 'smooth' }
   }
 })
-router.beforeEach(async (to, from, next) => {
-  const auth = useCustomerStore()
 
- if (!auth.token) {
-    auth.restoreAuth()
+
+router.beforeEach((to, from, next) => {
+  const customerStore = useCustomerStore()
+
+  // Restore auth from sessionStorage if needed
+  if (!customerStore.user && sessionStorage.getItem('auth_user')) {
+    customerStore.restoreAuth()
   }
 
-  //  Protect dashboard routes
-  if (to.path.startsWith('/customer') && !auth.token) {
-    return next('/login')
-  }
+  const isLoggedIn = !!customerStore.user
 
-  // Preload dynamic component if needed
-  if (typeof to.matched[0]?.components?.default === 'function') {
-    await to.matched[0].components.default()
-  }
-
-  // Prefetch API data
-  if (to.name === 'ProductDetail') {
-    const slug = to.params.slug
-    await prefetchProductData(slug)
+  //  Redirect logged-in users away from login/registration
+  if ((to.path === '/login' || to.path === '/registration') && isLoggedIn) {
+    return next('/customer/dashboard')
   }
 
   next()

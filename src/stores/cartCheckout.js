@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
-import { frontendApi, posadminApi ,csrfApi} from "../api";
+import { posadminApi ,csrfApi} from "../api";
 import { useRouter } from "vue-router";
+import { useToast } from "vue-toast-notification";
 
 export const useCartCheckoutStore = defineStore("cartCheckout", {
   state: () => ({
@@ -20,6 +21,7 @@ export const useCartCheckoutStore = defineStore("cartCheckout", {
     loading: false,
     error: null,
     orderResponse: null,
+
   }),
 
   getters: {
@@ -133,7 +135,7 @@ restoreCartFromLocalStorage() {
 async fetchShippingCharge() {
   try {
     this.loading = true;
-    const res = await frontendApi.get('/checkoutGet');
+    const res = await posadminApi.get('/checkoutGet');
     this.shippingCharge = res.data.shipping_charges;
     // console.log("shipping charge", res.data);
     
@@ -199,7 +201,7 @@ async fetchShippingCharge() {
         }
 
         // Make API call
-        const response = await frontendApi.post("/cartStore", payload);
+        const response = await posadminApi.post("/cartStore", payload);
 
         this.persistCartToLocalStorage();
         this.updateHeaderCart();
@@ -216,7 +218,7 @@ async fetchShippingCharge() {
     async fetchCart() {
       this.loading = true;
       try {
-        const response = await frontendApi.get("/getcart");
+        const response = await posadminApi.get("/getcart");
         const cartData = response.data.cart || {};
 
         const newCartItems = Array.isArray(cartData)
@@ -250,25 +252,36 @@ async fetchShippingCharge() {
       }
     },
 
-//     async processCheckout() {
-//       this.loading = true;
-   
-// //end new
-//       try {
-//         await csrfApi.get('/sanctum/csrf-cookie');
+// async processCheckout() {
+//   this.loading = true;
+  
+//   try {
+//     // 1. First get CSRF token
+//     await csrfApi.get('/sanctum/csrf-cookie');
     
+//     // 2. Get auth token
 //     const token = sessionStorage.getItem('auth_token');
-//     if (!token) {
-//       throw new Error('Not authenticated');
-//     }
+//     // if (!token) {
+//     //   throw new Error('Authentication token not found');
+//     // }
 
-//         const orderData = {
+//     // 3. Get CSRF token from cookies
+//     const getCookie = (name) => {
+//       const value = `; ${document.cookie}`;
+//       const parts = value.split(`; ${name}=`);
+//       if (parts.length === 2) return parts.pop().split(';').shift();
+//       return null;
+//     };
+//     const csrfToken = getCookie('XSRF-TOKEN');
+
+//     // 4. Prepare order data
+//     const orderData = {
 //       name: this.customer.name,
 //       mobile: this.customer.mobile,
 //       address: this.customer.address,
-//       shipping_charge: this.selectedShippingCharge, // Changed from this.shippingCharge
+//       shipping_charge: this.selectedShippingCharge,
 //       paying_method: this.payingMethod,
-//       cart_items: this.cartItems.map((item) => ({
+//       cart_items: this.cartItems.map(item => ({
 //         product_id: item.product_id,
 //         variant_id: item.variant_id || null,
 //         quantity: item.quantity,
@@ -276,50 +289,62 @@ async fetchShippingCharge() {
 //         discount: item.discount || 0,
 //       })),
 //     };
-// const response = await posadminApi.post("/checkout", orderData, {
-//       headers: {
-//         Authorization: `Bearer ${token}`
-//       }
-//     });
-//     // const response = await posadminApi.post("/checkout", orderData);
-//     console.log('checkout data',response.data );
+
+//     // 5. Make the authenticated request
     
-//         if (response.data.success) {
-//           await this.clearCart();
-//           this.updateHeaderCart();
-//         }
+//     const response = await posadminApi.post("/checkout", orderData, {
 
-//         return response.data;
-//       } catch (error) {
-//         console.error("Checkout error:", error);
-//         this.error = error.response?.data?.message || "Checkout failed";
-//         throw error;
-//       } finally {
-//         this.loading = false;
+//       headers: {
+//         'Authorization': `Bearer ${token}`,
+//         'X-XSRF-TOKEN': csrfToken
 //       }
-//     },
+// //     headers: {
+// //   ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+// //   'X-XSRF-TOKEN': csrfToken
+// // }
 
+//     });
+
+//     if (response.data.success) {
+//       await this.clearCart();
+//       this.updateHeaderCart();
+//     }
+
+//     return response.data;
+//   } catch (error) {
+//     console.error("Checkout failed:", {
+//       message: error.message,
+//       response: error.response?.data,
+//       status: error.response?.status,
+//       headers: error.response?.headers
+//     });
+//     throw error;
+//   } finally {
+//     this.loading = false;
+//   }
+// },
 async processCheckout() {
   this.loading = true;
   
   try {
-    // 1. First get CSRF token
+    // 1. Get CSRF token first
     await csrfApi.get('/sanctum/csrf-cookie');
     
-    // 2. Get auth token
+    // 2. Get auth data
     const token = sessionStorage.getItem('auth_token');
-    // if (!token) {
-    //   throw new Error('Authentication token not found');
-    // }
+    const authUser = JSON.parse(sessionStorage.getItem('auth_user'));
 
-    // 3. Get CSRF token from cookies
-    const getCookie = (name) => {
-      const value = `; ${document.cookie}`;
-      const parts = value.split(`; ${name}=`);
-      if (parts.length === 2) return parts.pop().split(';').shift();
-      return null;
+    // 3. Prepare headers
+    const headers = {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'X-Requested-With': 'XMLHttpRequest'
     };
-    const csrfToken = getCookie('XSRF-TOKEN');
+
+    // Add auth header only if token exists
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
 
     // 4. Prepare order data
     const orderData = {
@@ -337,40 +362,48 @@ async processCheckout() {
       })),
     };
 
-    // 5. Make the authenticated request
-    
-    const response = await posadminApi.post("/checkout", orderData, {
-
-      // headers: {
-      //   'Authorization': `Bearer ${token}`,
-      //   'X-XSRF-TOKEN': csrfToken
-      // }
-    headers: {
-  ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-  'X-XSRF-TOKEN': csrfToken
-}
-
+    const response = await posadminApi.post("/checkout", orderData, { 
+      headers,
+      withCredentials: true
     });
 
-    if (response.data.success) {
+    // Handle all successful responses (200 or 201 status)
+    if ([200, 201].includes(response.status)) {
       await this.clearCart();
       this.updateHeaderCart();
+      
+      // Standardize response format
+      return {
+        success: true,
+        message: response.data.message || 'Order processed successfully',
+        order_id: response.data.order_id,
+        ...(response.data.redirect_url && { redirect_url: response.data.redirect_url })
+      };
     }
 
-    return response.data;
+    throw new Error(response.data.message || 'Unexpected response from server');
+
   } catch (error) {
     console.error("Checkout failed:", {
-      message: error.message,
-      response: error.response?.data,
       status: error.response?.status,
-      headers: error.response?.headers
+      data: error.response?.data,
+      message: error.response?.data?.message || error.message
     });
-    throw error;
+    
+    if (error.response?.status === 401) {
+      sessionStorage.removeItem('auth_token');
+      sessionStorage.removeItem('auth_user');
+    }
+    
+    throw {
+      message: error.response?.data?.message || 'Checkout failed',
+      status: error.response?.status,
+      data: error.response?.data
+    };
   } finally {
     this.loading = false;
   }
 },
-
 
     async clearCart() {
       this.cartItems = [];
@@ -395,7 +428,7 @@ async processCheckout() {
         this.cartItems[itemIndex].quantity = newQuantity;
 
         // Make API call
-        const response = await frontendApi.post("/cart/update", {
+        const response = await posadminApi.post("/cart/update", {
           item_id:
             this.cartItems[itemIndex].variant_id ||
             this.cartItems[itemIndex].product_id,
@@ -423,7 +456,7 @@ async processCheckout() {
 
         const item = this.cartItems[itemIndex];
 
-        const response = await frontendApi.delete(
+        const response = await posadminApi.delete(
           `/cartDelete/${item.variant_id || item.product_id}`
         );
 
@@ -456,7 +489,7 @@ async processCheckout() {
 
         const item = this.cartItems[itemIndex];
 
-        const response = await frontendApi.delete(
+        const response = await posadminApi.delete(
           `/cartDelete/${item.variant_id || item.product_id}`
         );
 
@@ -494,31 +527,33 @@ async processCheckout() {
 
 async applyCoupon(code) {
   try {
-    const response = await frontendApi.post('/apply-coupon', { couponCode: code });
+    const toast = useToast(); // ✅ Call here, inside the method
+
+    const response = await posadminApi.post('/apply-coupon', { couponCode: code });
 
     this.couponCode = response.data.couponCode || '';
     this.couponDiscount = response.data.discountAmount || 0;
     this.couponType = response.data.couponDetails?.type || 'fixed';
-    this.couponDetails = response.data.couponDetails || null;  // store full coupon details
+    this.couponDetails = response.data.couponDetails || null;
 
     if (response.data.message) {
-      alert(response.data.message);
+      toast.success(response.data.message); // ✅ Use toast safely here
     }
 
-    // Debug output
-    console.log('Coupon applied:', {
-      type: this.couponType,
-      discountAmount: this.couponDiscount,
-      details: this.couponDetails,
-      computedDiscount: this.computedCouponDiscount,
-    });
+    return {
+      success: true,
+      message: response.data.message,
+      discountAmount: response.data.discountAmount,
+    };
 
-    return response.data;
   } catch (error) {
-    console.error('Coupon error:', error);
-    throw error;
+    const toast = useToast(); // Call here too in case of error
+    toast.error('Failed to apply coupon');
+    console.error("Coupon error:", error);
+    return { success: false };
   }
 }
+
 
   },
 });
